@@ -1,0 +1,29 @@
+<div class="form-horizontal">
+
+    <div class="alert alert-danger">
+        <h4>Warning</h4>
+        Are you sure you wish to permanently delete tag <strong>'${tagInstance.label}'</strong> and all of its descendants? This tag, and any of it's children, will be removed from any images to which they are currently attached.'
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <button class="btn btn-danger" id="btnDeleteTag">Delete Tag</button>
+            <button class="btn" id="btnCancelDeleteTag">Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+
+    $("#btnCancelDeleteTag").click(function(e) {
+        e.preventDefault();
+        hideModal();
+    });
+
+    $("#btnDeleteTag").click(function(e) {
+        e.preventDefault();
+        $.ajax("${createLink(controller:'webService', action:'deleteTag')}?tagId=${tagInstance.id}").done(function() {
+            hideModal();
+        });
+    });
+
+</script>
