@@ -210,7 +210,7 @@ class TagService {
         image.keywords?.each { imageKeyword ->
             imageKeyword.delete()
         }
-        image.keywords.clear()
+        image.keywords?.clear()
 
         def tagPaths = ImageTag.findAllByImage(image)?.collect { it.tag.path }
         Set imageKeywords = new HashSet<String>()

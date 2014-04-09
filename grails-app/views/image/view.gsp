@@ -57,10 +57,16 @@
             var centerx = ${imageInstance.width / 2} / imageScaleFactor;
             var centery = ${imageInstance.height / 2} / imageScaleFactor;
 
+            var p1 = L.latLng(${imageInstance.height} / imageScaleFactor, 0);
+            var p2 = L.latLng(0, ${imageInstance.width} / imageScaleFactor );
+            var bounds = new L.latLngBounds(p1, p2);
+
+
             var viewer = L.map('imageViewer', {
                 minZoom: 2,
                 maxZoom: ${maxZoom + 2},
                 zoom: 2,
+                // maxBounds: bounds,
                 center:new L.LatLng(centery, centerx),
                 crs: L.CRS.Simple
             });
@@ -74,13 +80,15 @@
 
                 hookShowSubimages();
 
+
                 var urlMask = "<img:imageTileBaseUrl imageId="${imageInstance?.imageIdentifier}"/>/{z}/{x}/{y}.png";
                 L.tileLayer(urlMask, {
                     attribution: '',
                     maxNativeZoom: ${maxZoom},
                     continuousWorld: true,
                     tms: true,
-                    noWrap: true
+                    noWrap: true,
+                    bounds: bounds
                 }).addTo(viewer);
 
                 // init drawing...

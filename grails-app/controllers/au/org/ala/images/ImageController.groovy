@@ -47,6 +47,9 @@ class ImageController {
 
         def userId = AuthenticationUtils.getUserId(request) ?: "<anonymous>"
         def image = imageService.storeImage(file, userId)
+        if (image) {
+            imageService.scheduleArtifactGeneration(image.id)
+        }
         flash.message = "Image uploaded with identifier: ${image?.imageIdentifier}"
         redirect(controller:'image', action:'upload')
     }

@@ -117,7 +117,7 @@ class SelectionController {
         int count = 0
         if (selected) {
             selected.each {
-                imageService.deleteImage(it.image)
+                imageService.deleteImage(it.image, AuthenticationUtils.getUserId(request) ?: '<unknown>')
                 count++
             }
         }

@@ -29,6 +29,7 @@ class ImageService {
     def tagService
     def grailsApplication
     def logService
+    def auditService
 
 
     private static Queue<BackgroundTask> _backgroundQueue = new ConcurrentLinkedQueue<BackgroundTask>()
@@ -42,8 +43,24 @@ class ImageService {
             // Store the image
             def originalFilename = imageFile.originalFilename
             def image = storeImageBytes(imageFile?.bytes, originalFilename, imageFile.size, imageFile.contentType, uploader)
-            scheduleArtifactGeneration(image.id)
+            auditService.log(image,"Image stored from multipart file ${originalFilename}", uploader ?: "<unknown>")
             return image
+        }
+        return null
+    }
+
+    public Image storeImageFromUrl(String imageUrl, String uploader) {
+        if (imageUrl) {
+            try {
+                def url = new URL(imageUrl)
+                def bytes = url.bytes
+                def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
+                def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader)
+                auditService.log(image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
+                return image
+            } catch (Exception ex) {
+                ex.printStackTrace()
+            }
         }
         return null
     }
@@ -58,17 +75,11 @@ class ImageService {
 
     private Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType, String uploaderId) {
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
+
         def md5Hash = MD5Codec.encode(bytes)
         def sha1Hash = SHA1Codec.encode(bytes)
 
-//        def existing = Image.findByContentMD5Hash(hash);
-//        if (existing) {
-//            println "Image already exists in database!"
-//            return existing;
-//        }
-
         def extension = FilenameUtils.getExtension(originalFilename) ?: 'jpg'
-
         def imgDesc = imageStoreService.storeImage(bytes)
 
         // Create the image record, and set the various attributes
@@ -229,14 +240,14 @@ class ImageService {
     }
 
     ThumbDimensions generateImageThumbnails(String imageIdentifier) {
-        return imageStoreService.generateImageThumbnails(imageIdentifier)
+        imageStoreService.generateImageThumbnails(imageIdentifier)
     }
 
     void generateTMSTiles(String imageIdentifier) {
         imageStoreService.generateTMSTiles(imageIdentifier)
     }
 
-    def deleteImage(Image image) {
+    def deleteImage(Image image, String userId) {
 
         if (image) {
 
@@ -281,6 +292,8 @@ class ImageService {
             // Finally need to delete images on disk. This might fail (if the file is held open somewhere), but that's ok, we can clean up later.
             imageStoreService.deleteImage(image?.imageIdentifier)
 
+            auditService.log(image?.imageIdentifier, "Image deleted", userId)
+
             return true
         }
 
@@ -305,7 +318,6 @@ class ImageService {
             throw new RuntimeException("Could not read file ${file?.absolutePath} - Does not exist")
         }
 
-
         Image image = null
 
         def fieldDefinitions = ImportFieldDefinition.list()
@@ -316,6 +328,8 @@ class ImageService {
             def bytes = file.getBytes()
             def mimeType = detectMimeTypeFromBytes(bytes, file.name)
             image = storeImageBytes(bytes, file.name, file.length(),mimeType, userId)
+
+            auditService.log(image, "Imported from ${file.absolutePath}", userId)
 
             if (image && batchId) {
                 setMetaDataItem(image, MetaDataSourceType.SystemDefined,  "importBatchId", batchId)
@@ -369,6 +383,8 @@ class ImageService {
                 md.save()
                 image.addToMetadata(md)
             }
+
+            auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", "<unknown>")
             image.save()
             return true
         } else {
@@ -387,31 +403,8 @@ class ImageService {
                 md.delete()
             }
         }
+        auditService.log(image, "Delete metadata item ${key} (${count} items)", "<unknown>")
         return count > 0
-    }
-
-    private Image importFromInbox(File file, String batchId, String userId) {
-        logService.log("Importing file from ${file.absolutePath}")
-
-        if (!file.exists()) {
-            throw new RuntimeException("File not found: ${file.absolutePath}")
-        }
-
-        try {
-            def bytes = file.getBytes()
-            def mimeType = detectMimeTypeFromBytes(bytes, file.name)
-            def image = storeImageBytes(bytes, file.name, file.length(),mimeType, userId)
-
-            if (image && batchId) {
-                setMetaDataItem(image, MetaDataSourceType.SystemDefined,  "importBatchId", batchId)
-            }
-
-            return image
-        } catch (Throwable ex) {
-            logService.error("Error importing from inbox", ex)
-            ex.printStackTrace()
-        }
-        return null
     }
 
     private static String detectMimeTypeFromBytes(byte[] bytes, String filename) {
@@ -454,6 +447,9 @@ class ImageService {
             def subimageRect = new Subimage(parentImage: parentImage, subimage: subimage, x: x, y: y, height: height, width: width)
             subimageRect.save()
             subimage.parent = parentImage
+
+            auditService.log(parentImage, "Subimage created ${subimage.imageIdentifier}", userId)
+            auditService.log(subimage, "Subimage created from parent image ${parentImage.imageIdentifier}", userId)
 
             scheduleArtifactGeneration(subimage.id)
 

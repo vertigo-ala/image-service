@@ -4,6 +4,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import grails.converters.JSON
 import grails.converters.XML
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.multipart.MultipartRequest
 
 class WebServiceController {
 
@@ -19,7 +20,7 @@ class WebServiceController {
         def image = Image.findByImageIdentifier(params.id as String)
         def success = false
         if (image) {
-            success = imageService.deleteImage(image)
+            success = imageService.deleteImage(image, AuthenticationUtils.getUserId(request) ?: '<unknown>')
         }
         renderResults(["success": success])
     }
@@ -550,6 +551,61 @@ class WebServiceController {
             }
         }
         renderResults([success: false, message:'Unhandled task type'])
+    }
+
+    def uploadImage() {
+        // Expect a multipart file request
+
+        Image image = null
+
+        def userId = AuthenticationUtils.getUserId(request)
+        def url = params.imageUrl ?: params.url
+
+        println url
+
+        if (url) {
+            // Image is located at an endpoint, and we need to download it first.
+            image = imageService.storeImageFromUrl(url, userId)
+            if (!image) {
+                renderResults([success: false, message: "Unable to retrieve image from ${url}"])
+            }
+        } else {
+            // it should contain a file paramater
+            MultipartRequest req = request as MultipartRequest
+            if (req) {
+                MultipartFile file = req.getFile('image')
+                if (!file || file.size == 0) {
+                    renderResults([success: false, message: 'image parameter not found, or empty. Please supply an image file.'])
+                    return
+                }
+                image = imageService.storeImage(file, userId)
+            } else {
+                renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])
+            }
+        }
+
+        if (image) {
+            def metadata = JSON.parse(params.metadata as String) as Map
+            if (metadata) {
+                metadata.each { kvp ->
+                    imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
+                }
+            }
+
+            def tags = JSON.parse(params.tags as String) as List
+            if (tags) {
+                tags.each { tagPath ->
+                    def tag = tagService.createTagByPath(tagPath)
+                    tagService.attachTagToImage(image, tag)
+                }
+            }
+            imageService.scheduleArtifactGeneration(image.id)
+            renderResults([success: true, imageId: image?.imageIdentifier])
+        } else {
+            renderResults([success: false, message: "Failed to store image!"])
+        }
+
+
     }
 
 }

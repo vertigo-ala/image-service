@@ -22,6 +22,7 @@ class ImageStoreService {
 
     def grailsApplication
     def logService
+    def auditService
 
     ImageDescriptor storeImage(byte[] imageBytes) {
         def uuid = UUID.randomUUID().toString()
@@ -254,6 +255,7 @@ class ImageStoreService {
             logService.log("No image readers for image ${imageIdentifier}!")
         }
         t.stop(true)
+        auditService.log(imageIdentifier, "Thumbnails created", "N/A")
         return new ThumbDimensions(height: thumbHeight, width: thumbWidth, squareThumbSize: size)
     }
 
@@ -282,7 +284,7 @@ class ImageStoreService {
         } else {
             logService.log("Image tiling failed! ${results}");
         }
-
+        auditService.log(imageIdentifier, "TMS tiles generated", "N/A")
         ct.stop(true)
     }
 
@@ -309,6 +311,7 @@ class ImageStoreService {
             File f = getOriginalImageFile(imageIdentifier)
             if (f && f.exists()) {
                 FileUtils.deleteQuietly(f.parentFile)
+                auditService.log(imageIdentifier, "Image deleted from store", "N/A")
                 return true
             }
         }
@@ -336,6 +339,7 @@ class ImageStoreService {
                     overwrite: true
             )
             // TODO: validate the extracted contents
+            auditService.log(imageIdentifier, "Image tiles stored from zip file (outsourced job?)", "N/A")
             return true
         }
         return false
@@ -345,6 +349,14 @@ class ImageStoreService {
         def original = getOriginalImageFile(imageId)
         if (original && original.exists()) {
             return FileUtils.sizeOfDirectory(original.parentFile)
+        }
+        return 0
+    }
+
+    public long getRepositorySizeOnDisk() {
+        def dir = new File(grailsApplication.config.imageservice.imagestore.root)
+        if (dir && dir.exists()) {
+            return FileUtils.sizeOfDirectory(dir)
         }
         return 0
     }
