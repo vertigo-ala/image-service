@@ -66,6 +66,7 @@ class ImageController {
 
         if (query) {
             def results = searchService.simpleSearch(query, params)
+
             images = results?.images
             totalCount = results?.totalCount
         } else {

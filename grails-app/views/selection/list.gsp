@@ -11,7 +11,6 @@
     <img:headerContent title="Selected images">
         <%
             pageScope.crumbs = [
-                [link:createLink(controller: 'image', action:'list'), label: 'Images']
             ]
         %>
     </img:headerContent>

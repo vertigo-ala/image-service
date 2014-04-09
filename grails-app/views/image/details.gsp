@@ -16,7 +16,6 @@
         <img:headerContent title="Image Details ${imageInstance?.originalFilename ?: imageInstance?.id}">
             <%
                 pageScope.crumbs = [
-                    [link:createLink(controller: 'image', action:'list'), label: 'Images']
                 ]
             %>
         </img:headerContent>

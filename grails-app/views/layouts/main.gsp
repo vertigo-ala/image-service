@@ -1,4 +1,4 @@
-<%@ page import="org.codehaus.groovy.grails.commons.ConfigurationHolder" %>
+<%@ page import="au.org.ala.web.CASRoles; org.codehaus.groovy.grails.commons.ConfigurationHolder" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -19,11 +19,11 @@
         <r:require module="qtip" />
 
         <style>
-            nav#breadcrumb {
-                margin-top: 10px;
-            }
+            /*nav#breadcrumb {*/
+                /*margin-top: 10px;*/
+            /*}*/
 
-            nav#breadcrumb ul,ol {
+            nav#breadcrumb ul, nav#breadcrumb ol {
                 margin: 0;
             }
 
@@ -42,6 +42,10 @@
                 color:#3a5c83;
                 text-decoration: underline;
                 outline:none;
+            }
+
+            hgroup h2 {
+                margin: 0;
             }
 
             .pagination a {
@@ -143,6 +147,20 @@
                 $("#modal_element_id").modal('hide');
             }
 
+            function updateSelectionContext() {
+                $.ajax("${createLink(controller:'selection', action:'userContextFragment')}").done(function(content) {
+                    $("#selectionContext").html(content);
+                });
+            }
+
+            function loadingSpinner() {
+                return '<img src="../images/spinner.gif"/>&nbsp;Loading...';
+            }
+
+            $(document).ready(function() {
+                updateSelectionContext();
+            });
+
         </r:script>
 
         <r:layoutResources/>
@@ -164,7 +182,21 @@
             <header id="page-header">
                 <div class="container">
                     <hgroup>
-                        <g:pageProperty name="page.page-header" />
+                        <div class="row-fluid">
+                            <div class="span8">
+                                <g:pageProperty name="page.page-header" />
+                            </div>
+                            <div class="span4">
+                                <div class="pull-right">
+                                    <auth:ifLoggedIn>
+                                        <span id="selectionContext" style="display: inline-block"></span>
+                                    </auth:ifLoggedIn>
+                                    <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                                        <a href="${createLink(controller:'admin', action:'index')}" class="btn btn-warning btn-small"><i class="icon-cog icon-white"></i>Admin</a>
+                                    </auth:ifAnyGranted>
+                                </div>
+                            </div>
+                        </div>
                     </hgroup>
                     <g:if test="${flash.message}">
                         <div class="alert alert-info" role="status">${flash.message}</div>

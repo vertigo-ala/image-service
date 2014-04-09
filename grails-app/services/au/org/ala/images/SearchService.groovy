@@ -8,28 +8,68 @@ import java.util.regex.Pattern
 
 class SearchService {
 
-
     public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
+
+    def searchByMetadataQuery(String query, GrailsParameterMap params) {
+
+        def images = []
+        def totalCount = 0
+
+        if (query.contains(":")) {
+
+            def key = query.substring(0, query.indexOf(":"))?.toLowerCase()
+            def value = query.substring(query.indexOf(":") + 1)?.toLowerCase()
+
+            value = value.replaceAll('[*]', '%')
+
+            def paramMap = [key: key, value: value]
+
+            if (query) {
+                images = Image.executeQuery("""
+            SELECT DISTINCT img FROM Image img LEFT JOIN img.metadata md
+            WHERE lower(md.name) like :key and lower(md.value) like :value
+            ORDER BY img.dateTaken""", paramMap, [max: params.max, offset: params.offset])
+
+                totalCount = Image.executeQuery("""
+            SELECT count(DISTINCT img) FROM Image img LEFT JOIN img.metadata md
+            WHERE lower(md.name) like :key and lower(md.value) like :value
+            """, paramMap)[0]
+            }
+        }
+
+        return [images: images, totalCount: totalCount]
+
+    }
 
     def simpleSearch(String query, GrailsParameterMap params) {
 
+        if (query.contains(":")) {
+            // metadata search
+            return searchByMetadataQuery(query, params)
+        }
+
         query = query.toLowerCase()
 
-        def images = Image.executeQuery("""
+        def images = []
+        def totalCount = 0
+
+        if (query) {
+            images = Image.executeQuery("""
             SELECT DISTINCT img FROM Image img LEFT JOIN img.keywords kw
             WHERE (lower(img.originalFilename) like :filenameQuery)
             OR kw.keyword like :keywordQuery
             OR img.imageIdentifier = :query
             ORDER BY img.dateTaken""",
-                [query: query, filenameQuery: '%' + query + '%', keywordQuery: query + '%'], [max: params.max, offset: params.offset])
+                    [query: query, filenameQuery: '%' + query + '%', keywordQuery: query + '%'], [max: params.max, offset: params.offset])
 
-        def totalCount = Image.executeQuery("""
+            totalCount = Image.executeQuery("""
             SELECT COUNT(DISTINCT img) FROM Image img LEFT JOIN img.keywords kw
             WHERE (lower(img.originalFilename) like :filenameQuery)
             OR kw.keyword like :keywordQuery
             OR img.imageIdentifier = :query
             """,
-                [query: query, filenameQuery: '%' + query + '%', keywordQuery: query + '%'])[0]
+                    [query: query, filenameQuery: '%' + query + '%', keywordQuery: query + '%'])[0]
+        }
 
         return [images: images, totalCount: totalCount]
     }

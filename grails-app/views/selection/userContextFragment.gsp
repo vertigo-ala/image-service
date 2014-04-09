@@ -1,5 +1,5 @@
 <div class="">
     <g:if test="${selectionCount}">
-        You have ${selectionCount} images <a href="${createLink(controller:'selection', action:'list')}">selected</a>.
+        ${selectionCount} images <a href="${createLink(controller:'selection', action:'list')}">selected <i class="icon-shopping-cart" /></a>
     </g:if>
 </div>

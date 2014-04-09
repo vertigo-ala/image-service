@@ -18,6 +18,18 @@
             opacity: 0.75;
         }
 
+        #viewer-status {
+            margin-bottom: 5px;
+            padding: 3px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+
+        }
+
+        #viewer-status label {
+            display: inline-block;
+        }
+
         </style>
     </head>
 
@@ -28,16 +40,18 @@
         <img:headerContent title="Viewing Image ${imageInstance?.id}" hideTitle="${true}">
             <%
                 pageScope.crumbs = [
-                    [link:createLink(controller: 'image', action:'list'), label: 'Thumbnails'],
                     [link:createLink(controller: 'image', action:'details', id:imageInstance?.id), label: 'Image Details']
                 ]
             %>
         </img:headerContent>
 
-        <div class="alert alert-info">
-            Show sub images <g:checkBox name="showSubImages" id="showSubImages" />
-            <span id="mouseStatus"></span>
-            <span id="zoomStatus" class="pull-right"></span>
+        <div class="row-fluid">
+            <div class="span12">
+                <div id="viewer-status">
+                    <label class="checkbox"><g:checkBox name="showSubImages" id="showSubImages" /> Show subimages</label>
+                    <span id="zoomStatus" class="pull-right"></span>
+                </div>
+            </div>
         </div>
 
         <div class="row-fluid">
@@ -73,13 +87,13 @@
 
             function updateZoomStatus() {
                 var zoomLevel = viewer.getZoom();
-                $("#zoomStatus").html( "ZoomLevel: " + zoomLevel + " of ${maxZoom}" );
+                $("#zoomStatus").html( "Zoom level " + zoomLevel + " of ${maxZoom}" );
             }
 
             $(document).ready(function () {
 
                 hookShowSubimages();
-
+                updateZoomStatus();
 
                 var urlMask = "<img:imageTileBaseUrl imageId="${imageInstance?.imageIdentifier}"/>/{z}/{x}/{y}.png";
                 L.tileLayer(urlMask, {
@@ -99,9 +113,9 @@
 
                 viewer.on('mousemove', function(e) {
                     var ll = e.latlng;
-                    var pixelx = Math.round(ll.lng * imageScaleFactor);
-                    var pixely = imageHeight - Math.round(ll.lat * imageScaleFactor);
-                    $("#mouseStatus").html( "Mouse: " + pixelx + ", " + pixely);
+                    %{--var pixelx = Math.round(ll.lng * imageScaleFactor);--}%
+                    %{--var pixely = imageHeight - Math.round(ll.lat * imageScaleFactor);--}%
+                    %{--$("#mouseStatus").html( "Mouse: " + pixelx + ", " + pixely);--}%
                 });
 
                 viewer.on('zoomend', function(e) {

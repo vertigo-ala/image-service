@@ -14,6 +14,7 @@ class AdminController {
     def imageStoreService
 
     def index() {
+        redirect(action:'dashboard')
     }
 
     def searchCriteria() {

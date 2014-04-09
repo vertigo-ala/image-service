@@ -32,9 +32,10 @@
 
 <script type="text/javascript">
 
-    %{--$("#criteriaDetail").html("<img:spinner/>");--}%
-
     var url = "${createLink(action: "criteriaDetailFragment", params:[criteriaId:criteria?.id, searchCriteriaDefinitionId: criteria?.criteriaDefinition?.id])}";
+
+    $("#criteriaDetail").html(loadingSpinner());
+
     $.ajax(url).done(function(content) {
         $("#criteriaDetail").html(content);
     });

@@ -12,10 +12,9 @@
     </head>
 
     <body class="content">
-        <img:headerContent title="Find images">
+        <img:headerContent title="Advanced Search">
             <%
                 pageScope.crumbs = [
-                    [link:createLink(controller: 'image', action:'list'), label: 'Thumbnails']
                 ]
             %>
         </img:headerContent>

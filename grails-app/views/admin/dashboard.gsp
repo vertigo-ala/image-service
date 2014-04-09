@@ -15,8 +15,13 @@
             <table class="table table-striped">
                 <tr>
                     <td>Image count</td>
-                    <td><span id="statImageCount"></span></td>
+                    <td><span id="statImageCount"><img:spinner dark="true"/></span></td>
                 </tr>
+                <tr>
+                    <td>Repository Size (including generated artifacts)</td>
+                    <td><span id="statRepoSize"><span class="muted"><img:spinner dark="true"/>&nbsp;calculating size...</span></span></td>
+                </tr>
+
             </table>
         </div>
         <div class="well well-small">
@@ -27,7 +32,7 @@
                         Import/Thumbnailing queue size
                     </td>
                     <td>
-                        <span id="statQueueSize"></span>
+                        <span id="statQueueSize"><img:spinner dark="true"/></span>
                     </td>
                 </tr>
                 <tr>
@@ -35,7 +40,7 @@
                         Tiling queue size
                     </td>
                     <td>
-                        <span id="tilingQueueSize"></span>
+                        <span id="tilingQueueSize"><img:spinner dark="true"/></span>
                     </td>
                 </tr>
 
@@ -45,14 +50,25 @@
     <r:script>
 
     $(document).ready(function() {
-        $.ajax("${createLink(controller:'webService', action:'getRepositoryStatistics')}").done(function(data) {
-            $("#statImageCount").html(data.imageCount);
-        });
 
         updateQueueLength();
+        updateRepoStatistics();
+        updateRepoSize();
 
         setInterval(updateQueueLength, 10000);
     });
+
+    function updateRepoStatistics() {
+        $.ajax("${createLink(controller:'webService', action:'getRepositoryStatistics')}").done(function(data) {
+            $("#statImageCount").html(data.imageCount);
+        });
+    }
+
+    function updateRepoSize() {
+        $.ajax("${createLink(controller:'webService', action:'getRepositorySizeOnDisk')}").done(function(data) {
+            $("#statRepoSize").html(data.repoSizeOnDisk);
+        });
+    }
 
     function updateQueueLength() {
         $.ajax("${createLink(controller:'webService', action:'getBackgroundQueueStats')}").done(function(data) {

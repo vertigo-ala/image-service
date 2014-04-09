@@ -36,7 +36,6 @@
             <legend>
                 <table style="width: 100%">
                     <tr>
-
                         <td><g:link uri="/">Home</g:link><img:navSeparator/><g:link controller="admin" action="index">Administration</g:link><img:navSeparator/><g:pageProperty name="page.pageTitle"/></td>
                         <td style="text-align: right"><span><g:pageProperty name="page.adminButtonBar"/></span></td>
                     </tr>
@@ -46,10 +45,11 @@
             <div class="row-fluid">
                 <div class="span3">
                     <ul class="nav nav-list nav-stacked nav-tabs">
-                        <img:breadcrumbItem href="${createLink(controller: 'admin', action: 'dashboard')}" title="Dashboard" />
-                        <img:breadcrumbItem href="${createLink(controller: 'admin', action: 'searchCriteria')}" title="Search Criteria" />
-                        <img:breadcrumbItem href="${createLink(controller: 'admin', action: 'tools')}" title="Tools" />
-                        <img:breadcrumbItem href="${createLink(controller: 'admin', action: 'duplicates')}" title="Duplicates" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'dashboard')}" title="Dashboard" />
+                        <img:menuNavItem href="${createLink(controller: 'image', action: 'upload')}" title="Upload an image" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'tools')}" title="Tools" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'duplicates')}" title="Duplicates" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'searchCriteria')}" title="Search Criteria" />
                     </ul>
                 </div>
 

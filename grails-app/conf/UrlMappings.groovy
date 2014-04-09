@@ -11,7 +11,7 @@ class UrlMappings {
             controller = "webService"
         }
 
-        "/"(view:"/index")
+        "/"(controller:'image', action:'list')
         "500"(view:'/error')
 	}
 }

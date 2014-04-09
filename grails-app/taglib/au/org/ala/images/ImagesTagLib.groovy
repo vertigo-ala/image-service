@@ -48,7 +48,7 @@ class ImagesTagLib {
                     ol {
                         li {
                             a(href:createLink(uri:'/')) {
-                                mkp.yield(message(code:'default.home.label'))
+                                mkp.yield("Home")
                             }
                         }
                         if (crumbList) {
@@ -87,7 +87,11 @@ class ImagesTagLib {
     }
 
     def spinner = { attrs, body ->
-        out << "<image src=\"${resource(dir:'images', file:'spinner.gif')}\" />"
+        if (attrs.dark) {
+            out << "<image src=\"${resource(dir:'images', file:'spinner-dark.gif')}\" />"
+        } else {
+            out << "<image src=\"${resource(dir:'images', file:'spinner-transparent.gif')}\" />"
+        }
     }
 
     /**
@@ -143,7 +147,7 @@ class ImagesTagLib {
      * @attr title
      * @attr href
      */
-    def breadcrumbItem = { attrs, body ->
+    def menuNavItem = { attrs, body ->
         def active = attrs.active
         if (!active) {
             active = attrs.title
@@ -153,7 +157,7 @@ class ImagesTagLib {
         def mb = new MarkupBuilder(out)
         mb.li(class: active == current ? 'active' : '') {
             a(href:attrs.href) {
-                i(class:'icon-chevron-right') { mkp.yieldUnescaped('&nbsp;')}
+//                i(class:'icon-chevron-right') { mkp.yieldUnescaped('&nbsp;')}
                 mkp.yield(attrs.title)
             }
         }
@@ -214,13 +218,6 @@ class ImagesTagLib {
             displayName = authService.getUserForUserId(userId)?.displayName
         }
         out << (displayName ?: userId ?: '&lt;Unknown&gt;')
-    }
-
-    def ifLoggedIn = { attrs, body ->
-        def userId = AuthenticationUtils.getUserId(request)
-        if (StringUtils.isNotEmpty(userId)) {
-            out << body()
-        }
     }
 
 }

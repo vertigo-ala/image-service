@@ -79,7 +79,7 @@
                     <th>Description</th>
                     <th>Field</th>
                     <th>Units</th>
-                    <th style="width: 120px">Actions</th>
+                    <th style="min-width: 80px">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -92,8 +92,8 @@
                         <td>${criteria.fieldName}</td>
                         <td>${criteria.units}</td>
                         <td style="">
-                            <button class="btn btn-mini btn-danger btnDeleteCriteria"><i class="icon-remove icon-white"></i>&nbsp;delete</button>
-                            <button class="btn btn-mini btnEditCriteria"><i class="icon-edit"></i>&nbsp;edit</button>
+                            <button class="btn btn-mini btn-danger btnDeleteCriteria"><i class="icon-remove icon-white"></i></button>
+                            <button class="btn btn-mini btnEditCriteria"><i class="icon-edit"></i></button>
                         </td>
                     </tr>
                 </g:each>

@@ -37,12 +37,13 @@
 <script type="text/javascript">
 
     $("#cmbCriteria").change(function(e) {
-        %{--$("#criteriaDetail").html("<img:spinner />");--}%
+        $("#criteriaDetail").html(loadingSpinner());
         var criteriaDefinitionId = $(this).val();
         if (criteriaDefinitionId == 0) {
             $("#criteriaDetail").html("");
             $("#addButtonDiv").css('display', 'none');
         } else {
+            $("#criteriaDetail").html(loadingSpinner());
             $.ajax("${createLink(action: "criteriaDetailFragment")}?searchCriteriaDefinitionId=" + criteriaDefinitionId).done(function(content) {
                 $("#addButtonDiv").css("display", "block");
                 $("#criteriaDetail").html(content);

@@ -291,6 +291,13 @@ class WebServiceController {
     def getRepositoryStatistics() {
         def results = [:]
         results.imageCount = Image.count()
+        results.sizeOnDisk =
+
+        renderResults(results)
+    }
+
+    def getRepositorySizeOnDisk() {
+        def results = [ repoSizeOnDisk : ImageUtils.formatFileSize(imageStoreService.getRepositorySizeOnDisk()) ]
         renderResults(results)
     }
 
