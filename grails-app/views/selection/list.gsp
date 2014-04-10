@@ -16,11 +16,46 @@
     </img:headerContent>
 
     <div class="well well-small">
-        <button class="btn" id="btnClearSelection">Clear selection</button>
-        <button class="btn" id="btnRegenerateThumbs">Regenerate thumbnails</button>
-        <button class="btn" id="btnRegenerateTiles">Regenerate tiles</button>
 
-        <a href="${createLink(controller:'selection', action:'deleteSelected')}" class="btn btn-danger pull-right"><i class="icon-remove icon-white"></i>&nbsp;Delete all selected</a>
+        <div class="btn-group">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                Actions
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="#" id="">Add meta data</a>
+                </li>
+                <li>
+                    <a href="#" id="">Add tags</a>
+                </li>
+            </ul>
+        </div>
+
+        <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_ADMIN}">≈
+        <div class="btn-group">
+            <a class="btn dropdown-toggle btn-warning" data-toggle="dropdown" href="#">
+                <i class="icon-cog icon-white"></i>&nbsp;Admin functions
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="#" id="btnRegenerateThumbs">Regenerate thumbnails</a>
+                </li>
+                <li>
+                    <a href="#" id="btnRegenerateTiles">Regenerate tiles</a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="#" id="btnDeleteImages">Delete Images</a>
+                </li>
+            </ul>
+        </div>
+        </auth:ifAnyGranted>
+
+        <button class="btn" id="btnClearSelection">Clear selection</button>
+
+        %{--<a href="" class="btn btn-danger pull-right"><i class="icon-remove icon-white"></i>&nbsp;Delete all selected</a>--}%
     </div>
 
     <table class="table table-condensed table-bordered table-striped">
@@ -52,19 +87,23 @@
         $(document).ready(function() {
             $("#btnClearSelection").click(function(e) {
                 e.preventDefault();
-                $.ajax("${createLink(controller: 'selection', action:'clearSelection')}").done(function() {
-                    window.location = "${createLink(controller: 'selection', action:"list")}";
+                $.ajax("${createLink(controller: 'selection', action: 'clearSelection')}").done(function() {
+                    window.location = "${createLink(controller: 'selection', action: "list")}";
                 });
             });
 
             $("#btnRegenerateThumbs").click(function(e) {
                 e.preventDefault();
-                window.location = "${createLink(controller: 'selection', action:'generateThumbnails')}";
+                window.location = "${createLink(controller: 'selection', action: 'generateThumbnails')}";
             });
 
             $("#btnRegenerateTiles").click(function(e) {
                 e.preventDefault();
-                window.location = "${createLink(controller: 'selection', action:'generateTMSTiles')}";
+                window.location = "${createLink(controller: 'selection', action: 'generateTMSTiles')}";
+            });
+
+            $("#btnDeleteImage").click(function(e) {
+                window.location = "${createLink(controller: 'selection', action: 'deleteSelected')}";
             });
 
         });

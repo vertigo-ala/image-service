@@ -17,11 +17,6 @@
                     <td>Image count</td>
                     <td><span id="statImageCount"><img:spinner dark="true"/></span></td>
                 </tr>
-                <tr>
-                    <td>Repository Size (including generated artifacts)</td>
-                    <td><span id="statRepoSize"><span class="muted"><img:spinner dark="true"/>&nbsp;calculating size...</span></span></td>
-                </tr>
-
             </table>
         </div>
         <div class="well well-small">
@@ -53,7 +48,6 @@
 
         updateQueueLength();
         updateRepoStatistics();
-        updateRepoSize();
 
         setInterval(updateQueueLength, 10000);
     });
@@ -61,12 +55,6 @@
     function updateRepoStatistics() {
         $.ajax("${createLink(controller:'webService', action:'getRepositoryStatistics')}").done(function(data) {
             $("#statImageCount").html(data.imageCount);
-        });
-    }
-
-    function updateRepoSize() {
-        $.ajax("${createLink(controller:'webService', action:'getRepositorySizeOnDisk')}").done(function(data) {
-            $("#statRepoSize").html(data.repoSizeOnDisk);
         });
     }
 

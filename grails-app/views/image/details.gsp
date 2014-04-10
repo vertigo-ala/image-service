@@ -1,3 +1,4 @@
+<%@ page import="au.org.ala.web.CASRoles" %>
 <!doctype html>
 <html>
     <head>
@@ -154,8 +155,10 @@
                                         <td colspan="2">
                                             <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
                                             <a class="btn btn-small" href="<img:imageUrl imageId="${imageInstance.imageIdentifier}" />" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
-                                            <button class="btn btn-small" id="btnRegen" title="Regenerate artifacts"><i class="icon-refresh"></i></button>
-                                            <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
+                                            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                                                <button class="btn btn-small" id="btnRegen" title="Regenerate artifacts"><i class="icon-refresh"></i></button>
+                                                <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
+                                            </auth:ifAnyGranted>
                                         </td>
                                     </tr>
 

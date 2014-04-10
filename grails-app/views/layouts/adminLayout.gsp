@@ -50,28 +50,12 @@
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'tools')}" title="Tools" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'duplicates')}" title="Duplicates" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'searchCriteria')}" title="Search Criteria" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'settings')}" title="Settings" />
                     </ul>
                 </div>
 
                 <div class="span9">
-                    <g:if test="${flash.errorMessage}">
-                        <div class="container-fluid">
-                            <div class="alert alert-error">
-                                ${flash.errorMessage}
-                            </div>
-                        </div>
-                    </g:if>
-
-                    <g:if test="${flash.message}">
-                        <div class="container-fluid">
-                            <div class="alert alert-info">
-                                ${flash.message}
-                            </div>
-                        </div>
-                    </g:if>
-
                     <g:layoutBody/>
-
                 </div>
             </div>
         </div>

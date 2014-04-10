@@ -4,6 +4,7 @@ class ProcessBackgroundTasksJob {
 
     def imageService
     def logService
+    def settingService
 
     def concurrent = false
 
@@ -13,7 +14,9 @@ class ProcessBackgroundTasksJob {
 
     def execute() {
         try {
-            imageService.processBackgroundTasks()
+            if (settingService.backgroundTasksEnabled) {
+                imageService.processBackgroundTasks()
+            }
         } catch (Exception ex) {
             logService.error("Exception thrown in job handler", ex)
             throw ex

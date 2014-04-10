@@ -5,6 +5,7 @@ class BootStrap {
 
     def grailsApplication
     def logService
+    def settingService
 
     def init = { servletContext ->
 
@@ -18,7 +19,9 @@ class BootStrap {
 
         ImageIO.scanForPlugins()
         IIORegistry.getDefaultInstance()
-        ImageIO.setUseCache(false);
+        ImageIO.setUseCache(false)
+
+        settingService.ensureSettingsCreated()
 
     }
 

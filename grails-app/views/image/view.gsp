@@ -1,3 +1,4 @@
+<%@ page import="au.org.ala.web.CASRoles" %>
 <!doctype html>
 <html>
     <head>
@@ -122,6 +123,7 @@
                     updateZoomStatus();
                 });
 
+                <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                 // Initialise the draw control and pass it the FeatureGroup of editable layers
                 var drawControl = new L.Control.Draw({
                     edit: {
@@ -205,6 +207,8 @@
                     button.attr("title", "Draw a rectangle to create a subimage");
 
                 });
+
+                </auth:ifAnyGranted>
 
             });
 

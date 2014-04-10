@@ -10,12 +10,17 @@ class CheckOutsourcedTasksJob {
 
     def logService
     def imageService
+    def settingService
 
     static triggers = {
         simple repeatInterval: 30000l // execute job once every minute
     }
 
     def execute() {
+
+        if (!settingService.outsourcedTaskCheckingEnabled) {
+            return
+        }
 
         def sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
 

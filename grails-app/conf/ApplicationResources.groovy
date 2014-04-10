@@ -45,4 +45,10 @@ modules = {
         resource url: "bootstrap-datepicker/datepicker.css"
     }
 
+    "bootstrap-switch" {
+        dependsOn "bootstrap, jquery"
+        resource url: 'bootstrap-switch/bootstrap-switch.css'
+        resource url: 'bootstrap-switch/bootstrap-switch.js'
+    }
+
 }

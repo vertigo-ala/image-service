@@ -1,7 +1,9 @@
-<%@ page import="au.org.ala.images.MetaDataSourceType" %>
+<%@ page import="au.org.ala.web.CASRoles; au.org.ala.images.MetaDataSourceType" %>
+<auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
 <g:if test="${source == MetaDataSourceType.UserDefined}">
     <btn class="btn btn-success" id="btnAddUserMetaData" style="margin-bottom: 5px"><i class="icon-plus icon-white"></i>&nbsp;Add item</btn>
 </g:if>
+</auth:ifAnyGranted>
 
 <g:if test="${metaData}">
     <table class="table table-bordered table-condensed table-striped">
@@ -9,9 +11,11 @@
             <tr metaDataKey="${md.name}">
                 <td class="property-name">${md.name}</td>
                 <td class="property-value">${md.value}
-                    <g:if test="${source == MetaDataSourceType.UserDefined}">
-                        <button class="btn btn-small btn-danger btnDeleteMetadataItem pull-right"><i class="icon-remove icon-white"></i></button>
-                    </g:if>
+                    <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                        <g:if test="${source == MetaDataSourceType.UserDefined}">
+                            <button class="btn btn-small btn-danger btnDeleteMetadataItem pull-right"><i class="icon-remove icon-white"></i></button>
+                        </g:if>
+                    </auth:ifAnyGranted>
                 </td>
             </tr>
         </g:each>
@@ -25,6 +29,7 @@
 
 <script>
 
+    <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
     $("#btnAddUserMetaData").click(function(e) {
         e.preventDefault();
         var opts = {
@@ -50,5 +55,6 @@
         }
 
     });
+    </auth:ifAnyGranted>
 
 </script>

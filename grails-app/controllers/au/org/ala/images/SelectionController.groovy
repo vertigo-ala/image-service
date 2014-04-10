@@ -1,6 +1,7 @@
 package au.org.ala.images
 
 import au.org.ala.cas.util.AuthenticationUtils
+import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
@@ -9,6 +10,10 @@ class SelectionController {
 
     def selectionService
     def imageService
+
+    def index() {
+        redirect(action:'list')
+    }
 
     def ajaxSelectImage() {
         def image = getImageFromParams(params)
@@ -101,12 +106,8 @@ class SelectionController {
         [selectedImages: selected]
     }
 
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN], message = "You do not have sufficient privileges to perform this action", redirectAction = "list")
     def deleteSelected() {
-        if (!AuthenticationUtils.isUserInRole(request, CASRoles.ROLE_ADMIN)) {
-            flash.errorMessage = "You do not have sufficient privileges to permanently delete these images! "
-            redirect(action:'list')
-            return
-        }
 
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
@@ -127,12 +128,8 @@ class SelectionController {
         redirect(action:'list')
     }
 
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN], message = "You do not have sufficient privileges to perform this action", redirectAction = "list")
     def generateThumbnails() {
-        if (!AuthenticationUtils.isUserInRole(request, CASRoles.ROLE_ADMIN)) {
-            flash.errorMessage = "You do not have sufficient privileges to permanently delete these images! "
-            redirect(action:'list')
-            return
-        }
 
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
@@ -153,12 +150,8 @@ class SelectionController {
         redirect(action:'list')
     }
 
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN], message = "You do not have sufficient privileges to perform this action", redirectAction = "list")
     def generateTMSTiles() {
-        if (!AuthenticationUtils.isUserInRole(request, CASRoles.ROLE_ADMIN)) {
-            flash.errorMessage = "You do not have sufficient privileges to permanently delete these images! "
-            redirect(action:'list')
-            return
-        }
 
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []

@@ -11,7 +11,7 @@ import java.util.regex.Pattern
 class AdminController {
 
     def imageService
-    def imageStoreService
+    def settingService
 
     def index() {
         redirect(action:'dashboard')
@@ -138,6 +138,28 @@ class AdminController {
         }
 
         [results: results?.sort { 1/it.count }]
+    }
+
+    def settings() {
+        def settings = Setting.list([sort:'name'])
+        [settings: settings]
+    }
+
+    def setSettingValue() {
+        def name = params.name
+        def value = params.value
+        if (name && value) {
+            println "${name} = ${value}"
+            try {
+                settingService.setSettingValue(name, value)
+                flash.message = "${name} set to ${value}"
+            } catch (Exception ex) {
+                flash.errorMessage = ex.message
+            }
+        } else {
+            flash.errorMessage = "Failed to set setting. Either name or value was not supplied"
+        }
+        redirect(action:'settings')
     }
 
 }
