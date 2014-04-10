@@ -19,10 +19,7 @@
     </facet>
     <facet type="hibernate" name="Hibernate">
       <configuration>
-        <datasource-map>
-          <unit-entry name="Gorm" />
-          <unit-entry name="sessionFactory" />
-        </datasource-map>
+        <datasource-map />
         <naming-strategy-map />
       </configuration>
     </facet>
@@ -41,14 +38,8 @@
       <sourceFolder url="file://$MODULE_DIR$/grails-app/domain" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/grails-app/services" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/grails-app/taglib" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/target/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/target/work/gspcompile" />
-      <excludeFolder url="file://$MODULE_DIR$/target/work/plugin-build-classes" />
-      <excludeFolder url="file://$MODULE_DIR$/target/work/plugin-classes" />
-      <excludeFolder url="file://$MODULE_DIR$/target/work/plugin-provided-classes" />
       <excludeFolder url="file://$MODULE_DIR$/target/work/resources" />
       <excludeFolder url="file://$MODULE_DIR$/target/work/scriptCache" />
-      <excludeFolder url="file://$MODULE_DIR$/target/work/tomcat" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -115,13 +106,11 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-logging-log4j/7.0.42/tomcat-embed-logging-log4j-7.0.42.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.42/tomcat-embed-jasper-7.0.42.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.42/tomcat-catalina-ant-7.0.42.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.0-SNAPSHOT/image-utils-1.0-SNAPSHOT.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.0/image-utils-1.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/ala-cas-client/2.1-SNAPSHOT/ala-cas-client-2.1-SNAPSHOT-sources.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-tiler/1.0-SNAPSHOT/image-tiler-1.0-SNAPSHOT-sources.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.0-SNAPSHOT/image-utils-1.0-SNAPSHOT-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.0/image-utils-1.0-sources.jar!/" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
