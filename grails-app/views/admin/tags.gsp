@@ -5,22 +5,32 @@
         <meta name="section" content="home"/>
         <title>ALA Images - Admin - Tags</title>
 
-        <style>
-        </style>
         <r:require module="bootstrap" />
         <r:require module="jstree" />
     </head>
 
     <body class="content">
+
+        <style>
+            #searchTags {
+                margin-bottom: 0 !important;
+            }
+        </style>
+
         <content tag="pageTitle">Tags</content>
         <content tag="adminButtonBar" />
 
         <div class="row-fluid" style="margin-bottom: 10px">
             <div class="span12">
-                <button class="btn btn-success btn-small" id="btnCreateNewTag"><i class="icon-plus icon-white"></i>&nbsp;Add</button>
-                <button class="btn btn-small" id="btnRenameSelectedTag">Rename</button>
-                <button class="btn btn-danger btn-small" id="btnDeleteSelectedTag"><i class="icon-remove icon-white"></i>&nbsp;Delete</button>
-                <button class="btn btn-small pull-right" id="btnUploadTags"><i class="icon-upload"></i>&nbsp;Upload tags from CSV file</button>
+                <button class="btn btn-success" id="btnCreateNewTag"><i class="icon-plus icon-white"></i>&nbsp;Add</button>
+                <button class="btn" id="btnRenameSelectedTag">Rename</button>
+                <button class="btn btn-danger" id="btnDeleteSelectedTag"><i class="icon-remove icon-white"></i>&nbsp;Delete</button>
+                <button class="btn pull-right" id="btnUploadTags"><i class="icon-upload"></i>&nbsp;Upload tags from CSV file</button>
+
+                <input type="text" id="searchTags" placeholder="Find tags">
+                <button id="btnSearchTags" class="btn"><i class="icon-search"></i>&nbsp;Search</button>
+
+
             </div>
         </div>
 
@@ -61,6 +71,19 @@
             };
             showModal(options);
         });
+
+        $("#searchTags").keydown(function(e) {
+            if (e.which == 13) {
+                e.preventDefault();
+                loadTagTree();
+            }
+        }).focus();
+
+        $("#btnSearchTags").click(function(e) {
+            e.preventDefault();
+            loadTagTree();
+        });
+
 
         loadTagTree();
 
@@ -120,7 +143,9 @@
 
         $("#tagContainer").html('<div id="tagTree"></div>');
 
-        $.ajax("${createLink(controller:'webService', action:'getTagModel')}").done(function(rootNodes) {
+        var q = $("#searchTags").val();
+
+        $.ajax("${createLink(controller:'webService', action:'getTagModel')}?q=" + q).done(function(rootNodes) {
 
             var tree = $("#tagTree");
 
