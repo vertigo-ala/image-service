@@ -109,26 +109,28 @@ class ImageStoreService {
             Iterator<ImageReader> iter = ImageIO.getImageReaders(iis)
             if (iter.hasNext()) {
                 ImageReader reader = iter.next()
-                reader.setInput(iis, false)
-                Rectangle stripRect = new Rectangle(x, y, width, height);
-                ImageReadParam params = reader.getDefaultReadParam();
-                params.setSourceRegion(stripRect);
-                params.setSourceSubsampling(1, 1, 0, 0);
-                // This may fail if there is not enough heap!
-                BufferedImage subimage = reader.read(0, params);
-                def bos = new ByteArrayOutputStream()
-                if (!ImageIO.write(subimage, "JPG", bos)) {
-                    logService.debug("Could not create subimage in JPEG format. Trying PNG")
+                try {
+                    reader.setInput(iis, false)
+                    Rectangle stripRect = new Rectangle(x, y, width, height);
+                    ImageReadParam params = reader.getDefaultReadParam();
+                    params.setSourceRegion(stripRect);
+                    params.setSourceSubsampling(1, 1, 0, 0);
+                    // This may fail if there is not enough heap!
+                    BufferedImage subimage = reader.read(0, params);
+                    def bos = new ByteArrayOutputStream()
                     if (!ImageIO.write(subimage, "PNG", bos)) {
                         logService.debug("Could not create subimage in PNG format. Giving up")
+                        return null
                     } else {
                         results.contentType = "image/png"
                     }
-                } else {
-                    results.contentType = "image/jpeg"
+                    results.bytes = bos.toByteArray()
+                    bos.close()
+                } finally {
+                    reader.dispose()
                 }
-                bos.close()
-                results.bytes = bos.toByteArray()
+            } else {
+                throw new RuntimeException("No appropriate reader for image type!");
             }
         }
 

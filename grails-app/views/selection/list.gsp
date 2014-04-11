@@ -24,15 +24,15 @@
             </a>
             <ul class="dropdown-menu">
                 <li>
-                    <a href="#" id="">Add meta data</a>
+                    <a href="#">Add meta data</a>
                 </li>
                 <li>
-                    <a href="#" id="">Add tags</a>
+                    <a href="#">Add tags</a>
                 </li>
             </ul>
         </div>
 
-        <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_ADMIN}">≈
+        <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_ADMIN}">
         <div class="btn-group">
             <a class="btn dropdown-toggle btn-warning" data-toggle="dropdown" href="#">
                 <i class="icon-cog icon-white"></i>&nbsp;Admin functions
@@ -40,14 +40,14 @@
             </a>
             <ul class="dropdown-menu">
                 <li>
-                    <a href="#" id="btnRegenerateThumbs">Regenerate thumbnails</a>
+                    <a href="#" id="btnRegenerateThumbs"><i class="icon-picture"></i>&nbsp;Regenerate thumbnails</a>
                 </li>
                 <li>
-                    <a href="#" id="btnRegenerateTiles">Regenerate tiles</a>
+                    <a href="#" id="btnRegenerateTiles"><i class="icon-refresh"></i>&nbsp;Regenerate tiles</a>
                 </li>
                 <li class="divider"></li>
                 <li>
-                    <a href="#" id="btnDeleteImages">Delete Images</a>
+                    <a href="#" id="btnDeleteImages"><i class="icon-trash"></i>&nbsp;Delete Images</a>
                 </li>
             </ul>
         </div>
@@ -63,13 +63,15 @@
             <tr>
                 <th width="110">Thumb</th>
                 <th>Name</th>
-                <th>Size</th>
+                <th>Size (bytes)</th>
+                <th>Size (pixels)</th>
                 <th>Content type</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             <g:each in="${selectedImages*.image}" var="image">
-                <tr>
+                <tr imageId="${image.id}">
                     <td>
                         <a href="${createLink(controller:'image', action:'details', id: image.id)}">
                             <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}'/>" width="100" />
@@ -77,7 +79,9 @@
                     </td>
                     <td><a href="${createLink(controller:'image', action:'details', id: image.id)}">${image.originalFilename ?: image.imageIdentifier}</a></td>
                     <td><img:sizeInBytes size="${image.fileSize}" /></td>
+                    <td>${image.width} x ${image.height}</td>
                     <td>${image.mimeType}</td>
+                    <td><button class="btn btn-small btnRemoveFromSelection"><i class="icon-remove"></i>&nbsp;Remove from selection</button></td>
                 </tr>
             </g:each>
         </tbody>
@@ -85,6 +89,17 @@
 
     <r:script>
         $(document).ready(function() {
+
+            $(".btnRemoveFromSelection").click(function(e) {
+                e.preventDefault();
+                var imageId = $(this).closest("[imageId]").attr("imageId");
+                if (imageId) {
+                    $.ajax("${createLink(controller: 'selection', action: 'ajaxDeselectImage')}/" + imageId).done(function() {
+                        window.location = "${createLink(controller: 'selection', action: "list")}";
+                    });
+                }
+            });
+
             $("#btnClearSelection").click(function(e) {
                 e.preventDefault();
                 $.ajax("${createLink(controller: 'selection', action: 'clearSelection')}").done(function() {
@@ -102,8 +117,15 @@
                 window.location = "${createLink(controller: 'selection', action: 'generateTMSTiles')}";
             });
 
-            $("#btnDeleteImage").click(function(e) {
-                window.location = "${createLink(controller: 'selection', action: 'deleteSelected')}";
+            $("#btnDeleteImages").click(function(e) {
+                e.preventDefault();
+                var options = {
+                    message: "Warning! This operation cannot be undone. Are you sure you wish to permanently delete these images?",
+                    affirmativeAction: function() {
+                        window.location = "${createLink(controller: 'selection', action: 'deleteSelected')}";
+                    }
+                }
+                areYouSure(options);
             });
 
         });

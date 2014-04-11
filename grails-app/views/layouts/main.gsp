@@ -157,6 +157,20 @@
                 return '<img src="../images/spinner.gif"/>&nbsp;Loading...';
             }
 
+            var areYouSureOptions = {};
+
+            function areYouSure(options) {
+                var modalOptions = {
+                    url:"${createLink(controller:"dialog", action: "areYouSureFragment")}?message=" + encodeURIComponent(options.message),
+                    title: "Are you sure?"
+                }
+
+                areYouSureOptions.affirmativeAction = options.affirmativeAction;
+                areYouSureOptions.negativeAction = options.negativeAction;
+
+                showModal(modalOptions);
+            }
+
             $(document).ready(function() {
                 updateSelectionContext();
             });

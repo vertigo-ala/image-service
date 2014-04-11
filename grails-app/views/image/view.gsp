@@ -79,7 +79,7 @@
 
             var viewer = L.map('imageViewer', {
                 minZoom: 2,
-                maxZoom: ${maxZoom + 2},
+                maxZoom: ${maxZoom},
                 zoom: 2,
                 // maxBounds: bounds,
                 center:new L.LatLng(centery, centerx),

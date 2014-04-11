@@ -74,7 +74,6 @@ grails.project.dependency.resolution = {
 
     dependencies {
         runtime 'org.postgresql:postgresql:9.3-1100-jdbc41'
-        // runtime 'postgresql:postgresql:9.1-901.jdbc4'
         compile 'org.imgscalr:imgscalr-lib:4.2'
         runtime 'org.apache.commons:commons-imaging:1.0-SNAPSHOT'
         runtime 'org.apache.tika:tika-core:1.4'

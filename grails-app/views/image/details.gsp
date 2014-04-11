@@ -213,10 +213,17 @@
 
         $("#btnDeleteImage").click(function(e) {
             e.preventDefault();
-            $.ajax("${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
-                window.location = "${createLink(controller:'image', action:'list')}";
-            });
 
+            var options = {
+                message: "Warning! This operation cannot be undone. Are you sure you wish to permanently delete this image?",
+                affirmativeAction: function() {
+                    $.ajax("${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
+                        window.location = "${createLink(controller:'image', action:'list')}";
+                    });
+                }
+            };
+
+            areYouSure(options);
         });
 
         $(".image-info-button").each(function() {
