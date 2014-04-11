@@ -3,6 +3,7 @@ package au.org.ala.images
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
+import org.springframework.web.multipart.MultipartFile
 
 import java.util.regex.Pattern
 
@@ -12,6 +13,7 @@ class AdminController {
 
     def imageService
     def settingService
+    def tagService
 
     def index() {
         redirect(action:'dashboard')
@@ -160,6 +162,29 @@ class AdminController {
             flash.errorMessage = "Failed to set setting. Either name or value was not supplied"
         }
         redirect(action:'settings')
+    }
+
+    def tags() {
+
+    }
+
+    def uploadTagsFragment() {
+    }
+
+    def uploadTagsFile() {
+        MultipartFile file = request.getFile('tagfile')
+
+        if (!file || file.size == 0) {
+            flash.errorMessage = "You need to select a file to upload!"
+            redirect(action:'tags')
+            return
+        }
+
+        def count = tagService.loadTagsFromFile(file)
+
+        flash.message = "${count} tags loaded from file"
+
+        redirect(action:'tags')
     }
 
 }

@@ -1,6 +1,7 @@
 package au.org.ala.images
 
 import grails.transaction.Transactional
+import org.springframework.web.multipart.MultipartFile
 
 @Transactional
 class TagService {
@@ -227,6 +228,15 @@ class TagService {
             image.addToKeywords(new ImageKeyword(image: image, keyword: keyword))
         }
 
+    }
+
+    def loadTagsFromFile(MultipartFile file) {
+        file.inputStream?.eachCsvLine {
+            def line = it.join(",")
+            println line
+            createTagByPath(line, null)
+        }
+        return 0
     }
 
 }
