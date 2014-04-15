@@ -216,7 +216,7 @@ class WebServiceController {
         def image = Image.findByImageIdentifier(params.id as String)
         def tag = Tag.get(params.int("tagId"))
         if (image && tag) {
-            success = tagService.attachTagToImage(image, tag)
+            success = tagService.attachTagToImage(image, tag, AuthenticationUtils.getUserId(request))
         }
         renderResults([success: success])
     }
@@ -568,8 +568,6 @@ class WebServiceController {
         def userId = AuthenticationUtils.getUserId(request)
         def url = params.imageUrl ?: params.url
 
-        println url
-
         if (url) {
             // Image is located at an endpoint, and we need to download it first.
             image = imageService.storeImageFromUrl(url, userId)
@@ -601,9 +599,9 @@ class WebServiceController {
 
             def tags = JSON.parse(params.tags as String) as List
             if (tags) {
-                tags.each { tagPath ->
+                tags.each { String tagPath ->
                     def tag = tagService.createTagByPath(tagPath)
-                    tagService.attachTagToImage(image, tag)
+                    tagService.attachTagToImage(image, tag, userId)
                 }
             }
             imageService.scheduleArtifactGeneration(image.id)

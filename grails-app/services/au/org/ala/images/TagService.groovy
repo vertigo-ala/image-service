@@ -1,5 +1,6 @@
 package au.org.ala.images
 
+import au.org.ala.cas.util.AuthenticationUtils
 import grails.transaction.Transactional
 import org.springframework.web.multipart.MultipartFile
 
@@ -7,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile
 class TagService {
 
     def logService
+    def auditService
 
     def createTagByPath(String path, Tag parent = null) {
 
@@ -135,7 +137,7 @@ class TagService {
         }
     }
 
-    def attachTagToImage(Image image, Tag tag) {
+    def attachTagToImage(Image image, Tag tag, String userId) {
 
         if (!image || !tag) {
             return false
@@ -158,6 +160,7 @@ class TagService {
             }
         }
         rebuildKeywords(image)
+        auditService.log(image, "Tag attached to image: ${tag.path}", userId)
         return addedAtLeastOneTag
     }
 
