@@ -78,6 +78,7 @@
 
 
             var viewer = L.map('imageViewer', {
+                fullscreenControl: true,
                 minZoom: 2,
                 maxZoom: ${maxZoom},
                 zoom: 2,

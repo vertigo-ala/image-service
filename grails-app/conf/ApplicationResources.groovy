@@ -8,13 +8,16 @@ modules = {
     leaflet {
         dependsOn 'jquery'
         resource url: 'leaflet/leaflet.css'
+        resource url: 'leaflet/Control.FullScreen.css'
         resource url: 'leaflet/leaflet.js'
+        resource url: 'leaflet/Control.FullScreen.js'
     }
 
     leaflet_draw {
         dependsOn 'leaflet'
         resource 'leaflet.draw/leaflet.draw.css'
         resource 'leaflet.draw/leaflet.draw.js'
+
     }
 
     jstree {
