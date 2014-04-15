@@ -19,7 +19,10 @@
     </facet>
     <facet type="hibernate" name="Hibernate">
       <configuration>
-        <datasource-map />
+        <datasource-map>
+          <unit-entry name="Gorm" />
+          <unit-entry name="sessionFactory" />
+        </datasource-map>
         <naming-strategy-map />
       </configuration>
     </facet>
@@ -39,6 +42,7 @@
       <sourceFolder url="file://$MODULE_DIR$/grails-app/services" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/grails-app/taglib" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/target/work/gspcompile" />
       <excludeFolder url="file://$MODULE_DIR$/target/work/plugin-build-classes" />
       <excludeFolder url="file://$MODULE_DIR$/target/work/plugin-classes" />
       <excludeFolder url="file://$MODULE_DIR$/target/work/plugin-provided-classes" />
@@ -111,13 +115,22 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-logging-log4j/7.0.42/tomcat-embed-logging-log4j-7.0.42.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.42/tomcat-embed-jasper-7.0.42.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.42/tomcat-catalina-ant-7.0.42.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.0/image-utils-1.0.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-psd/3.0-rc5/imageio-psd-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-tiff/3.0-rc5/imageio-tiff-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/common/common-image/3.0-rc5/common-image-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/common/common-lang/3.0-rc5/common-lang-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/common/common-io/3.0-rc5/common-io-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-metadata/3.0-rc5/imageio-metadata-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-core/3.0-rc5/imageio-core-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-jpeg/3.0-rc5/imageio-jpeg-3.0-rc5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.1/image-utils-1.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
           <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.0/image-utils-1.0-sources.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/ala-cas-client/2.1-SNAPSHOT/ala-cas-client-2.1-SNAPSHOT-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.1/image-utils-1.1-sources.jar!/" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>

@@ -1,7 +1,9 @@
 package au.org.ala.images
 
 import au.org.ala.images.tiling.TileFormat
+import com.sun.jna.platform.win32.WinDef
 import grails.transaction.Transactional
+import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
 import org.apache.commons.imaging.common.IImageMetadata
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata
@@ -369,8 +371,20 @@ class ImageService {
 
     }
 
+    private static String sanitizeString(String value) {
+        def bytes = value?.getBytes("utf8")
+
+        def hasZeros = bytes.contains(0)
+        if (hasZeros) {
+            return Base64.encodeBase64String(bytes)
+        }
+        return value
+    }
+
     def setMetaDataItem(Image image, MetaDataSourceType source, String key, String value) {
 
+
+        value = sanitizeString(value)
 
         if (image && StringUtils.isNotEmpty(key?.trim()) && StringUtils.isNotEmpty(value?.trim())) {
             

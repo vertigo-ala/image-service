@@ -1,6 +1,7 @@
 package au.org.ala.images
 
 import au.org.ala.images.util.FastByteArrayInputStream
+import au.org.ala.images.util.ImageReaderUtils
 import groovy.xml.MarkupBuilder
 
 import javax.imageio.ImageIO
@@ -12,16 +13,14 @@ class MapResourceFileGenerator {
     public static String generateMapResourceXML(byte[] bytes, int tileSize, int[] pyramid) {
 
         FastByteArrayInputStream bis = new FastByteArrayInputStream(bytes, bytes.length);
-        ImageInputStream iis = ImageIO.createImageInputStream(bis);
-        Iterator<ImageReader> iter = ImageIO.getImageReaders(iis);
+        ImageInputStream iis = ImageIO.createImageInputStream(bis)
+        def reader = ImageReaderUtils.findCompatibleImageReader(iis)
 
         int height = 0;
         int width = 0;
 
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next();
+        if (reader) {
             reader.setInput(iis);
-
             height = reader.getHeight(0);
             width = reader.getWidth(0);
         } else {

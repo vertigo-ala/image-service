@@ -1,4 +1,5 @@
 <%@ page import="au.org.ala.images.ImportFieldValueExtractor" %>
+${fileList.size()} files found.
 <table class="table table-bordered table-condensed table-striped">
     <thead>
         <tr>

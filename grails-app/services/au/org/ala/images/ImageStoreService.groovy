@@ -4,6 +4,7 @@ import au.org.ala.images.tiling.ImageTiler
 import au.org.ala.images.tiling.ImageTilerConfig
 import au.org.ala.images.tiling.ImageTilerResults
 import au.org.ala.images.tiling.TileFormat
+import au.org.ala.images.util.ImageReaderUtils
 import grails.transaction.Transactional
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
@@ -33,14 +34,11 @@ class ImageStoreService {
         f.parentFile.mkdirs()
         FileUtils.writeByteArrayToFile(f, imageBytes)
         ImageInputStream iis = ImageIO.createImageInputStream(f);
-        Iterator<ImageReader> iter = ImageIO.getImageReaders(iis)
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next()
+        def reader = ImageReaderUtils.findCompatibleImageReader(iis)
+        if (reader) {
             reader.setInput(iis, false)
-
             imgDesc.height = reader.getHeight(0)
             imgDesc.width = reader.getWidth(0)
-
             reader.dispose()
         }
         iis.close()
@@ -106,9 +104,8 @@ class ImageStoreService {
         if (imageIdentifier) {
             def imageFile = getOriginalImageFile(imageIdentifier)
             ImageInputStream iis = ImageIO.createImageInputStream(imageFile);
-            Iterator<ImageReader> iter = ImageIO.getImageReaders(iis)
-            if (iter.hasNext()) {
-                ImageReader reader = iter.next()
+            def reader = ImageReaderUtils.findCompatibleImageReader(iis);
+            if (reader) {
                 try {
                     reader.setInput(iis, false)
                     Rectangle stripRect = new Rectangle(x, y, width, height);
@@ -182,7 +179,7 @@ class ImageStoreService {
     /**
      * Create two thumbnail artifacts for an image, one the preserves the aspect ratio of the original image, the other drawing a scale image on a transparent
      * square with a constrained maximum dimension of config item "imageservice.thumbnail.size"
-     * The first thumbnail (preserved aspect ration) is of type JPG to conserve disk space, whilst the square thumb is PNG as JPG does not support alpha transparency
+     * The first thumbnail (preserved aspect ratio) is of type JPG to conserve disk space, whilst the square thumb is PNG as JPG does not support alpha transparency
      * @param imageIdentifier The id of the image to thumb
      */
     public ThumbDimensions generateImageThumbnails(String imageIdentifier) {
@@ -191,11 +188,11 @@ class ImageStoreService {
         def imageFile = getOriginalImageFile(imageIdentifier)
 
         ImageInputStream iis = ImageIO.createImageInputStream(imageFile);
-        Iterator<ImageReader> iter = ImageIO.getImageReaders(iis)
+        def reader = ImageReaderUtils.findCompatibleImageReader(iis);
+
         int size = grailsApplication.config.imageservice.thumbnail.size as Integer
         def thumbHeight = 0, thumbWidth = 0
-        if (iter.hasNext()) {
-            ImageReader reader = iter.next()
+        if (reader) {
             def imageParams = reader.getDefaultReadParam()
             reader.setInput(iis, false)
             def height = reader.getHeight(0)
