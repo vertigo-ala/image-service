@@ -10,6 +10,7 @@ class SelectionController {
 
     def selectionService
     def imageService
+    def albumService
 
     def index() {
         redirect(action:'list')
@@ -30,6 +31,40 @@ class SelectionController {
         } else {
             render([success:false, message:"No image id specified!"] as JSON)
         }
+    }
+
+    def ajaxSelectImages() {
+
+        def idList = params."imageList[]"
+        def userId = AuthenticationUtils.getUserId(request)
+        if (idList && userId) {
+            idList.each { String imageId ->
+                def image = Image.get(imageId.toLong())
+                if (image) {
+                    selectionService.selectImage(userId, image)
+                }
+            }
+            render([success:true] as JSON)
+            return
+        }
+        render([success:false] as JSON)
+    }
+
+    def ajaxDeselectImages() {
+
+        def idList = params."imageList[]"
+        def userId = AuthenticationUtils.getUserId(request)
+        if (idList && userId) {
+            idList.each { String imageId ->
+                def image = Image.get(imageId.toLong())
+                if (image) {
+                    selectionService.deselectImage(userId, image)
+                }
+            }
+            render([success:true] as JSON)
+            return
+        }
+        render([success:false] as JSON)
     }
 
     def ajaxDeselectImage() {
@@ -171,6 +206,32 @@ class SelectionController {
 
         redirect(action:'list')
 
+    }
+
+    @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)
+    def addToAlbumFragment() {
+        def userId = AuthenticationUtils.getUserId(request)
+        def albums = Album.findAllByUserId(userId)
+        [albums: albums]
+    }
+
+    @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)
+    def addSelectionToAlbum() {
+
+        def userId = AuthenticationUtils.getUserId(request)
+        def album = Album.get(params.int('album'))
+        if (album) {
+            def selected = SelectedImage.findAllByUserId(userId)
+            selected?.each { image ->
+                albumService.addImageToAlbum(album, image.image)
+            }
+
+
+        } else {
+            flash.errorMessage = "Album not found, or no album specified!"
+        }
+
+        redirect(action:'list')
     }
 
 }

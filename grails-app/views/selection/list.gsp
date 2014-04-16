@@ -24,6 +24,10 @@
             </a>
             <ul class="dropdown-menu">
                 <li>
+                    <a href="#" id="btnAddToAlbum">Add to album...</a>
+                </li>
+
+                <li>
                     <a href="#">Add meta data</a>
                 </li>
                 <li>
@@ -98,6 +102,16 @@
                         window.location = "${createLink(controller: 'selection', action: "list")}";
                     });
                 }
+            });
+
+            $("#btnAddToAlbum").click(function(e) {
+                e.preventDefault();
+                var options = {
+                    title: 'Add images to album',
+                    url: "${createLink(action:'addToAlbumFragment')}"
+                };
+                showModal(options);
+
             });
 
             $("#btnClearSelection").click(function(e) {

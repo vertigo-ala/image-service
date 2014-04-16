@@ -1,0 +1,1 @@
+<g:render template="/image/imageThumbnails" model="${[images: imageList, totalImageCount: albumImages.totalCount, allowSelection: false, thumbsTitle:"Album '${album.name}' (${albumImages.totalCount} images)", paginateActionId: album.id]}" />

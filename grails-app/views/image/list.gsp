@@ -11,15 +11,13 @@
         <img:headerContent title="Images" hideCrumbs="${true}">
         </img:headerContent>
 
-        <div class="well well-small">
+        <div class="">
             <input type="text" class="input-xlarge" id="keyword" style="margin-bottom: 0" value="${q}" />
             <button class="btn" id="btnFindImagesByKeyword"><i class="icon-search"></i>&nbsp;Search</button>
             <a class="btn btn-info" id="btnAdvancedSearch" href="${createLink(controller:'search', action:'index')}"><i class="icon-cog icon-white"></i>&nbsp;Advanced Search</a>
         </div>
 
-        <h4>${totalImageCount} images</h4>
-
-        <g:render template="imageThumbnails" model="${[images: images, totalImageCount: totalImageCount, allowSelection: isLoggedIn, selectedImageMap: selectedImageMap]}" />
+        <g:render template="imageThumbnails" model="${[images: images, totalImageCount: totalImageCount, allowSelection: isLoggedIn, selectedImageMap: selectedImageMap, thumbsTitle:"${totalImageCount} images"]}" />
 
     <r:script>
             $(document).ready(function() {

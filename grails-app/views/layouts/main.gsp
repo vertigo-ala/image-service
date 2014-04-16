@@ -153,6 +153,13 @@
                 });
             }
 
+            function updateAlbums() {
+                $.ajax("${createLink(controller:'album', action:'userContextFragment')}").done(function(content) {
+                    $("#albums-div").html(content);
+                });
+            }
+
+
             function loadingSpinner() {
                 return '<img src="../images/spinner.gif"/>&nbsp;Loading...';
             }
@@ -173,6 +180,7 @@
 
             $(document).ready(function() {
                 updateSelectionContext();
+                updateAlbums();
             });
 
         </r:script>
@@ -203,6 +211,7 @@
                             <div class="span4">
                                 <div class="pull-right">
                                     <auth:ifLoggedIn>
+                                        <span id="albums-div" style="display: inline-block"></span>
                                         <span id="selectionContext" style="display: inline-block"></span>
                                     </auth:ifLoggedIn>
                                     <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
