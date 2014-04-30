@@ -33,15 +33,12 @@ class ImageStoreService {
         File f = new File(path)
         f.parentFile.mkdirs()
         FileUtils.writeByteArrayToFile(f, imageBytes)
-        ImageInputStream iis = ImageIO.createImageInputStream(f);
-        def reader = ImageReaderUtils.findCompatibleImageReader(iis)
+        def reader = ImageReaderUtils.findCompatibleImageReader(imageBytes)
         if (reader) {
-            reader.setInput(iis, false)
             imgDesc.height = reader.getHeight(0)
             imgDesc.width = reader.getWidth(0)
             reader.dispose()
         }
-        iis.close()
         return imgDesc
     }
 
@@ -107,7 +104,6 @@ class ImageStoreService {
             def reader = ImageReaderUtils.findCompatibleImageReader(iis);
             if (reader) {
                 try {
-                    reader.setInput(iis, false)
                     Rectangle stripRect = new Rectangle(x, y, width, height);
                     ImageReadParam params = reader.getDefaultReadParam();
                     params.setSourceRegion(stripRect);
@@ -194,7 +190,6 @@ class ImageStoreService {
         def thumbHeight = 0, thumbWidth = 0
         if (reader) {
             def imageParams = reader.getDefaultReadParam()
-            reader.setInput(iis, false)
             def height = reader.getHeight(0)
             def width = reader.getWidth(0)
 
