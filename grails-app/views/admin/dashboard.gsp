@@ -49,7 +49,8 @@
         updateQueueLength();
         updateRepoStatistics();
 
-        setInterval(updateQueueLength, 10000);
+        setInterval(updateQueueLength, 5000);
+        setInterval(updateRepoStatistics, 5000);
     });
 
     function updateRepoStatistics() {
