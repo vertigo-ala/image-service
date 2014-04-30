@@ -305,7 +305,7 @@ class SearchService {
         // split out by criteria type
         def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
         def c = Image.createCriteria()
-        def l = c.list(params) {
+        def l = c.list(params ?: [:]) {
             and {
                 def list = criteriaMap[CriteriaType.ImageProperty]
                 if (list) {

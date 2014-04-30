@@ -1,5 +1,8 @@
 package au.org.ala.images
 
+import au.org.ala.cas.util.AuthenticationUtils
+import au.org.ala.web.AlaSecured
+import au.org.ala.web.CASRoles
 import grails.converters.JSON
 
 import java.util.regex.Pattern
@@ -8,6 +11,7 @@ class SearchController {
 
     def searchService
     def searchCriteriaService
+    def selectionService
 
     def index() {
         boolean hasCriteria = searchService.getSearchCriteriaList()?.size() > 0
@@ -28,7 +32,7 @@ class SearchController {
                         redirect(action: 'imageFieldCriteriaFragment', params: params)
                         break
                     case CriteriaType.ImageMetadata:
-                        redirect(action:'imageMetadataCriteriaFragment', params: params)
+                        redirect(action: 'imageMetadataCriteriaFragment', params: params)
                         break
                     default:
                         throw new RuntimeException("Unhandled CriteriaType - " + criteriaDefinition.type)
@@ -37,7 +41,7 @@ class SearchController {
             }
             throw new RuntimeException("No criteria specified!")
         } catch (Exception ex) {
-            redirect(action:'ajaxErrorFragment', params: [title: 'Error getting criteria details', errorMessage: ex.message])
+            redirect(action: 'ajaxErrorFragment', params: [title: 'Error getting criteria details', errorMessage: ex.message])
         }
     }
 
@@ -81,7 +85,7 @@ class SearchController {
 
     def ajaxAddSearchCriteria() {
 
-        def results = [status:'ok']
+        def results = [status: 'ok']
         try {
 
             def existing = searchService.getSearchCriteria(params.criteriaId)
@@ -108,13 +112,14 @@ class SearchController {
     }
 
     def ajaxRemoveSearchCriteria() {
-        def results = [status:'ok']
+        println "Here"
+        def results = [status: 'ok']
         searchService.removeSearchCriteria(params.searchCriteriaId as String)
         render(results as JSON)
     }
 
     def ajaxClearSearchCriteria() {
-        def results = [status:'ok']
+        def results = [status: 'ok']
         searchService.removeAllSearchCriteria()
         render(results as JSON)
     }
@@ -129,7 +134,32 @@ class SearchController {
         params.max = params.max ?: 48
 
         def imageList = searchService.searchUsingCriteria(params)
-        [imageList: imageList, totalCount: imageList?.totalCount]
+        def userId = AuthenticationUtils.getUserId(request)
+        def selectedImageMap = [:]
+        if (userId) {
+            selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
+        }
+
+        [imageList: imageList, totalCount: imageList?.totalCount, selectedImageMap: selectedImageMap]
+    }
+
+    @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)
+    def ajaxSelectAllCurrentQuery() {
+
+        def results = [success: true]
+        def userId = AuthenticationUtils.getUserId(request)
+        if (userId) {
+            def imageList = searchService.searchUsingCriteria(null)
+            imageList?.each { image ->
+                selectionService.selectImage(userId, image)
+            }
+        } else {
+            results.success = false
+            results.message = "Could not identify user!"
+        }
+
+
+        render(results as JSON)
     }
 
 }

@@ -39,6 +39,15 @@
                             <li>
                                 <a href="#" id="btnDeselectAllOnPage">Deselect all on page</a>
                             </li>
+                            <g:if test="${toolButtons}">
+                                <li class="divider"></li>
+                                <g:each in="${toolButtons}" var="tool">
+                                    <li>
+                                        <a href="#" id="${tool.id}">${tool.label}</a>
+                                    </li>
+                                </g:each>
+                            </g:if>
+                            %{--<g:pageProperty name="page.imageListMenuItems"/>--}%
                         </ul>
                     </div>
                 </g:if>

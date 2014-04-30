@@ -53,7 +53,7 @@ grails.project.dependency.resolution = {
 
     plugins {
         // plugins for the build system only
-        build ":tomcat:7.0.42"
+        build ":tomcat:7.0.52.1"
 
         // plugins for the compile step
         compile ":scaffolding:2.0.1"
@@ -61,10 +61,10 @@ grails.project.dependency.resolution = {
         compile ":quartz:1.0.1"
 
         // plugins needed at runtime but not for compilation
-        runtime ":hibernate:3.6.10.7" // or ":hibernate4:4.1.11.6"
-        runtime ":database-migration:1.3.8"
+        runtime ":hibernate:3.6.10.13"
+        runtime ":database-migration:1.4.0"
         runtime ":jquery:1.8.3"
-        runtime ":resources:1.2.1"
+        runtime ":resources:1.2.7"
         runtime ":ala-web-theme:0.3"
         compile ":csv:0.3.1"
         // Uncomment these (or add new ones) to enable additional resources capabilities

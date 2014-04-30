@@ -22,10 +22,10 @@ class ImageController {
 
     def index() { }
 
-    @AlaSecured(value = [CASRoles.ROLE_ADMIN], redirectUri = "/")
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN], redirectUri = '/')
     def upload() { }
 
-    @AlaSecured(value = [CASRoles.ROLE_ADMIN], redirectUri = "/")
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN], redirectUri = '/')
     def storeImage() {
 
         MultipartFile file = request.getFile('image')
