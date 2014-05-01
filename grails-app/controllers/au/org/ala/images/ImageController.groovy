@@ -189,6 +189,16 @@ class ImageController {
         [imageInstance: imageInstance]
     }
 
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN])
+    def imageAuditTrailFragment() {
+        def imageInstance = Image.get(params.int("id"))
+        def messages = []
+        if (imageInstance) {
+            messages = AuditMessage.findAllByImageIdentifier(imageInstance.imageIdentifier, [order:'asc', sort:'dateCreated'])
+        }
+        [messages: messages]
+    }
+
     def imageMetadataTableFragment() {
 
         def imageInstance = getImageFromParams(params)

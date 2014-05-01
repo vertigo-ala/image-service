@@ -164,7 +164,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-el/7.0.52/tomcat-embed-el-7.0.52.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.52/tomcat-embed-jasper-7.0.52.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.52/tomcat-catalina-ant-7.0.52.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.4/image-utils-1.4.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.5/image-utils-1.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

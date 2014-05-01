@@ -57,6 +57,11 @@
                             <li>
                                 <a href="#tabSystem" data-toggle="tab">System</a>
                             </li>
+                            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                                <li>
+                                    <a href="#tabAuditMessages" data-toggle="tab">Audit trail</a>
+                                </li>
+                            </auth:ifAnyGranted>
                         </ul>
 
                         <div class="tab-content">
@@ -170,6 +175,10 @@
                             </div>
                             <div class="tab-pane" id="tabSystem" metadataSource="${au.org.ala.images.MetaDataSourceType.SystemDefined}">
                             </div>
+                            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                            <div class="tab-pane" id="tabAuditMessages">
+                            </div>
+                            </auth:ifAnyGranted>
                         </div>
                     </div>
                 </div>
@@ -187,8 +196,17 @@
         $.ajax("${createLink(controller:'image', action:'imageMetadataTableFragment', id: imageInstance.id)}?source=" + source).done(function(content) {
             dest.html(content);
         });
-
     }
+
+    <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+
+        function refreshAuditTrail() {
+            $.ajax("${createLink(controller: 'image', action:'imageAuditTrailFragment', id: imageInstance.id)}").done(function(content) {
+                $("#tabAuditMessages").html(content);
+            });
+        }
+
+    </auth:ifAnyGranted>
 
     $(document).ready(function() {
 
@@ -196,6 +214,10 @@
             var dest = $($(this).attr("href"));
             if (dest.attr("metadataSource")) {
                 refreshMetadata(dest);
+            } else {
+                if (dest.attr("id") == "tabAuditMessages") {
+                    refreshAuditTrail();
+                }
             }
         });
 

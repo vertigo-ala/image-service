@@ -100,8 +100,8 @@ class ImageStoreService {
 
         if (imageIdentifier) {
             def imageFile = getOriginalImageFile(imageIdentifier)
-            ImageInputStream iis = ImageIO.createImageInputStream(imageFile);
-            def reader = ImageReaderUtils.findCompatibleImageReader(iis);
+            def imageBytes = FileUtils.readFileToByteArray(imageFile);
+            def reader = ImageReaderUtils.findCompatibleImageReader(imageBytes);
             if (reader) {
                 try {
                     Rectangle stripRect = new Rectangle(x, y, width, height);
@@ -183,9 +183,8 @@ class ImageStoreService {
 
         def imageFile = getOriginalImageFile(imageIdentifier)
 
-        ImageInputStream iis = ImageIO.createImageInputStream(imageFile);
-        def reader = ImageReaderUtils.findCompatibleImageReader(iis);
-
+        def imageBytes = FileUtils.readFileToByteArray(imageFile)
+        def reader = ImageReaderUtils.findCompatibleImageReader(imageBytes)
         int size = grailsApplication.config.imageservice.thumbnail.size as Integer
         def thumbHeight = 0, thumbWidth = 0
         if (reader) {
