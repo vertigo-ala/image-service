@@ -17,6 +17,7 @@ import javax.imageio.stream.ImageInputStream
 import java.awt.Color
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
+import java.lang.reflect.Field
 
 @Transactional
 class ImageStoreService {
@@ -56,10 +57,15 @@ class ImageStoreService {
         return l.join('/')
     }
 
-    private String createSquareThumbnailPathFromUUID(String uuid) {
+    private String createSquareThumbnailPathFromUUID(String uuid, String backgroundColorName) {
         def l = [grailsApplication.config.imageservice.imagestore.root]
         computeAndAppendLocalDirectoryPath(uuid, l)
-        l << "thumbnail_square"
+        if (backgroundColorName) {
+            l << "thumbnail_square_${backgroundColorName}"
+        } else {
+            l << "thumbnail_square"
+        }
+
         return l.join('/')
     }
 
@@ -158,10 +164,14 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public String getImageSquareThumbUrl(String imageIdentifier) {
+    public String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
-        path << "thumbnail_square"
+        if (backgroundColor) {
+            path << "thumbnail_square_${backgroundColor}"
+        } else {
+            path << "thumbnail_square"
+        }
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
@@ -173,7 +183,7 @@ class ImageStoreService {
     }
 
     /**
-     * Create two thumbnail artifacts for an image, one the preserves the aspect ratio of the original image, the other drawing a scale image on a transparent
+     * Create a number of thumbnail artifacts for an image, one the preserves the aspect ratio of the original image, the other drawing a scale image on a transparent
      * square with a constrained maximum dimension of config item "imageservice.thumbnail.size"
      * The first thumbnail (preserved aspect ratio) is of type JPG to conserve disk space, whilst the square thumb is PNG as JPG does not support alpha transparency
      * @param imageIdentifier The id of the image to thumb
@@ -208,7 +218,7 @@ class ImageStoreService {
                 imageParams.setSourceSubsampling(ratio, ratio ?: 1, 0, 0)
                 thumbImage = reader.read(0, imageParams)
 
-                // then finely scale the subsampled image to get the final thumbnail
+                // then finely scale the sub sampled image to get the final thumbnail
                 thumbImage = ImageUtils.scaleWidth(thumbImage, size)
             } else {
                 // small images
@@ -219,30 +229,60 @@ class ImageStoreService {
             if (thumbImage) {
                 thumbHeight = thumbImage.height
                 thumbWidth = thumbImage.width
+
                 def thumbFilename = createThumbnailPathFromUUID(imageIdentifier)
                 def thumbFile = new File(thumbFilename)
                 ImageIO.write(thumbImage, "JPG", thumbFile)
 
-                // Now square up the thumbnail
-                if (thumbImage.height < size) {
-                    def temp = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
-                    int top = (size / 2) - (thumbImage.height / 2)
+                def backgroundColors = ['white', 'black', 'darkGray']
+
+                // for each background color (where empty string means transparent), create a squared thumb
+                // If not transparent, keep as jpeg for speed/space!
+                backgroundColors.each { colorName ->
+
+                    Color backgroundColor = null
+                    if (colorName) {
+                        try {
+                            Field field = Color.class.getField(colorName);
+                            backgroundColor = (Color)field.get(null);
+                        } catch (Exception e) {
+                            backgroundColor = null; // Not defined
+                        }
+                    }
+
+                    BufferedImage temp
+                    if (!backgroundColor) {
+                        temp = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR)
+                    } else {
+                        temp = new BufferedImage(size, size, BufferedImage.TYPE_3BYTE_BGR)
+                    }
+
                     def g = temp.graphics
-                    g.drawImage(thumbImage, 0, top, null)
+                    if (colorName && backgroundColor) {
+                        g.setColor(backgroundColor);
+                        g.fillRect(0, 0, size, size)
+                    }
+
+                    if (thumbHeight < size) {
+                        int top = (size / 2) - (thumbHeight / 2)
+                        g.drawImage(thumbImage, 0, top, null)
+                    } else if (thumbWidth < size) {
+                        int left = (size / 2) - (thumbWidth / 2)
+                        g.drawImage(thumbImage, left, 0, null)
+                    }
+
                     g.dispose()
-                    thumbImage = temp
-                } else if (thumbImage.width < size) {
-                    def temp = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
-                    int left = (size / 2) - (thumbImage.width / 2)
-                    def g = temp.graphics
-                    g.drawImage(thumbImage, left, 0, null)
-                    g.dispose()
-                    thumbImage = temp
+
+                    thumbFilename = createSquareThumbnailPathFromUUID(imageIdentifier, colorName)
+                    thumbFile = new File(thumbFilename)
+                    if (colorName && backgroundColor) {
+                        ImageIO.write(temp, "JPG", thumbFile)
+                    } else {
+                        ImageIO.write(temp, "PNG", thumbFile)
+                    }
+
                 }
 
-                thumbFilename = createSquareThumbnailPathFromUUID(imageIdentifier)
-                thumbFile = new File(thumbFilename)
-                ImageIO.write(thumbImage, "PNG", thumbFile)
             }
         } else {
             logService.log("No image readers for image ${imageIdentifier}!")

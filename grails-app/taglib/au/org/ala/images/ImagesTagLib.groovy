@@ -111,7 +111,7 @@ class ImagesTagLib {
 
     def imageSquareThumbUrl = { attrs, body ->
         if (attrs.imageId) {
-            out << imageService.getImageSquareThumbUrl(attrs.imageId as String)
+            out << imageService.getImageSquareThumbUrl(attrs.imageId as String, attrs.backgroundColor ?: '')
         }
     }
 

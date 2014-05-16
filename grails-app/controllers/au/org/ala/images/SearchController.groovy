@@ -112,7 +112,6 @@ class SearchController {
     }
 
     def ajaxRemoveSearchCriteria() {
-        println "Here"
         def results = [status: 'ok']
         searchService.removeSearchCriteria(params.searchCriteriaId as String)
         render(results as JSON)

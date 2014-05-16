@@ -60,15 +60,15 @@
 <ul class="thumbnails">
     <g:each in="${images}" var="image">
         <li class="span2">
-            <div class="thumbnail" imageId="${image.id}">
+            <div class="thumbnail" imageId="${image.id}" style="background: white">
                 <g:if test="${allowSelection == true}">
                     <div class="">
                         <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}" checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
                     </div>
                 </g:if>
-                <div class="image-thumbnail">
+                <div class="image-thumbnail" >
                     <a href="${createLink(controller:'image', action:'details', id: image.id)}">
-                        <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}'/>" />
+                        <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}' backgroundColor="white"/>"/>
                     </a>
                 </div>
             </div>

@@ -590,20 +590,25 @@ class WebServiceController {
         }
 
         if (image) {
-            def metadata = JSON.parse(params.metadata as String) as Map
-            if (metadata) {
-                metadata.each { kvp ->
-                    imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
+            if (params.metadata) {
+                def metadata = JSON.parse(params.metadata as String) as Map
+                if (metadata) {
+                    metadata.each { kvp ->
+                        imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
+                    }
                 }
             }
 
-            def tags = JSON.parse(params.tags as String) as List
-            if (tags) {
-                tags.each { String tagPath ->
-                    def tag = tagService.createTagByPath(tagPath)
-                    tagService.attachTagToImage(image, tag, userId)
+            if (params.tags) {
+                def tags = JSON.parse(params.tags as String) as List
+                if (tags) {
+                    tags.each { String tagPath ->
+                        def tag = tagService.createTagByPath(tagPath)
+                        tagService.attachTagToImage(image, tag, userId)
+                    }
                 }
             }
+
             imageService.scheduleArtifactGeneration(image.id)
             renderResults([success: true, imageId: image?.imageIdentifier])
         } else {

@@ -146,8 +146,8 @@ class ImageService {
         return imageStoreService.getImageThumbUrl(imageIdentifier)
     }
 
-    public String getImageSquareThumbUrl(String imageIdentifier) {
-        return imageStoreService.getImageSquareThumbUrl(imageIdentifier)
+    public String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor = null) {
+        return imageStoreService.getImageSquareThumbUrl(imageIdentifier, backgroundColor)
     }
 
 
