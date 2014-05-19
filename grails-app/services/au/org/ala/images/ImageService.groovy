@@ -39,23 +39,49 @@ class ImageService {
 
     private static int BACKGROUND_TASKS_BATCH_SIZE = 100
 
-    public Image storeImage(MultipartFile imageFile, String uploader) {
+    public Image storeImage(MultipartFile imageFile, String uploader, boolean returnExistingDuplicate = false, Closure onDuplicate = null) {
 
         if (imageFile) {
             // Store the image
             def originalFilename = imageFile.originalFilename
-            def image = storeImageBytes(imageFile?.bytes, originalFilename, imageFile.size, imageFile.contentType, uploader)
+            def bytes = imageFile?.bytes
+            if (returnExistingDuplicate) {
+                def md5Hash = MD5Codec.encode(bytes)
+                def existing = Image.findByContentMD5Hash(md5Hash)
+                if (existing) {
+                    auditService.log(existing, "Attempted import from ${originalFilename} has returned existing duplicate (imageId: ${existing.imageIdentifier})", uploader ?: "<unknown>")
+                    if (onDuplicate) {
+                        onDuplicate(existing)
+                    }
+                    return existing
+                }
+            }
+
+            def image = storeImageBytes(bytes, originalFilename, imageFile.size, imageFile.contentType, uploader)
             auditService.log(image,"Image stored from multipart file ${originalFilename}", uploader ?: "<unknown>")
             return image
         }
         return null
     }
 
-    public Image storeImageFromUrl(String imageUrl, String uploader) {
+    public Image storeImageFromUrl(String imageUrl, String uploader, boolean returnExistingDuplicate = false, Closure onDuplicate = null) {
         if (imageUrl) {
             try {
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
+
+                if (returnExistingDuplicate) {
+                    def md5Hash = MD5Codec.encode(bytes)
+                    def existing = Image.findByContentMD5Hash(md5Hash)
+                    if (existing) {
+                        auditService.log(existing, "Attempted upload from ${imageUrl} has returned existing duplicate (imageId: ${existing.imageIdentifier})", uploader ?: "<unknown>")
+                        if (onDuplicate) {
+                            onDuplicate(existing)
+                        }
+                        return existing
+                    }
+                }
+
                 def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
                 def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader)
                 auditService.log(image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
@@ -76,6 +102,7 @@ class ImageService {
     }
 
     private Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType, String uploaderId) {
+
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
 
         def md5Hash = MD5Codec.encode(bytes)
@@ -383,10 +410,14 @@ class ImageService {
 
     def setMetaDataItem(Image image, MetaDataSourceType source, String key, String value) {
 
-
         value = sanitizeString(value)
 
         if (image && StringUtils.isNotEmpty(key?.trim()) && StringUtils.isNotEmpty(value?.trim())) {
+
+            if (value.length() > 8000) {
+                auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", "<unknown>")
+                return false
+            }
             
             // See if we already have an existing item...
             def existing = ImageMetaDataItem.findByImageAndNameAndSource(image, key, source)

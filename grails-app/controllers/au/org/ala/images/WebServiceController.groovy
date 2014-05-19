@@ -568,14 +568,18 @@ class WebServiceController {
         def userId = AuthenticationUtils.getUserId(request)
         def url = params.imageUrl ?: params.url
 
+        boolean detectDuplicate = params.boolean("detectDuplicate") ?: false
+
+        boolean isDuplicate = false
+
         if (url) {
             // Image is located at an endpoint, and we need to download it first.
-            image = imageService.storeImageFromUrl(url, userId)
+            image = imageService.storeImageFromUrl(url, userId, detectDuplicate) { existingImage ->  isDuplicate = true }
             if (!image) {
                 renderResults([success: false, message: "Unable to retrieve image from ${url}"])
             }
         } else {
-            // it should contain a file paramater
+            // it should contain a file parameter
             MultipartRequest req = request as MultipartRequest
             if (req) {
                 MultipartFile file = req.getFile('image')
@@ -583,13 +587,14 @@ class WebServiceController {
                     renderResults([success: false, message: 'image parameter not found, or empty. Please supply an image file.'])
                     return
                 }
-                image = imageService.storeImage(file, userId)
+                image = imageService.storeImage(file, userId, detectDuplicate) { existingImage ->  isDuplicate = true }
             } else {
                 renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])
             }
         }
 
         if (image) {
+
             if (params.metadata) {
                 def metadata = JSON.parse(params.metadata as String) as Map
                 if (metadata) {
@@ -609,7 +614,10 @@ class WebServiceController {
                 }
             }
 
-            imageService.scheduleArtifactGeneration(image.id)
+            if (!isDuplicate) {
+                imageService.scheduleArtifactGeneration(image.id)
+            }
+
             renderResults([success: true, imageId: image?.imageIdentifier])
         } else {
             renderResults([success: false, message: "Failed to store image!"])
