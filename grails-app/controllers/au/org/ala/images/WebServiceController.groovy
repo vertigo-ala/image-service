@@ -3,6 +3,7 @@ package au.org.ala.images
 import au.org.ala.cas.util.AuthenticationUtils
 import grails.converters.JSON
 import grails.converters.XML
+import org.apache.http.HttpStatus
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartRequest
 
@@ -269,9 +270,7 @@ class WebServiceController {
         renderResults(results)
     }
 
-    private renderResults(Object results) {
-
-
+    private renderResults(Object results, int responseCode = 200) {
 
         withFormat {
             json {
@@ -286,6 +285,7 @@ class WebServiceController {
                 render(results as XML)
             }
         }
+        response.status = responseCode
     }
 
     def getRepositoryStatistics() {
@@ -449,6 +449,39 @@ class WebServiceController {
         renderResults(results)
     }
 
+    def findImagesByOriginalFilename() {
+        def query = request.JSON
+
+        if (query) {
+
+            def filenames = query.filenames as List<String>
+
+            if (!filenames) {
+                renderResults([success:false, message:'You must supply a list of filenames to search for!'])
+                return
+            }
+
+            def results =  [:]
+
+            filenames.each { filename ->
+
+                def images = searchService.findImagesByOriginalFilename(filename, params)
+                def list = []
+                images?.each { image ->
+                    def map = imageService.getImageInfoMap(image)
+                    list << map
+                }
+                results[filename] = [count: list.size(), images: list]
+            }
+
+            renderResults([success: true, results: results])
+            return
+        }
+
+        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
+
+    }
+
     def findImagesByMetadata() {
         def query = request.JSON
 
@@ -568,13 +601,9 @@ class WebServiceController {
         def userId = AuthenticationUtils.getUserId(request)
         def url = params.imageUrl ?: params.url
 
-        boolean detectDuplicate = params.boolean("detectDuplicate") ?: false
-
-        boolean isDuplicate = false
-
         if (url) {
             // Image is located at an endpoint, and we need to download it first.
-            image = imageService.storeImageFromUrl(url, userId, detectDuplicate) { existingImage ->  isDuplicate = true }
+            image = imageService.storeImageFromUrl(url, userId)
             if (!image) {
                 renderResults([success: false, message: "Unable to retrieve image from ${url}"])
             }
@@ -587,7 +616,7 @@ class WebServiceController {
                     renderResults([success: false, message: 'image parameter not found, or empty. Please supply an image file.'])
                     return
                 }
-                image = imageService.storeImage(file, userId, detectDuplicate) { existingImage ->  isDuplicate = true }
+                image = imageService.storeImage(file, userId)
             } else {
                 renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])
             }
@@ -614,16 +643,45 @@ class WebServiceController {
                 }
             }
 
-            if (!isDuplicate) {
-                imageService.scheduleArtifactGeneration(image.id)
-            }
-
+            imageService.scheduleArtifactGeneration(image.id)
             renderResults([success: true, imageId: image?.imageIdentifier])
         } else {
             renderResults([success: false, message: "Failed to store image!"])
         }
-
-
     }
+
+    def uploadImagesFromUrls() {
+
+        def userId = AuthenticationUtils.getUserId(request)
+        def body = request.JSON
+
+        if (body) {
+
+            List<Map<String, String>> imageList = body.images
+
+            if (!imageList) {
+                renderResults([success:false, message:'You must supply a list of objects called "images", each of which must contain a "sourceUrl" key, along with optional meta data items!'], HttpStatus.SC_BAD_REQUEST)
+                return
+            }
+
+            // first create the images
+            def results = imageService.batchUploadFromUrl(imageList, userId)
+
+            imageList.each { srcImage ->
+                def newImage = results[srcImage.sourceUrl]
+                if (newImage && newImage.success) {
+                    imageService.setMetadataItems(newImage.image, srcImage, MetaDataSourceType.SystemDefined, userId)
+                    imageService.scheduleArtifactGeneration(newImage.image.id)
+                    newImage.image = null
+                }
+            }
+
+            renderResults([success: true, results: results])
+            return
+        }
+
+        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
+    }
+
 
 }

@@ -2,6 +2,7 @@ package au.org.ala.images
 
 import au.org.ala.images.tiling.TileFormat
 import com.sun.jna.platform.win32.WinDef
+import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
@@ -19,6 +20,7 @@ import org.apache.tika.mime.MediaType
 import org.apache.tika.parser.AutoDetectParser
 import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
+import org.hibernate.FlushMode
 import org.springframework.web.multipart.MultipartFile
 
 import java.text.SimpleDateFormat
@@ -33,30 +35,20 @@ class ImageService {
     def logService
     def auditService
 
+    def sessionFactory
+
 
     private static Queue<BackgroundTask> _backgroundQueue = new ConcurrentLinkedQueue<BackgroundTask>()
     private static Queue<BackgroundTask> _tilingQueue = new ConcurrentLinkedQueue<BackgroundTask>()
 
     private static int BACKGROUND_TASKS_BATCH_SIZE = 100
 
-    public Image storeImage(MultipartFile imageFile, String uploader, boolean returnExistingDuplicate = false, Closure onDuplicate = null) {
+    public Image storeImage(MultipartFile imageFile, String uploader) {
 
         if (imageFile) {
             // Store the image
             def originalFilename = imageFile.originalFilename
             def bytes = imageFile?.bytes
-            if (returnExistingDuplicate) {
-                def md5Hash = MD5Codec.encode(bytes)
-                def existing = Image.findByContentMD5Hash(md5Hash)
-                if (existing) {
-                    auditService.log(existing, "Attempted import from ${originalFilename} has returned existing duplicate (imageId: ${existing.imageIdentifier})", uploader ?: "<unknown>")
-                    if (onDuplicate) {
-                        onDuplicate(existing)
-                    }
-                    return existing
-                }
-            }
-
             def image = storeImageBytes(bytes, originalFilename, imageFile.size, imageFile.contentType, uploader)
             auditService.log(image,"Image stored from multipart file ${originalFilename}", uploader ?: "<unknown>")
             return image
@@ -64,24 +56,11 @@ class ImageService {
         return null
     }
 
-    public Image storeImageFromUrl(String imageUrl, String uploader, boolean returnExistingDuplicate = false, Closure onDuplicate = null) {
+    public Image storeImageFromUrl(String imageUrl, String uploader) {
         if (imageUrl) {
             try {
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
-
-                if (returnExistingDuplicate) {
-                    def md5Hash = MD5Codec.encode(bytes)
-                    def existing = Image.findByContentMD5Hash(md5Hash)
-                    if (existing) {
-                        auditService.log(existing, "Attempted upload from ${imageUrl} has returned existing duplicate (imageId: ${existing.imageIdentifier})", uploader ?: "<unknown>")
-                        if (onDuplicate) {
-                            onDuplicate(existing)
-                        }
-                        return existing
-                    }
-                }
-
                 def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
                 def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader)
                 auditService.log(image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
@@ -93,6 +72,41 @@ class ImageService {
         return null
     }
 
+    @NotTransactional
+    public Map batchUploadFromUrl(List<Map<String, String>> imageSources, String uploader) {
+        def results = [:]
+        Image.withNewTransaction {
+
+            sessionFactory.currentSession.setFlushMode(FlushMode.MANUAL)
+            try {
+                imageSources.each { imageSource ->
+                    def imageUrl = imageSource.sourceUrl as String
+                    if (imageUrl) {
+                        def result = [success: false]
+                        try {
+                            def url = new URL(imageUrl)
+                            def bytes = url.bytes
+                            def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
+                            def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader)
+                            result.imageId = image.imageIdentifier
+                            result.image = image
+                            result.success = true
+                            auditService.log(image, "Image (batch) downloaded from ${imageUrl}", uploader ?: "<unknown>")
+                        } catch (Exception ex) {
+                            ex.printStackTrace()
+                            result.message = ex.message
+                        }
+                        results[imageUrl] = result
+                    }
+                }
+            } finally {
+                sessionFactory.currentSession.flush()
+                sessionFactory.currentSession.setFlushMode(FlushMode.AUTO)
+            }
+        }
+        return results
+    }
+
     public int getImageTaskQueueLength() {
         return _backgroundQueue.size()
     }
@@ -101,6 +115,7 @@ class ImageService {
         return _tilingQueue.size()
     }
 
+    @NotTransactional
     private Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType, String uploaderId) {
 
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
@@ -124,7 +139,7 @@ class ImageService {
         image.height = imgDesc.height
         image.width = imgDesc.width
 
-        image.save(flush: true, failOnError: true)
+        image.save(failOnError: true)
 
         def md = getImageMetadataFromBytes(bytes)
         md.each { kvp ->
@@ -315,6 +330,12 @@ class ImageService {
                 subimage.delete()
             }
 
+            // and delete album images
+            def albumImages = AlbumImage.findAllByImage(image)
+            albumImages.each { albumImage ->
+                albumImage.delete()
+            }
+
             // and delete domain object
             image.delete(flush: true, failonerror: true)
 
@@ -398,7 +419,13 @@ class ImageService {
 
     }
 
-    private static String sanitizeString(String value) {
+    private static String sanitizeString(Object value) {
+        if (value) {
+            value = value.toString()
+        } else {
+            return ""
+        }
+
         def bytes = value?.getBytes("utf8")
 
         def hasZeros = bytes.contains(0)
@@ -437,6 +464,38 @@ class ImageService {
         }
 
         return false
+    }
+
+    def setMetadataItems(Image image, Map<String, String> metadata, MetaDataSourceType source, String userId) {
+        metadata.each { kvp ->
+            def value = sanitizeString(kvp.value)
+            def key = kvp.key
+
+            if (image && StringUtils.isNotEmpty(key?.trim()) && StringUtils.isNotEmpty(value?.trim())) {
+
+                if (value.length() > 8000) {
+                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", "<unknown>")
+                    return false
+                }
+
+                // See if we already have an existing item...
+                def existing = ImageMetaDataItem.findByImageAndNameAndSource(image, key, source)
+                if (existing) {
+                    existing.value = value
+                } else {
+                    def md = new ImageMetaDataItem(image: image, name: key, value: value, source: source)
+                    md.save()
+                    image.addToMetadata(md)
+                }
+
+                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", "<unknown>")
+                image.save()
+                return true
+            } else {
+                logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
+            }
+
+        }
     }
 
     def removeMetaDataItem(Image image, String key, MetaDataSourceType source) {

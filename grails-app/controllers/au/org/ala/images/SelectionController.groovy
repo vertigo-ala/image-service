@@ -38,12 +38,7 @@ class SelectionController {
         def idList = params."imageList[]"
         def userId = AuthenticationUtils.getUserId(request)
         if (idList && userId) {
-            idList.each { String imageId ->
-                def image = Image.get(imageId.toLong())
-                if (image) {
-                    selectionService.selectImage(userId, image)
-                }
-            }
+            selectionService.selectImages(userId, idList)
             render([success:true] as JSON)
             return
         }

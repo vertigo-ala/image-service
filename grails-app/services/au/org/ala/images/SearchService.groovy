@@ -74,6 +74,23 @@ class SearchService {
         return [images: images, totalCount: totalCount]
     }
 
+    def findImagesByOriginalFilename(String filename, GrailsParameterMap params) {
+        filename = URLDecoder.decode(filename, "utf-8")
+        filename.replaceAll("\\*", "%")
+        def c = Image.createCriteria()
+        def results = []
+        if (filename.contains("%")) {
+            results = c.list(params) {
+                ilike("originalFilename", filename)
+            }
+        } else {
+            results = c.list(params) {
+                eq("originalFilename", filename)
+            }
+        }
+        return results
+    }
+
     def findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
 
         CodeTimer t = new CodeTimer("Find by metadata key '${metaDataKey}' with ${values?.size()} values")
