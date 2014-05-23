@@ -124,7 +124,7 @@
                     updateZoomStatus();
                 });
 
-                <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN},${CASRoles.ROLE_USER}">
                 // Initialise the draw control and pass it the FeatureGroup of editable layers
                 var drawControl = new L.Control.Draw({
                     edit: {

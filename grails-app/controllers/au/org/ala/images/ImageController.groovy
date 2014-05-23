@@ -164,9 +164,6 @@ class ImageController {
     }
 
     def view() {
-
-        Assertion assertion = (Assertion) (session == null ? request.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION) : session.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION));
-
         def image = getImageFromParams(params)
         if (!image) {
             flash.errorMessage = "Could not find image with id ${params.int("id")}!"
