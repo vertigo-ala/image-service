@@ -26,28 +26,36 @@
         </td>
         <td>
             <div class="">
-                <g:if test="${allowSelection && images?.size() > 0}">
+                <g:if test="${allowSelection && images?.size() > 0 || toolButtons}">
                     <div class="btn-group pull-right">
                         <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
                             <i class="icon-cog"></i>&nbsp;
                             <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu pull-right">
-                            <li>
-                                <a href="#" id="btnSelectAllOnPage">Select all on page</a>
-                            </li>
-                            <li>
-                                <a href="#" id="btnDeselectAllOnPage">Deselect all on page</a>
-                            </li>
+                            <g:if test="${allowSelection && images?.size() > 0}">
+                                <li>
+                                    <a href="#" id="btnSelectAllOnPage">Select all on page</a>
+                                </li>
+                                <li>
+                                    <a href="#" id="btnDeselectAllOnPage">Deselect all on page</a>
+                                </li>
+                            </g:if>
                             <g:if test="${toolButtons}">
-                                <li class="divider"></li>
+                                <g:if test="${allowSelection}">
+                                    <li class="divider"></li>
+                                </g:if>
                                 <g:each in="${toolButtons}" var="tool">
-                                    <li>
-                                        <a href="#" id="${tool.id}">${tool.label}</a>
-                                    </li>
+                                    <g:if test="${tool.id == 'divider'}">
+                                        <li class="divider"></li>
+                                    </g:if>
+                                    <g:else>
+                                        <li>
+                                            <a href="#" id="${tool.id}">${tool.label}</a>
+                                        </li>
+                                    </g:else>
                                 </g:each>
                             </g:if>
-                            %{--<g:pageProperty name="page.imageListMenuItems"/>--}%
                         </ul>
                     </div>
                 </g:if>

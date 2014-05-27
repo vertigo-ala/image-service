@@ -182,15 +182,15 @@
                     var height = maxy - miny;
                     var width = maxx - minx;
 
-                    $.ajax("${createLink(controller:'webService', action:'createSubimage', params:[id: imageInstance.imageIdentifier])}?x=" + minx + "&y=" + miny + "&width=" + width + "&height=" + height).done(function(results) {
-                        if (results.success) {
-                            alert("Subimage created with id " + results.subImageId);
+                    var url = "${createLink(controller:'image', action:'createSubimageFragment', id:imageInstance.id)}?x=" + minx + "&y=" + miny + "&width=" + width + "&height=" + height;
+                    var opts = {
+                        title: "Create subimage",
+                        url: url,
+                        onClose: function() {
                             drawnItems.clearLayers();
-                        } else {
-                            alert("Failed to create subimage: " + results.message);
                         }
-                    });
-
+                    };
+                    showModal(opts);
                 });
 
                 viewer.on('draw:created', function (e) {

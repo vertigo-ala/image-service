@@ -16,7 +16,10 @@
     }
 
 </style>
-<g:render template="/image/imageThumbnails" model="${[images: imageList, totalImageCount: albumImages.totalCount, allowSelection: false, thumbsTitle:"Album '${album.name}' (${albumImages.totalCount} images)", paginateActionId: album.id, footerTemplate:'imageThumbFooter' ]}" />
+
+<g:set var="buttons" value="${[[id:'btnExport', label:'Export links'],[id:'divider'],[id:'btnAddTag', label:'Tag images'], [id:'btnAddMetaData', label:'Attach meta data']]}" />
+
+<g:render template="/image/imageThumbnails" model="${[images: imageList, totalImageCount: albumImages.totalCount, allowSelection: false, thumbsTitle:"Album '${album.name}' (${albumImages.totalCount} images)", paginateActionId: album.id, footerTemplate:'imageThumbFooter', toolButtons: buttons ]}" />
 
 <script>
 
