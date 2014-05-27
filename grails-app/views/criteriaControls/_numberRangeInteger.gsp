@@ -20,7 +20,12 @@
             <g:set var="evaluator" value="${new SearchCriteriaUtils.IntegerCriteriaTranslator(value as String)}" />
         </g:if>
         <label class="radio inline" style="white-space: nowrap">
-            <g:radio class="radioButton" name="operator" value="gt" checked="${evaluator == null || evaluator?.operator == 'gt' ? 'checked' : ''}"/>
+            <g:radio class="radioButton" name="operator" value="eq" checked="${evaluator == null || evaluator?.operator == 'eq' ? 'checked' : ''}"/>
+            Equal to
+        </label>
+
+        <label class="radio inline" style="white-space: nowrap">
+            <g:radio class="radioButton" name="operator" value="gt" checked="${evaluator?.operator == 'gt' ? 'checked' : ''}"/>
             Greater than or equal to
         </label>
         <label class="radio inline" style="white-space: nowrap">
@@ -41,7 +46,7 @@
         <g:if test="${units}">
             <span>&nbsp;(${units})</span>
         </g:if>
-
+        <span class="numberRangeOtherField"> - OR field <g:select id="cmbCriteria" name="otherField" from="${criteriaDefinitions}" optionValue="name" optionKey="fieldName" noSelection="${[0:"<Select Field>"]}" value="${evaluator?.otherField}" /></span>
     </div>
     <g:hiddenField name="units" value="${units}" />
 </div>
@@ -53,8 +58,11 @@
             var operator = $(this).val();
             if (operator == "bt") {
                 $(".numberRangeOther").css("display", "inline-block");
+                $(".numberRangeOtherField").css("display", "none");
             } else {
                 $(".numberRangeOther").css("display", "none");
+                $(".numberRangeOtherField").css("display", "inline-block");
+
             }
         });
 

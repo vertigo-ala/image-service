@@ -16,7 +16,12 @@ import javax.imageio.ImageReader
 import javax.imageio.stream.ImageInputStream
 import java.awt.Color
 import java.awt.Rectangle
+import java.awt.color.ColorSpace
+import java.awt.color.ICC_ColorSpace
+import java.awt.color.ICC_Profile
 import java.awt.image.BufferedImage
+import java.awt.image.ColorConvertOp
+import java.awt.image.ImageObserver
 import java.lang.reflect.Field
 
 @Transactional
@@ -226,7 +231,17 @@ class ImageStoreService {
                 thumbImage = ImageUtils.scaleWidth(thumbImage, size)
             }
 
+            def correctColourProfile = true // TODO: inspect image to work out if the color conversion op is actually required?
+
             if (thumbImage) {
+
+                if (correctColourProfile) {
+                    ICC_Profile ip = ICC_Profile.getInstance(ColorSpace.CS_sRGB);
+                    ICC_ColorSpace ics = new ICC_ColorSpace(ip);
+                    ColorConvertOp cco = new ColorConvertOp(ics, null);
+                    thumbImage = cco.filter(thumbImage, null);
+                }
+
                 thumbHeight = thumbImage.height
                 thumbWidth = thumbImage.width
 
@@ -234,7 +249,7 @@ class ImageStoreService {
                 def thumbFile = new File(thumbFilename)
                 ImageIO.write(thumbImage, "JPG", thumbFile)
 
-                def backgroundColors = ['white', 'black', 'darkGray']
+                def backgroundColors = ['white', 'black', 'darkGray', '']
 
                 // for each background color (where empty string means transparent), create a squared thumb
                 // If not transparent, keep as jpeg for speed/space!
@@ -263,12 +278,22 @@ class ImageStoreService {
                         g.fillRect(0, 0, size, size)
                     }
 
+                    def observer = new ImageObserver() {
+                        @Override
+                        boolean imageUpdate(java.awt.Image img, int infoflags, int x, int y, int ww, int hh) {
+                            println "${infoflags} ${x},${y} (${ww} x ${hh})"
+                            return true
+                        }
+                    }
+
                     if (thumbHeight < size) {
                         int top = (size / 2) - (thumbHeight / 2)
-                        g.drawImage(thumbImage, 0, top, null)
+                        g.drawImage(thumbImage, 0, top, observer)
                     } else if (thumbWidth < size) {
                         int left = (size / 2) - (thumbWidth / 2)
-                        g.drawImage(thumbImage, left, 0, null)
+                        g.drawImage(thumbImage, left, 0, observer)
+                    } else {
+                        g.drawImage(thumbImage, 0, 0, observer)
                     }
 
                     g.dispose()

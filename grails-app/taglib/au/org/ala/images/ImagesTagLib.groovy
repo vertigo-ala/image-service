@@ -11,6 +11,7 @@ class ImagesTagLib {
     def imageService
     def groovyPageLocator
     def authService
+    def searchCriteriaService
 
     /**
      * @attr title
@@ -172,8 +173,16 @@ class ImagesTagLib {
      * @attr units
      */
     def criteriaValueControl = { attrs, body ->
+        def allDefinitions = searchCriteriaService.criteriaDefinitionList
+
         def criteriaDefinition = attrs.criteriaDefinition as SearchCriteriaDefinition
         if (criteriaDefinition) {
+
+            // Remove incompatible definitions for those criteria types that can compare against other fields
+            allDefinitions.removeAll {
+                it.valueType != criteriaDefinition.valueType
+            }
+
             def templateName = criteriaDefinition.valueType.toString()
             if (criteriaDefinition.valueType == CriteriaValueType.NumberRangeLong) {
                 templateName = CriteriaValueType.NumberRangeInteger.toString()
@@ -190,7 +199,7 @@ class ImagesTagLib {
             if (criteriaDefinition.valueType == CriteriaValueType.StringMultiSelect) {
             }
 
-            out << render(template: templatePath, model: [criteriaDefinition: criteriaDefinition, units: criteriaDefinition.units, value: attrs.value, allowedValues: allowedValues])
+            out << render(template: templatePath, model: [criteriaDefinition: criteriaDefinition, units: criteriaDefinition.units, value: attrs.value, allowedValues: allowedValues, criteriaDefinitions: allDefinitions])
         }
     }
 

@@ -4,13 +4,13 @@
     <facet type="web" name="GrailsWeb">
       <configuration>
         <webroots>
-          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/web-app" relative="/" />
-          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/grails-app/views" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/database-migration-1.4.0/grails-app/views" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7/web-app" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/csv-0.3.1/web-app" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/rest-0.7/web-app" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/jquery-1.8.3/web-app" relative="/" />
+          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/web-app" relative="/" />
+          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/views" relative="/" />
         </webroots>
         <sourceRoots />
       </configuration>
@@ -26,13 +26,13 @@
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3">
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/src/groovy" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/grails-app/i18n" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/grails-app/controllers" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/grails-app/services" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.3/grails-app/taglib" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5">
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/src/groovy" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/i18n" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/controllers" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/services" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/taglib" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/target/work/plugins/cache-1.1.1">
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/cache-1.1.1/src/java" isTestSource="false" />
@@ -92,6 +92,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="grails-2.3.8" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="grails-2.3.8" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="grails-2.3.8" level="application" />
     <orderEntry type="module-library" exported="">
@@ -167,9 +168,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.52/tomcat-catalina-ant-7.0.52.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../ala-bie/ala-cas-client/src/main/java" />
-        </SOURCES>
+        <SOURCES />
       </library>
     </orderEntry>
   </component>

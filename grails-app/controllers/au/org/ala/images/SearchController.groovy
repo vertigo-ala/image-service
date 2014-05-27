@@ -148,10 +148,11 @@ class SearchController {
         def results = [success: true]
         def userId = AuthenticationUtils.getUserId(request)
         if (userId) {
-            def imageList = searchService.searchUsingCriteria(null)
-            imageList?.each { image ->
-                selectionService.selectImage(userId, image)
-            }
+
+            searchService.withCriteriaImageIds(null, { idList ->
+                selectionService.selectImages(userId, idList)
+            })
+
         } else {
             results.success = false
             results.message = "Could not identify user!"

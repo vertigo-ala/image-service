@@ -265,17 +265,21 @@ class SearchService {
                 break;
             case CriteriaValueType.NumberRangeInteger:
             case CriteriaValueType.NumberRangeLong:
-                if (params.operator && params.numberValue) {
-                    try {
-                        def number = Long.parseLong(params.numberValue)
-                        if (params.operator == 'bt') {
-                            def number2 = Long.parseLong(params.numberValue2)
-                            return [value:"${params.operator} ${number}:${number2}"]
-                        } else {
-                            return [value:"${params.operator} ${number}"]
+                if (params.operator && (params.numberValue || params.otherField)) {
+                    if (params.numberValue) {
+                        try {
+                            def number = Long.parseLong(params.numberValue)
+                            if (params.operator == 'bt') {
+                                def number2 = Long.parseLong(params.numberValue2)
+                                return [value: "${params.operator} ${number}:${number2}"]
+                            } else {
+                                return [value: "${params.operator} ${number}"]
+                            }
+                        } catch (Exception ex) {
+                            return [errorMessage: "Value is not a valid integer/long!"]
                         }
-                    } catch (Exception ex) {
-                        return [errorMessage: "Value is not a valid integer/long!"]
+                    } else {
+                        return [value: "${params.operator} field(${params.otherField})"]
                     }
                 } else {
                     return [errorMessage: "Please enter a value for " + criteriaDefinition.name]
@@ -313,6 +317,46 @@ class SearchService {
         }
 
         return [errorMessage: "Unhandled criteria value type - ${criteriaDefinition.valueType}"]
+    }
+
+    def withCriteriaImageIds(GrailsParameterMap params, Closure closure) {
+        def criteriaList = searchCriteriaList
+        def metaDataPattern = Pattern.compile("^(.*)[:](.*)\$")
+        // split out by criteria type
+        def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
+        def c = Image.createCriteria()
+
+        def l = c.list(params ?: [:]) {
+            and {
+                def list = criteriaMap[CriteriaType.ImageProperty]
+                if (list) {
+                    SearchCriteriaUtils.buildCriteria(delegate, list)
+                }
+                list = criteriaMap[CriteriaType.ImageMetadata]
+                if (list) {
+                    metadata {
+                        and {
+                            for (int i = 0; i < list.size(); ++i) {
+                                def criteria = list[i]
+                                // need to split the metadata name out of the value...
+                                def matcher = metaDataPattern.matcher(criteria.value)
+                                if (matcher.matches()) {
+                                    ilike("name", matcher.group(1))
+                                    ilike("value", matcher.group(2))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            projections {
+                property("id")
+            }
+        }
+
+        if (closure) {
+            closure(l ?: [])
+        }
     }
 
     def searchUsingCriteria(GrailsParameterMap params) {

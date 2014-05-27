@@ -130,7 +130,9 @@ class SelectionController {
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
         if (userId) {
+            def ct = new CodeTimer("List Selected Images")
             selected = SelectedImage.findAllByUserId(userId)
+            ct.stop(true)
         }
 
         [selectedImages: selected]

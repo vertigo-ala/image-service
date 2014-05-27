@@ -95,7 +95,7 @@ public class SearchCriteriaUtils {
 
     public static class DoubleCriteriaTranslator implements CriteriaTranslator {
 
-        public static Pattern DoublePattern = Pattern.compile("^(gt|lt)\\s([-]{0,1}\\d+[\\.]{0,1}\\d*)\$")
+        public static Pattern DoublePattern = Pattern.compile("^(eq|gt|lt)\\s([-]{0,1}\\d+[\\.]{0,1}\\d*)\$")
         public static Pattern DoubleRangePattern = Pattern.compile("^(bt)\\s([-]{0,1}\\d+[\\.]{0,1}\\d*)[:]([-]{0,1}\\d+[\\.]{0,1}\\d*)\$")
 
         String operator
@@ -126,6 +126,9 @@ public class SearchCriteriaUtils {
         public void injectCriteria(SearchCriteria criteria, Object delegate) {
             def field = criteria.criteriaDefinition.fieldName
             switch (operator) {
+                case "eq":
+                    delegate."eq"(field, value1)
+                    break;
                 case "lt":
                     delegate."le"(field, value1)
                     break
@@ -140,6 +143,8 @@ public class SearchCriteriaUtils {
 
         public String displayString(Closure<String> formatValue) {
             switch (operator) {
+                case "eq":
+                    return "is equal to " + formatValue(value1)
                 case "lt":
                     return "is less or equal to " + formatValue(value1)
                     break
@@ -181,21 +186,24 @@ public class SearchCriteriaUtils {
 
     }
 
-
-
     private abstract static class NumberCriteriaTranslator<T extends Number> implements CriteriaTranslator {
 
-        public static Pattern IntegerPattern = Pattern.compile("^(gt|lt)\\s([-]{0,1}\\d+)\$")
+        public static Pattern IntegerPattern = Pattern.compile("^(eq|gt|lt)\\s([-]{0,1}\\d+)\$")
         public static Pattern IntegerRangePattern = Pattern.compile("^(bt)\\s([-]{0,1}\\d+)[:]([-]{0,1}\\d+)\$")
+        public static Pattern IntegerFieldPattern = Pattern.compile("^(eq|gt|lt)\\sfield[(](\\w+)[)]\$")
 
         String operator
         T value1
         T value2
+        String otherField
 
         protected abstract T parseString(String s);
 
         public NumberCriteriaTranslator(String pattern) {
             def m = IntegerPattern.matcher(pattern)
+
+            otherField = null
+
             if (m.matches()) {
                 operator = m.group(1)
                 value1 = parseString(m.group(2))
@@ -208,18 +216,33 @@ public class SearchCriteriaUtils {
                     value1 = Math.min(num1, num2)
                     value2 = Math.max(num1, num2)
                 } else {
-                    throw new RuntimeException("Unrecognized number range criteria format: " + pattern)
+                    m = IntegerFieldPattern.matcher(pattern)
+                    if (m.matches()) {
+                        operator = m.group(1)
+                        otherField = m.group(2)
+                        value1 = null
+                        value2 = null
+                    } else {
+                        throw new RuntimeException("Unrecognized number range criteria format: " + pattern)
+                    }
                 }
             }
         }
 
         public String displayString(Closure<String> formatValue) {
+            def value = value1
+            if (otherField) {
+                value = otherField
+            }
+
             switch (operator) {
+                case "eq":
+                    return "is equal to " + formatValue(value)
                 case "lt":
-                    return "is less or equal to " + formatValue(value1)
+                    return "is less or equal to " + formatValue(value)
                     break
                 case "gt":
-                    return "is greater or equal to " + formatValue(value1)
+                    return "is greater or equal to " + formatValue(value)
                     break
                 case "bt":
                     return "is between ${formatValue(value1)} and ${formatValue(value2)}"
@@ -232,11 +255,26 @@ public class SearchCriteriaUtils {
         public void injectCriteria(SearchCriteria criteria, Object delegate) {
             def field = criteria.criteriaDefinition.fieldName
             switch (operator) {
+                case "eq":
+                    if (otherField) {
+                        delegate."eqProperty"(field, otherField)
+                    } else {
+                        delegate."eq"(field, value1)
+                    }
+                    break;
                 case "lt":
-                    delegate."le"(field, value1)
+                    if (otherField) {
+                        delegate."leProperty"(field, otherField)
+                    } else {
+                        delegate."le"(field, value1)
+                    }
                     break
                 case "gt":
-                    delegate."ge"(field, value1)
+                    if (otherField) {
+                        delegate."gtProperty"(field, otherField)
+                    } else {
+                        delegate."gt"(field, value1)
+                    }
                     break
                 case "bt":
                     delegate."between"(field, value1, value2)
