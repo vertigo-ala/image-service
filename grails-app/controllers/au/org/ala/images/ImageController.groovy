@@ -160,7 +160,13 @@ class ImageController {
         }
         def subimages = Subimage.findAllByParentImage(image)*.subimage
         def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
-        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk]
+
+        def userId = AuthenticationUtils.getUserId(request)
+        def albums = []
+        if (userId) {
+            albums = Album.findAllByUserId(userId, [sort:'name'])
+        }
+        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums]
     }
 
     def view() {

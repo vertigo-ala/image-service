@@ -65,6 +65,7 @@
     <table class="table table-condensed table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th width="110">Thumb</th>
                 <th>Name</th>
                 <th>Size (bytes)</th>
@@ -74,8 +75,9 @@
             </tr>
         </thead>
         <tbody>
-            <g:each in="${selectedImages*.image}" var="image">
+            <g:each in="${selectedImages*.image}" var="image" status="i">
                 <tr imageId="${image.id}">
+                    <td>${i.toInteger() + 1 + params.offset.toInteger()}</td>
                     <td>
                         <a href="${createLink(controller:'image', action:'details', id: image.id)}">
                             <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}'/>" width="100" />
@@ -83,13 +85,17 @@
                     </td>
                     <td><a href="${createLink(controller:'image', action:'details', id: image.id)}">${image.originalFilename ?: image.imageIdentifier}</a></td>
                     <td><img:sizeInBytes size="${image.fileSize}" /></td>
-                    <td>${image.width} x ${image.height}</td>
+                    <td>${image.width}&nbsp;x&nbsp;${image.height}</td>
                     <td>${image.mimeType}</td>
-                    <td><button class="btn btn-small btnRemoveFromSelection"><i class="icon-remove"></i>&nbsp;Remove from selection</button></td>
+                    <td><button class="btn btn-small btnRemoveFromSelection"><i class="icon-remove"></i></button></td>
                 </tr>
             </g:each>
         </tbody>
     </table>
+
+    <div class="pagination">
+        <g:paginate total="${total}" prev="" next="" />
+    </div>
 
     <r:script>
         $(document).ready(function() {

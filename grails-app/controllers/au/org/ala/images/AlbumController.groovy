@@ -32,7 +32,7 @@ class AlbumController {
             countMap[arr[1]] = arr[0]
         }
 
-        [albums: albums, countMap: countMap]
+        [albums: albums, countMap: countMap, selectedAlbum: albums?.get(0)]
     }
 
     def userContextFragment() {
@@ -97,4 +97,34 @@ class AlbumController {
         def imageList = albumImages*.image
         [album: album, albumImages: albumImages, imageList: imageList]
     }
+
+    def ajaxRemoveImageFromAlbum() {
+        def album = Album.get(params.int("id"))
+        def image = Image.get(params.int("imageId"));
+        if (album && image) {
+            albumService.removeImageFromAlbum(album, image)
+        }
+        render([success: true] as JSON)
+    }
+
+    def selectAlbumFragment() {
+        def userId = AuthenticationUtils.getUserId(request)
+        def albums = []
+        if (userId) {
+            albums = Album.findAllByUserId(userId, [sort:'name'])
+        }
+        [albums: albums]
+    }
+
+    def ajaxAddImageToAlbum() {
+        def album = Album.get(params.int("id"))
+        def image = Image.get(params.int("imageId"))
+        if (album && image) {
+            albumService.addImageToAlbum(album, image)
+            render([success:true] as JSON)
+            return
+        }
+        render([success:false] as JSON)
+    }
+
 }

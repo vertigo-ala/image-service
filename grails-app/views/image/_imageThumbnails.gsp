@@ -66,11 +66,18 @@
                         <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}" checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
                     </div>
                 </g:if>
+                <g:if test="${headerTemplate}">
+                    <g:render template="${headerTemplate}" model="${[image: image]}" />
+                </g:if>
                 <div class="image-thumbnail" >
                     <a href="${createLink(controller:'image', action:'details', id: image.id)}">
                         <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}' backgroundColor="white"/>"/>
                     </a>
                 </div>
+                <g:if test="${footerTemplate}">
+                    <g:render template="${footerTemplate}" model="${[image: image]}" />
+                </g:if>
+
             </div>
         </li>
     </g:each>

@@ -34,4 +34,16 @@ class AlbumService {
         return albumImage
     }
 
+    def removeImageFromAlbum(Album album, Image image) {
+        if (!album || !image) {
+            return
+        }
+
+        def albumImage = AlbumImage.findByAlbumAndImage(album, image)
+        if (albumImage) {
+            albumImage.delete()
+        }
+
+    }
+
 }

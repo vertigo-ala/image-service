@@ -183,6 +183,18 @@
                 updateAlbums();
             });
 
+            var onAlbumSelected = null;
+
+            function selectAlbum(onSelectFunction) {
+                var opts = {
+                    title: "Select an album",
+                    url: "${createLink(controller: 'album', action:'selectAlbumFragment')}"
+                };
+                onAlbumSelected = onSelectFunction;
+
+                showModal(opts);
+            }
+
         </r:script>
 
         <r:layoutResources/>

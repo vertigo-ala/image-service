@@ -160,6 +160,13 @@
                                         <td colspan="2">
                                             <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
                                             <a class="btn btn-small" href="<img:imageUrl imageId="${imageInstance.imageIdentifier}" />" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
+
+                                            <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
+                                                <g:if test="${albums}">
+                                                    <button class="btn btn-small" title="Add this image to an album" id="btnAddToAlbum"><i class="icon-book"></i></button>
+                                                </g:if>
+                                            </auth:ifAnyGranted>
+
                                             <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                                                 <button class="btn btn-small" id="btnRegen" title="Regenerate artifacts"><i class="icon-refresh"></i></button>
                                                 <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
@@ -209,6 +216,19 @@
     </auth:ifAnyGranted>
 
     $(document).ready(function() {
+
+        $("#btnAddToAlbum").click(function(e) {
+
+            e.preventDefault();
+            selectAlbum(function(albumId) {
+                $.ajax("${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
+                    if (result.success) {
+                        alert("Image add to album");
+                    }
+                });
+            });
+
+        });
 
         $('a[data-toggle="tab"]').on('shown', function (e) {
             var dest = $($(this).attr("href"));

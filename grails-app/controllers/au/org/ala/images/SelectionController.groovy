@@ -129,13 +129,20 @@ class SelectionController {
     def list() {
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
+        def total = 0
         if (userId) {
+
+            params.max = params.max ?: 20
+            params.offset = params.offset ?: 0
+
             def ct = new CodeTimer("List Selected Images")
-            selected = SelectedImage.findAllByUserId(userId)
+            selected = SelectedImage.findAllByUserId(userId, params)
+
+            total = SelectedImage.countByUserId(userId)
             ct.stop(true)
         }
 
-        [selectedImages: selected]
+        [selectedImages: selected, total: total]
     }
 
     @AlaSecured(value = [CASRoles.ROLE_ADMIN], message = "You do not have sufficient privileges to perform this action", redirectAction = "list")
@@ -143,8 +150,9 @@ class SelectionController {
 
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
+
         if (userId) {
-            selected = SelectedImage.findAllByUserId(userId)
+            selected = SelectedImage.findAllByUserId(userId, params)
         }
 
         int count = 0

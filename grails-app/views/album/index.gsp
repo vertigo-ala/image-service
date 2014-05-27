@@ -85,6 +85,10 @@
                 });
             }
         });
+
+        <g:if test="${selectedAlbum}">
+            updateAlbumDetails("${createLink(action:'albumDetailsFragment', id: selectedAlbum.id)}");
+        </g:if>
     });
 
     function updateAlbumDetails(url) {
