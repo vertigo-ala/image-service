@@ -173,9 +173,25 @@ class AlbumController {
                 def userId = AuthenticationUtils.getUserId(request) ?: "<unknown>"
                 albumService.tagImages(album, tag, userId)
                 render([success: true] as JSON)
-                return
+
             } else {
                 render([success: false, message: 'Missing or invalid tag id'] as JSON)
+            }
+        } else {
+            render([success: false, message: 'Missing or invalid album id'] as JSON)
+        }
+    }
+
+    def ajaxAddMetaData() {
+        def album = Album.get(params.int("id"))
+        def key = params.key as String
+        def value = params.value as String
+        if (album) {
+            if (key && value) {
+                albumService.attachMetadata(album, key, value, MetaDataSourceType.UserDefined)
+                render([success: true] as JSON)
+            } else {
+                render([success: false, message: 'Missing either key or value!'] as JSON)
             }
         } else {
             render([success: false, message: 'Missing or invalid album id'] as JSON)

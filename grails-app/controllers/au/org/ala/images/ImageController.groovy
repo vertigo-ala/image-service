@@ -187,11 +187,6 @@ class ImageController {
         [imageInstance: imageInstance, tags: leafTags]
     }
 
-    def addKeywordFragment() {
-        def imageInstance = getImageFromParams(params)
-        [imageInstance: imageInstance]
-    }
-
     @AlaSecured(value = [CASRoles.ROLE_ADMIN])
     def imageAuditTrailFragment() {
         def imageInstance = Image.get(params.int("id"))
@@ -217,16 +212,6 @@ class ImageController {
         }
 
         [imageInstance: imageInstance, metaData: metaData?.sort { it.name }, source: source]
-    }
-
-    def addUserMetadataFragment() {
-        def imageInstance = getImageFromParams(params)
-        [imageInstance: imageInstance]
-    }
-
-    def attachTagFragment() {
-        def imageInstance = getImageFromParams(params)
-        [imageInstance: imageInstance]
     }
 
     private Image getImageFromParams(GrailsParameterMap params) {

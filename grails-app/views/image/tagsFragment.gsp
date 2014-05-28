@@ -27,17 +27,15 @@
         $("#btnAttachTag").click(function(e) {
             e.preventDefault();
 
-            var opts = {
-                title:"Add tag to image",
-                url: "${createLink(controller:'image', action:'attachTagFragment', id:imageInstance.id)}",
-                onClose: function() {
-                    if (loadTags) {
-                        loadTags();
-                    }
+            imglib.selectTag(function(tagId) {
+                if (tagId) {
+                    $.ajax("${createLink(controller:'webService', action:'attachTagToImage', id: imageInstance.imageIdentifier)}?tagId=" + tagId).done(function() {
+                        if (loadTags) {
+                            loadTags();
+                        }
+                    });
                 }
-            }
-            imglib.showModal(opts);
-
+            });
         });
 
         $(".btnDetachTag").click(function(e) {

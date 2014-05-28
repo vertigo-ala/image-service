@@ -21,6 +21,7 @@
             <button class="btn" id="btnCancelAddUserMetaData">Cancel</button>
         </div>
     </div>
+
 </div>
 <script>
 
@@ -36,9 +37,9 @@
         if (key && value) {
             key = encodeURIComponent(key);
             value = encodeURIComponent(value);
-            $.ajax("${createLink(controller:'webService', action:'addUserMetadataToImage', id: imageInstance.imageIdentifier)}?key=" + key + "&value=" + value).done(function() {
-                imglib.hideModal();
-            });
+            if (imglib.onAddMetadata) {
+                imglib.onAddMetadata(key, value);
+            }
         }
     });
 

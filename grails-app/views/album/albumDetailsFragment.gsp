@@ -73,14 +73,19 @@
     });
 
     $("#btnAddTag").click(function(e) {
-
         e.preventDefault();
         imglib.selectTag(function(tagId) {
-            $.ajax("${createLink(controller:'album', action:"ajaxTagImages", id: album.id)}?tagId=" + tagId).done(function() {
-                imglib.hideModal();
-            });
+            var url = "${createLink(controller:'album', action:"ajaxTagImages", id: album.id)}?tagId=" + tagId;
+            imglib.pleaseWait("Adding tags to images...", url);
         });
+    });
 
+    $("#btnAddMetaData").click(function(e) {
+        e.preventDefault();
+        imglib.promptForMetadata(function(key, value) {
+            var url = "${createLink(controller:'album', action:'ajaxAddMetaData', id: album.id)}?key=" + key + "&value=" + value;
+            imglib.pleaseWait("Applying metadata to images...", url);
+        });
     });
 
     imglib.bindImageTagTooltips();

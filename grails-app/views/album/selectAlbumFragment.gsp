@@ -28,7 +28,6 @@
         var albumId = $("#album").val();
         if (albumId && imglib.onAlbumSelected) {
             imglib.onAlbumSelected(albumId);
-            imglib.hideModal();
         }
     });
 

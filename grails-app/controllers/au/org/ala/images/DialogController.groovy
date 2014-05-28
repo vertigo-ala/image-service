@@ -9,4 +9,11 @@ class DialogController {
 
         [message: message, affirmativeText: affirmativeText, negativeText: negativeText]
     }
+
+    def addUserMetadataFragment() {
+    }
+
+    def pleaseWaitFragment() {
+        [message: params.message ?: "Please wait..."]
+    }
 }

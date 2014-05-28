@@ -30,18 +30,16 @@
 <script>
 
     <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+
     $("#btnAddUserMetaData").click(function(e) {
         e.preventDefault();
-        var opts = {
-            title:"Add Metadata",
-            url: "${createLink(controller:'image', action:'addUserMetadataFragment', id:imageInstance.id)}",
-            onClose: function() {
+        imglib.promptForMetadata(function(key, value) {
+            $.ajax("${createLink(controller:'webService', action:'addUserMetadataToImage', id: imageInstance.imageIdentifier)}?key=" + key + "&value=" + value).done(function() {
                 if (refreshMetadata) {
                     refreshMetadata($("#tabUserDefined"));
                 }
-            }
-        }
-        imglib.showModal(opts);
+            });
+        });
     });
 
     $(".btnDeleteMetadataItem").click(function(e) {
@@ -53,8 +51,8 @@
                 }
             });
         }
-
     });
+
     </auth:ifAnyGranted>
 
 </script>

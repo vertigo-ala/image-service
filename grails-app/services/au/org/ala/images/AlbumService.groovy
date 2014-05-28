@@ -109,4 +109,16 @@ class AlbumService {
         }
     }
 
+    def attachMetadata(Album album, String key, String value, MetaDataSourceType source) {
+        if (album && key && value) {
+            source = source ?: MetaDataSourceType.UserDefined
+            withImageIds(album) { imageId ->
+                def image = Image.get(imageId)
+                if (image) {
+                    imageService.setMetaDataItem(image, source, key, value)
+                }
+            }
+        }
+    }
+
 }

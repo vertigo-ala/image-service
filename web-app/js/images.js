@@ -74,7 +74,12 @@ var imglib = {};
             title: "Select an album",
             url: IMAGES_CONF.selectAlbumUrl
         };
-        lib.onAlbumSelected = onSelectFunction;
+        lib.onAlbumSelected = function(albumId) {
+            lib.hideModal();
+            if (onSelectFunction) {
+                onSelectFunction(albumId);
+            }
+        };
         imglib.showModal(opts);
     };
 
@@ -86,7 +91,31 @@ var imglib = {};
             url: IMAGES_CONF.selectTagUrl
         };
 
-        lib.onTagSelected = onSelectFunction;
+        lib.onTagSelected = function(tagId) {
+            lib.hideModal();
+            if (onSelectFunction) {
+                onSelectFunction(tagId);
+            }
+        };
+        imglib.showModal(opts);
+    };
+
+    lib.onAddMetadata = null;
+
+    lib.promptForMetadata = function(onMetadata) {
+
+        var opts = {
+            title: "Add meta data item",
+            url: IMAGES_CONF.addUserMetaDataUrl
+        };
+
+        lib.onAddMetadata = function(key, value) {
+            lib.hideModal();
+            if (onMetadata) {
+                onMetadata(key, value);
+            }
+        };
+
         imglib.showModal(opts);
     };
 
@@ -98,11 +127,11 @@ var imglib = {};
                     content: {
                         text: function(event, api) {
                             $.ajax(IMAGES_CONF.imageTagsTooltipUrl + "/" + imageId).then(function(content) {
-                                    api.set("content.text", content);
-                                },
-                                function(xhr, status, error) {
-                                    api.set("content.text", status + ": " + error);
-                                });
+                                api.set("content.text", content);
+                            },
+                            function(xhr, status, error) {
+                                api.set("content.text", status + ": " + error);
+                            });
                         }
                     }
                 });
@@ -110,6 +139,24 @@ var imglib = {};
         });
     };
 
+    lib.pleaseWait = function(message, ajaxUrl, resultHandler) {
+
+        var modalOptions = {
+            url: IMAGES_CONF.pleaseWaitUrl + "?message=" + encodeURIComponent(message),
+            title: "Please wait...",
+            onShown: function() {
+                $.ajax(ajaxUrl).done(function(result) {
+                    if (resultHandler) {
+                        resultHandler(result);
+                    }
+                    lib.hideModal();
+                });
+            }
+        };
+
+        lib.showModal(modalOptions);
+
+    };
 
     lib.htmlEscape = function(str) {
         return String(str)

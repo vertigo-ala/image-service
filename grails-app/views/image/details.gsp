@@ -223,7 +223,6 @@
             imglib.selectAlbum(function(albumId) {
                 $.ajax("${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
                     if (result.success) {
-                        alert("Image add to album");
                     }
                 });
             });

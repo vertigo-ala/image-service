@@ -60,7 +60,9 @@
                 areYouSureUrl: "${createLink(controller:"dialog", action: "areYouSureFragment")}",
                 selectAlbumUrl: "${createLink(controller: 'album', action:'selectAlbumFragment')}",
                 selectTagUrl: "${createLink(controller: 'tag', action: 'selectTagFragment')}",
-                imageTagsTooltipUrl: "${createLink(controller:'image', action:"imageTagsTooltipFragment")}"
+                imageTagsTooltipUrl: "${createLink(controller:'image', action:"imageTagsTooltipFragment")}",
+                addUserMetaDataUrl: "${createLink(controller:'dialog', action:'addUserMetadataFragment')}",
+                pleaseWaitUrl: "${createLink(controller:'dialog', action:'pleaseWaitFragment')}"
             };
 
             // initialise plugins
