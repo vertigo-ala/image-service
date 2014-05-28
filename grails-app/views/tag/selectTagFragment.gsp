@@ -16,16 +16,18 @@
 
     <div class="control-group">
         <div class="controls">
-            <button class="btn btn-primary" id="btnAttachTagToImage">Attach tag</button>
+            <button class="btn btn-primary" id="btnSelectTag">Select tag</button>
             <button class="btn" id="btnCancelAttachTag">Cancel</button>
         </div>
     </div>
 </div>
+
 <style>
-    #tagTree {
-        height: 300px;
-    }
+#tagTree {
+    height: 300px;
+}
 </style>
+
 <script>
 
     $("#search").keydown(function(e) {
@@ -45,18 +47,16 @@
         imglib.hideModal();
     });
 
-    function attachSelectedTag() {
+    function selectCurrentTag() {
         var tagId = getSelectedTagId();
-        if (tagId) {
-            $.ajax("${createLink(controller:'webService', action:'attachTagToImage', id: imageInstance.imageIdentifier)}?tagId=" + tagId).done(function() {
-                imglib.hideModal();
-            });
+        if (tagId && imglib.onTagSelected) {
+            imglib.onTagSelected(tagId);
         }
     }
 
-    $("#btnAttachTagToImage").click(function(e) {
+    $("#btnSelectTag").click(function(e) {
         e.preventDefault();
-        attachSelectedTag();
+        selectCurrentTag();
     });
 
     function getSelectedTagId() {
@@ -82,7 +82,7 @@
             tree.on("ready.jstree", function (event, data) {
                 tree.jstree("open_all");
             }).on("dblclick.jstree", function() {
-                attachSelectedTag();
+                selectCurrentTag();
             }).jstree({
                 "plugins" : [],
                 "core" : {
@@ -99,6 +99,5 @@
     }
 
     loadTagTree();
-
 
 </script>

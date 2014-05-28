@@ -13,18 +13,18 @@
 
     $("#btnYes").click(function(e) {
         e.preventDefault();
-        if (areYouSureOptions && areYouSureOptions.affirmativeAction) {
-            areYouSureOptions.affirmativeAction();
+        if (imglib.areYouSureOptions && imglib.areYouSureOptions.affirmativeAction) {
+            imglib.areYouSureOptions.affirmativeAction();
         }
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#btnNo").click(function(e) {
         e.preventDefault();
-        if (areYouSureOptions && areYouSureOptions.negativeAction) {
-            areYouSureOptions.negativeAction();
+        if (imglib.areYouSureOptions && imglib.areYouSureOptions.negativeAction) {
+            imglib.areYouSureOptions.negativeAction();
         }
-        hideModal();
+        imglib.hideModal();
     });
 
 </script>

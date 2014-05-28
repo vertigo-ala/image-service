@@ -20,15 +20,15 @@
 
     $("#btnCancelSelectAlbum").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#btnSelectAlbum").click(function(e) {
         e.preventDefault();
         var albumId = $("#album").val();
-        if (albumId && onAlbumSelected) {
-            onAlbumSelected(albumId);
-            hideModal();
+        if (albumId && imglib.onAlbumSelected) {
+            imglib.onAlbumSelected(albumId);
+            imglib.hideModal();
         }
     });
 

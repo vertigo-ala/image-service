@@ -27,7 +27,7 @@
 
     $("#btnCancelAddTag").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#btnAddTag").click(function(e) {
@@ -35,7 +35,7 @@
         var tagPath = $("#tag").val();
         if (tagPath) {
             $.ajax("${createLink(controller:'webService', action:'createTagByPath')}?tagPath=" + tagPath + "&parentTagId=${parentTag?.id}").done(function() {
-                hideModal();
+                imglib.hideModal();
             });
         }
     });

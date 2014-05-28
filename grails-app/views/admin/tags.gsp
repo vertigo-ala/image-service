@@ -69,7 +69,7 @@
                 title:"Select a file to upload",
                 url: "${createLink(action:'uploadTagsFragment')}"
             };
-            showModal(options);
+            imglib.showModal(options);
         });
 
         $("#searchTags").keydown(function(e) {
@@ -109,7 +109,7 @@
                     loadTagTree();
                 }
             }
-            showModal(opts);
+            imglib.showModal(opts);
         }
     }
 
@@ -123,7 +123,7 @@
                     loadTagTree();
                 }
             }
-            showModal(opts);
+            imglib.showModal(opts);
         }
     }
 
@@ -136,7 +136,7 @@
                 loadTagTree();
             }
         }
-        showModal(opts);
+        imglib.showModal(opts);
     }
 
     function loadTagTree() {

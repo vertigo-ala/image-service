@@ -190,7 +190,7 @@
                             drawnItems.clearLayers();
                         }
                     };
-                    showModal(opts);
+                    imglib.showModal(opts);
                 });
 
                 viewer.on('draw:created', function (e) {

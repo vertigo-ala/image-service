@@ -91,7 +91,7 @@
                     loadTagTree();
                 }
             }
-            showModal(opts);
+            imglib.showModal(opts);
         }
     }
 
@@ -105,7 +105,7 @@
                     loadTagTree();
                 }
             }
-            showModal(opts);
+            imglib.showModal(opts);
         }
     }
 
@@ -118,7 +118,7 @@
                 loadTagTree();
             }
         }
-        showModal(opts);
+        imglib.showModal(opts);
     }
 
     function loadTagTree() {

@@ -36,7 +36,7 @@
                     }
                 }
             }
-            showModal(opts);
+            imglib.showModal(opts);
 
         });
 

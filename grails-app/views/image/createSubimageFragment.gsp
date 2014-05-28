@@ -13,7 +13,7 @@
 
     $("#btnCancelSubimage").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#btnCreateSubimage2").click(function(e) {
@@ -21,7 +21,7 @@
         var url = "${raw(createLink(controller:'webService', action:'createSubimage', id: imageInstance.imageIdentifier,  params:[x: x, y: y, width: width, height: height]))}";
         $.ajax(url).done(function(results) {
             if (results.success) {
-                hideModal();
+                imglib.hideModal();
             } else {
                 alert("Failed to create subimage: " + results.message);
             }

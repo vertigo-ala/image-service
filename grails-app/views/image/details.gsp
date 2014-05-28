@@ -220,7 +220,7 @@
         $("#btnAddToAlbum").click(function(e) {
 
             e.preventDefault();
-            selectAlbum(function(albumId) {
+            imglib.selectAlbum(function(albumId) {
                 $.ajax("${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
                     if (result.success) {
                         alert("Image add to album");
@@ -265,7 +265,7 @@
                 }
             };
 
-            areYouSure(options);
+            imglib.areYouSure(options);
         });
 
         $(".image-info-button").each(function() {

@@ -55,7 +55,7 @@
                     }
                 };
 
-                showModal(options);
+                imglib.showModal(options);
             });
 
             renderFieldDefinitions();
@@ -91,7 +91,7 @@
                             }
                         };
 
-                        showModal(options);
+                        imglib.showModal(options);
                     }
                 });
 

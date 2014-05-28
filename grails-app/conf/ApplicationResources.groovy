@@ -1,7 +1,7 @@
 modules = {
 
     application {
-        dependsOn 'jquery'
+        dependsOn 'jquery','imglib'
         resource url:'js/application.js'
     }
 
@@ -52,6 +52,11 @@ modules = {
         dependsOn "bootstrap, jquery"
         resource url: 'js/bootstrap-switch/bootstrap-switch.css'
         resource url: 'js/bootstrap-switch/bootstrap-switch.js'
+    }
+
+    imglib {
+        dependsOn "jquery"
+        resource url: 'js/images.js'
     }
 
 }

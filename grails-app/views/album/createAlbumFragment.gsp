@@ -32,7 +32,7 @@
 
     $("#btnCancelCreateAlbum").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#saveAlbumForm").submit(function(e) {

@@ -60,7 +60,7 @@
                 errorDiv.html(data.errorMessage);
                 errorDiv.css("display",'block');
             } else {
-                hideModal();
+                imglib.hideModal();
             }
         });
     });

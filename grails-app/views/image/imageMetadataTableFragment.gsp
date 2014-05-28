@@ -41,7 +41,7 @@
                 }
             }
         }
-        showModal(opts);
+        imglib.showModal(opts);
     });
 
     $(".btnDeleteMetadataItem").click(function(e) {

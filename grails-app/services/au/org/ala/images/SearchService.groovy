@@ -349,6 +349,9 @@ class SearchService {
                     }
                 }
             }
+            if (!params.sort) {
+                order("id", "desc") // stable sort order
+            }
             projections {
                 property("id")
             }
@@ -388,6 +391,9 @@ class SearchService {
                         }
                     }
                 }
+            }
+            if (!params.sort) {
+                order("id", "desc") // stable sort order
             }
         }
         return l

@@ -55,7 +55,7 @@
         e.preventDefault();
         var criteriaId = $(this).parents("tr[searchCriteriaId]").attr("searchCriteriaId");
         if (criteriaId) {
-            showModal({
+            imglib.showModal({
                 url: "${createLink(action:'editSearchCriteriaFragment')}?criteriaId=" + criteriaId,
                 title: "Edit search criteria",
                 height: 520,

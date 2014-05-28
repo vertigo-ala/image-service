@@ -9,6 +9,7 @@
             margin-bottom: 5px;
         }
     </style>
+    <r:require module="jstree" />
 </head>
 
 <body class="content">
@@ -63,7 +64,7 @@
                 url: "${createLink(action:'createAlbumFragment')}",
                 title: "Create a new album"
             }
-            showModal(options);
+            imglib.showModal(options);
         });
 
         $(".albumLink").click(function(e) {

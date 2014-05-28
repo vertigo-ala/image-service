@@ -27,7 +27,7 @@
 <script>
     $("#btnCancelUpload").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
 </script>

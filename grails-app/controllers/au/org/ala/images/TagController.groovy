@@ -21,5 +21,9 @@ class TagController {
         [tagInstance: tag]
     }
 
+    def selectTagFragment() {
+        [:]
+    }
+
 
 }

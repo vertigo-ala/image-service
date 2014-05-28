@@ -116,7 +116,7 @@
                     title: 'Add images to album',
                     url: "${createLink(action:'addToAlbumFragment')}"
                 };
-                showModal(options);
+                imglib.showModal(options);
 
             });
 
@@ -145,7 +145,7 @@
                         window.location = "${createLink(controller: 'selection', action: 'deleteSelected')}";
                     }
                 }
-                areYouSure(options);
+                imglib.areYouSure(options);
             });
 
         });

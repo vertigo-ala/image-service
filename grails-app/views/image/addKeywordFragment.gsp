@@ -17,7 +17,7 @@
 
     $("#btnCancelAddKeyword").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#btnAddNewKeyword").click(function(e) {
@@ -25,7 +25,7 @@
         var keyword = $("#keyword").val();
         if (keyword) {
             $.ajax("${createLink(controller:'webService', action:'addKeyword', id: imageInstance.imageIdentifier)}?keyword=" + keyword).done(function() {
-                hideModal();
+                imglib.hideModal();
             });
         }
     });

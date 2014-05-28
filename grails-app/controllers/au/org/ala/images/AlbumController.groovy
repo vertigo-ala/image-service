@@ -32,7 +32,12 @@ class AlbumController {
             countMap[arr[1]] = arr[0]
         }
 
-        [albums: albums, countMap: countMap, selectedAlbum: albums?.get(0)]
+        def selectedAlbum = Album.get(params.int("id"))
+        if (!selectedAlbum && albums?.size() > 0) {
+            selectedAlbum = albums.get(0)
+        }
+
+        [albums: albums, countMap: countMap, selectedAlbum: selectedAlbum]
     }
 
     def userContextFragment() {
@@ -125,6 +130,56 @@ class AlbumController {
             return
         }
         render([success:false] as JSON)
+    }
+
+    def ajaxScheduleTileGeneration() {
+        def album = Album.get(params.int("id"))
+        if (album) {
+            albumService.scheduleTileRegeneration(album)
+            render([success:true] as JSON)
+            return
+        }
+        render([success:false, message:'Missing or invalid album id'] as JSON)
+    }
+
+    def ajaxScheduleThumbnailGeneration() {
+        def album = Album.get(params.int("id"))
+        if (album) {
+            albumService.scheduleThumbnailRegeneration(album)
+            render([success:true] as JSON)
+            return
+        }
+        render([success:false, message:'Missing or invalid album id'] as JSON)
+    }
+
+    def deleteAllImages() {
+        def album = Album.get(params.int("id"))
+        if (album) {
+            def userId = AuthenticationUtils.getUserId(request) ?: "<unknown>"
+            albumService.deleteAllImages(album, userId)
+            redirect(action:'index', id: album.id)
+            return
+        }
+
+        flash.message = "Missing or invalid album id!"
+        redirect(action:index())
+    }
+
+    def ajaxTagImages() {
+        def album = Album.get(params.int("id"))
+        def tag = Tag.get(params.int("tagId"))
+        if (album) {
+            if (tag) {
+                def userId = AuthenticationUtils.getUserId(request) ?: "<unknown>"
+                albumService.tagImages(album, tag, userId)
+                render([success: true] as JSON)
+                return
+            } else {
+                render([success: false, message: 'Missing or invalid tag id'] as JSON)
+            }
+        } else {
+            render([success: false, message: 'Missing or invalid album id'] as JSON)
+        }
     }
 
 }

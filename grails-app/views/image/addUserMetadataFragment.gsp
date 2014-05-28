@@ -26,7 +26,7 @@
 
     $("#btnCancelAddUserMetaData").click(function(e) {
         e.preventDefault();
-        hideModal();
+        imglib.hideModal();
     });
 
     $("#btnAddNewUserMetadata").click(function(e) {
@@ -37,7 +37,7 @@
             key = encodeURIComponent(key);
             value = encodeURIComponent(value);
             $.ajax("${createLink(controller:'webService', action:'addUserMetadataToImage', id: imageInstance.imageIdentifier)}?key=" + key + "&value=" + value).done(function() {
-                hideModal();
+                imglib.hideModal();
             });
         }
     });

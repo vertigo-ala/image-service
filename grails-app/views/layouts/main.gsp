@@ -55,6 +55,14 @@
     </style>
 
         <r:script disposition='head'>
+
+            var IMAGES_CONF = {
+                areYouSureUrl: "${createLink(controller:"dialog", action: "areYouSureFragment")}",
+                selectAlbumUrl: "${createLink(controller: 'album', action:'selectAlbumFragment')}",
+                selectTagUrl: "${createLink(controller: 'tag', action: 'selectTagFragment')}",
+                imageTagsTooltipUrl: "${createLink(controller:'image', action:"imageTagsTooltipFragment")}"
+            };
+
             // initialise plugins
             jQuery(function () {
                 // autocomplete on navbar search input
@@ -102,51 +110,6 @@
 
             });
 
-            function showModal(options) {
-
-                var opts = {
-                    url: options.url ? options.url : false,
-                    id: options.id ? options.id : 'modal_element_id',
-                    height: options.height ? options.height : 500,
-                    width: options.width ? options.width : 600,
-                    title: options.title ? options.title : 'Modal Title',
-                    hideHeader: options.hideHeader ? options.hideHeader : false,
-                    onClose: options.onClose ? options.onClose : null,
-                    onShown: options.onShown ? options.onShown : null
-                }
-
-                var html = "<div id='" + opts.id + "' class='modal hide' role='dialog' aria-labelledby='modal_label_" + opts.id + "' aria-hidden='true' style='width: " + opts.width + "px; margin-left: -" + opts.width / 2 + "px;overflow: hidden'>";
-                if (!opts.hideHeader) {
-                    html += "<div class='modal-header'><button type='button' class='close' data-dismiss='modal' aria-hidden='true'>x</button><h3 id='modal_label_" + opts.id + "'>" + opts.title + "</h3></div>";
-                }
-                html += "<div class='modal-body' style='max-height: " + opts.height + "px'>Loading...</div></div>";
-
-                $("body").append(html);
-
-                var selector = "#" + opts.id;
-
-                $(selector).on("hidden", function() {
-                    $(selector).remove();
-                    if (opts.onClose) {
-                        opts.onClose();
-                    }
-                });
-
-                $(selector).on("shown", function() {
-                    if (opts.onShown) {
-                        opts.onShown();
-                    }
-                });
-
-                $(selector).modal({
-                    remote: opts.url
-                });
-            }
-
-            function hideModal() {
-                $("#modal_element_id").modal('hide');
-            }
-
             function updateSelectionContext() {
                 $.ajax("${createLink(controller:'selection', action:'userContextFragment')}").done(function(content) {
                     $("#selectionContext").html(content);
@@ -164,36 +127,10 @@
                 return '<img src="../images/spinner.gif"/>&nbsp;Loading...';
             }
 
-            var areYouSureOptions = {};
-
-            function areYouSure(options) {
-                var modalOptions = {
-                    url:"${createLink(controller:"dialog", action: "areYouSureFragment")}?message=" + encodeURIComponent(options.message),
-                    title: "Are you sure?"
-                }
-
-                areYouSureOptions.affirmativeAction = options.affirmativeAction;
-                areYouSureOptions.negativeAction = options.negativeAction;
-
-                showModal(modalOptions);
-            }
-
             $(document).ready(function() {
                 updateSelectionContext();
                 updateAlbums();
             });
-
-            var onAlbumSelected = null;
-
-            function selectAlbum(onSelectFunction) {
-                var opts = {
-                    title: "Select an album",
-                    url: "${createLink(controller: 'album', action:'selectAlbumFragment')}"
-                };
-                onAlbumSelected = onSelectFunction;
-
-                showModal(opts);
-            }
 
         </r:script>
 

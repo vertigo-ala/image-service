@@ -144,25 +144,6 @@
             }
         });
 
-        $(".image-tags-button").each(function() {
-            var imageId = $(this).closest("[imageId]").attr("imageId");
-            if (imageId) {
-                $(this).qtip({
-                    content: {
-                        text: function(event, api) {
-                            $.ajax("${createLink(controller:'image', action:"imageTagsTooltipFragment")}/" + imageId).then(function(content) {
-                                    api.set("content.text", content);
-                                },
-                                function(xhr, status, error) {
-                                    api.set("content.text", status + ": " + error);
-                                });
-                            }
-                    }
-                });
-            }
-        });
-
-
     });
 
     function selectAllOnPage() {
