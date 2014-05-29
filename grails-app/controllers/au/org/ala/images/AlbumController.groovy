@@ -9,6 +9,7 @@ import grails.converters.JSON
 class AlbumController {
 
     def albumService
+    def selectionService
 
     def index() {
         def userId = AuthenticationUtils.getUserId(request)
@@ -87,6 +88,8 @@ class AlbumController {
     }
 
     def albumDetailsFragment() {
+
+        def userId = AuthenticationUtils.getUserId(request)
         def album = Album.get(params.int("id"))
         if (!album) {
             render("<div />")
@@ -100,7 +103,8 @@ class AlbumController {
         }
 
         def imageList = albumImages*.image
-        [album: album, albumImages: albumImages, imageList: imageList]
+        def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
+        [album: album, albumImages: albumImages, imageList: imageList, selectedImageMap: selectedImageMap]
     }
 
     def ajaxRemoveImageFromAlbum() {
