@@ -130,7 +130,13 @@ class AdminController {
     }
 
     def duplicates() {
-        def c = Image.executeQuery("select contentMD5Hash, count(*) from Image group by contentMD5Hash having count(*) > 1 order by count(*)")
+        def queryParams = [:]
+        queryParams.max = params.max ?: 10
+        queryParams.offset = params.offset ?: 0
+
+        def allCounts = Image.executeQuery("select count(contentMD5Hash) from Image group by contentMD5Hash having count(*) > 1")
+        def c = Image.executeQuery("select contentMD5Hash, count(*) from Image group by contentMD5Hash having count(*) > 1 order by count(*) desc", queryParams)
+
         // find an exemplar image for each set of duplicates
         def results = []
         c.each {
@@ -139,7 +145,7 @@ class AdminController {
             results << [image: image, hash: hash, count:it[1]]
         }
 
-        [results: results?.sort { 1/it.count }]
+        [results: results, totalCount: allCounts.size()]
     }
 
     def settings() {

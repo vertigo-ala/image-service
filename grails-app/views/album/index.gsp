@@ -35,7 +35,7 @@
 
                             <div class="pull-right">
                                 <button class="btn btn-danger btn-mini btnDeleteAlbum"><i class="icon-remove icon-white"></i></button>
-                                <button class="btn btn-mini"><i class="icon-edit"></i></button>
+                                <button class="btn btn-mini btnEditAlbum"><i class="icon-edit"></i></button>
                             </div>
                         </li>
                     </g:each>
@@ -61,10 +61,22 @@
         $("#btnShowAddAlbum").click(function(e) {
             e.preventDefault();
             var options = {
-                url: "${createLink(action:'createAlbumFragment')}",
+                url: "${createLink(action:'editAlbumFragment')}",
                 title: "Create a new album"
             }
             imglib.showModal(options);
+        });
+
+        $(".btnEditAlbum").click(function(e) {
+            e.preventDefault();
+            var albumId = $(this).closest("[albumId]").attr("albumId");
+            if (albumId) {
+                var options = {
+                    url: "${createLink(action: 'editAlbumFragment')}/" + albumId,
+                    title: "Edit album details"
+                };
+                imglib.showModal(options);
+            };
         });
 
         $(".albumLink").click(function(e) {

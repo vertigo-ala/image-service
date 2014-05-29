@@ -1,10 +1,12 @@
 package au.org.ala.images
 
 import grails.transaction.Transactional
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 @Transactional
 class AlbumService {
 
+    def selectionService
     def imageService
     def tagService
 
@@ -119,6 +121,12 @@ class AlbumService {
                 }
             }
         }
+    }
+
+    def getUserAlbums(String userId, GrailsParameterMap params) {
+        params.sort = params.sort ?: 'name'
+        def albums = Album.findAllByUserIdAndNameNotEqual(userId, selectionService.SELECTION_ALBUM_NAME, params)
+        return albums
     }
 
 }

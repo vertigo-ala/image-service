@@ -8,13 +8,11 @@ import grails.converters.JSON
 @AlaSecured(value = [CASRoles.ROLE_USER], redirectUri = '/')
 class AlbumController {
 
-    def auditService
     def albumService
-
 
     def index() {
         def userId = AuthenticationUtils.getUserId(request)
-        def albums = Album.findAllByUserId(userId, [sort:'name'])
+        def albums = albumService.getUserAlbums(userId, params)
 
         def c = AlbumImage.createCriteria()
         def counts = c.list() {
@@ -48,12 +46,14 @@ class AlbumController {
             return
         }
 
-        def albums = Album.findAllByUserId(userId, [sort:'name'])
-
+        def albums = albumService.getUserAlbums(userId, params)
         [albums: albums]
     }
 
-    def createAlbumFragment() {
+    def editAlbumFragment() {
+        def album = Album.get(params.int("id"))
+        // null album is ok - means we are creating a new one...
+        [album: album]
     }
 
 
@@ -116,9 +116,35 @@ class AlbumController {
         def userId = AuthenticationUtils.getUserId(request)
         def albums = []
         if (userId) {
-            albums = Album.findAllByUserId(userId, [sort:'name'])
+            albums = albumService.getUserAlbums(userId, params)
         }
         [albums: albums]
+    }
+
+    def ajaxCreateNewAlbum() {
+        def userId = AuthenticationUtils.getUserId(request)
+        if (!userId) {
+            render([success:false, message:'Missing or invalid user id!'] as JSON)
+            return
+        }
+
+        def albumName = params.albumName
+        if (!albumName) {
+            render([success:false, message:'Missing or invalid album name!'] as JSON)
+            return
+        }
+        
+        def existing = Album.findByUserIdAndName(userId, albumName)
+
+        if (existing) {
+            render([success:false, message:"An album called ${albumName} already exists!"] as JSON)
+            return
+        }
+
+        def album = new Album(name: albumName, userId: userId, externalIdentifier: UUID.randomUUID().toString(), description: params.description)
+        album.save(flush: true, failOnError: true)
+
+        render([success:true, albumId: album.id, message:"Album called ${albumName} created"] as JSON)
     }
 
     def ajaxAddImageToAlbum() {

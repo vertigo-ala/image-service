@@ -4,11 +4,46 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.http.HttpSession
+import java.lang.reflect.Field
 import java.util.regex.Pattern
 
 class SearchService {
 
     public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
+
+    def getPropertyName(String fieldName) {
+        def fields = Image.class.declaredFields
+
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(SearchableProperty)) {
+                if (field.name.equalsIgnoreCase(fieldName)) {
+                    return field.name
+                }
+            }
+        }
+        return null
+    }
+
+    def searchByImageProperty(String query, GrailsParameterMap params) {
+
+        def images = []
+        def totalCount = 0
+
+        if (query.contains("=")) {
+
+            def field = getPropertyName(query.substring(0, query.indexOf("=")))
+            if (field) {
+                def value = query.substring(query.indexOf("=") + 1)?.toLowerCase()
+                value = value.replaceAll('[*]', '%')
+                def c = Image.createCriteria()
+                images = c.list(params) {
+                    ilike(field, value)
+                }
+            }
+        }
+
+        return [images: images, totalCount: images.totalCount]
+    }
 
     def searchByMetadataQuery(String query, GrailsParameterMap params) {
 
@@ -38,7 +73,6 @@ class SearchService {
         }
 
         return [images: images, totalCount: totalCount]
-
     }
 
     def simpleSearch(String query, GrailsParameterMap params) {
@@ -46,6 +80,11 @@ class SearchService {
         if (query.contains(":")) {
             // metadata search
             return searchByMetadataQuery(query, params)
+        }
+
+        if (query.contains("=")) {
+            // property value search
+            return searchByImageProperty(query, params)
         }
 
         query = query.toLowerCase()

@@ -75,7 +75,7 @@
             </tr>
         </thead>
         <tbody>
-            <g:each in="${selectedImages*.image}" var="image" status="i">
+            <g:each in="${selectedImages}" var="image" status="i">
                 <tr imageId="${image.id}">
                     <td>${i.toInteger() + 1 + params.offset.toInteger()}</td>
                     <td>
@@ -112,12 +112,9 @@
 
             $("#btnAddToAlbum").click(function(e) {
                 e.preventDefault();
-                var options = {
-                    title: 'Add images to album',
-                    url: "${createLink(action:'addToAlbumFragment')}"
-                };
-                imglib.showModal(options);
-
+                imglib.selectAlbum(function(albumId) {
+                    window.location = "${createLink(controller:'selection', action:'addSelectionToAlbum')}?albumId=" + albumId;
+                });
             });
 
             $("#btnClearSelection").click(function(e) {

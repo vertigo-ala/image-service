@@ -87,10 +87,7 @@ class SelectionController {
             return
         }
 
-        def selected = SelectedImage.findAllByUserId(userId)
-        selected?.each {
-            it.delete()
-        }
+        selectionService.clearSelection(userId)
         render([success:true] as JSON)
     }
 
@@ -101,10 +98,9 @@ class SelectionController {
             return
         }
 
-        def selected = SelectedImage.findAllByUserId(userId)
         def results = [success: true, images:[]]
-        selected.each { selectedImage ->
-            results.images << imageService.getImageInfoMap(selectedImage.image)
+        selectionService.withSelectedImages(userId) { image ->
+            results.images << imageService.getImageInfoMap(image)
         }
         render(results as JSON)
     }
@@ -113,7 +109,7 @@ class SelectionController {
         def userId = AuthenticationUtils.getUserId(request)
         def selectionCount = 0
         if (userId) {
-            selectionCount = SelectedImage.countByUserId(userId)
+            selectionCount = selectionService.selectionSize(userId)
         }
         [userId: userId, selectionCount: selectionCount]
     }
@@ -136,9 +132,9 @@ class SelectionController {
             params.offset = params.offset ?: 0
 
             def ct = new CodeTimer("List Selected Images")
-            selected = SelectedImage.findAllByUserId(userId, params)
+            selected = selectionService.getSelectedImages(userId, params)
+            total = selectionService.selectionSize(userId)
 
-            total = SelectedImage.countByUserId(userId)
             ct.stop(true)
         }
 
@@ -151,20 +147,12 @@ class SelectionController {
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
 
+        def count = 0
         if (userId) {
-            selected = SelectedImage.findAllByUserId(userId, params)
-        }
-
-        int count = 0
-        if (selected) {
-            selected.each {
-                imageService.deleteImage(it.image, AuthenticationUtils.getUserId(request) ?: '<unknown>')
-                count++
-            }
+            count = selectionService.deleteSelectedImages(userId)
         }
 
         flash.message = "${count} images deleted"
-
         redirect(action:'list')
     }
 
@@ -174,18 +162,11 @@ class SelectionController {
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
         if (userId) {
-            selected = SelectedImage.findAllByUserId(userId)
+            def album = selectionService.getOrCreateUserSelection(userId)
+            albumService.scheduleThumbnailRegeneration(album)
         }
 
-        int count = 0
-        if (selected) {
-            selected.each {
-                imageService.scheduleThumbnailGeneration(it.image.id)
-                count++
-            }
-        }
-
-        flash.message = "Scheduled thumbnail generation for ${count} images."
+        flash.message = "Scheduled thumbnail generation for selected images."
 
         redirect(action:'list')
     }
@@ -196,42 +177,25 @@ class SelectionController {
         def userId = AuthenticationUtils.getUserId(request)
         def selected = []
         if (userId) {
-            selected = SelectedImage.findAllByUserId(userId)
+            def album = selectionService.getOrCreateUserSelection(userId)
+            albumService.scheduleTileRegeneration(album)
         }
 
-        int count = 0
-        if (selected) {
-            selected.each {
-                imageService.scheduleTileGeneration(it.image.id)
-                count++
-            }
-        }
-
-        flash.message = "Scheduled tile generation for ${count} images."
+        flash.message = "Scheduled tile generation for selected images."
 
         redirect(action:'list')
 
     }
 
     @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)
-    def addToAlbumFragment() {
-        def userId = AuthenticationUtils.getUserId(request)
-        def albums = Album.findAllByUserId(userId)
-        [albums: albums]
-    }
-
-    @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)
     def addSelectionToAlbum() {
 
         def userId = AuthenticationUtils.getUserId(request)
-        def album = Album.get(params.int('album'))
+        def album = Album.get(params.int('albumId'))
         if (album) {
-            def selected = SelectedImage.findAllByUserId(userId)
-            selected?.each { image ->
-                albumService.addImageToAlbum(album, image.image)
+            selectionService.withSelectedImages(userId) { Image image ->
+                albumService.addImageToAlbum(album, image)
             }
-
-
         } else {
             flash.errorMessage = "Album not found, or no album specified!"
         }

@@ -15,6 +15,27 @@
         border: 1px solid #ddd;
     }
 
+    input[type=checkbox] { display:none; } /* to hide the checkbox itself */
+    input[type=checkbox] + label:before {
+        font-family: FontAwesome, Arial, san-serif;
+        font-size: 14px;
+        display: inline-block;
+        opacity: 0.50;
+    }
+
+    .selection-header label {
+        margin-bottom: 0;
+    }
+
+    input[type=checkbox] + label:before { content: "\f096"; } /* unchecked icon */
+    input[type=checkbox] + label:before { letter-spacing: 10px; } /* space between checkbox and label */
+
+    input[type=checkbox]:checked + label:before {
+        content: "\f046";
+        opacity: 1;
+    } /* checked icon */
+    input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
+
 </style>
 
 <table style="width: 100%;">
@@ -39,6 +60,10 @@
                                 </li>
                                 <li>
                                     <a href="#" id="btnDeselectAllOnPage">Deselect all on page</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="#" id="btnClearSelection">Clear selection</a>
                                 </li>
                             </g:if>
                             <g:if test="${toolButtons}">
@@ -70,8 +95,9 @@
         <li class="span2">
             <div class="thumbnail" imageId="${image.id}" style="background: white">
                 <g:if test="${allowSelection == true}">
-                    <div class="">
+                    <div class="selection-header">
                         <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}" checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
+                        <label for="chkSelectImage${image.id}"></label>
                     </div>
                 </g:if>
                 <g:if test="${headerTemplate}">
@@ -99,6 +125,13 @@
 <script>
 
     $(document).ready(function() {
+
+        $("#btnClearSelection").click(function(e) {
+            e.preventDefault();
+            $.ajax("${createLink(controller: 'selection', action: 'clearSelection')}").done(function() {
+                location.reload(true);
+            });
+        });
 
         $(".chkSelectImage").change(function(e) {
             var imageId = $(this).closest("[imageId]").attr("imageId");
