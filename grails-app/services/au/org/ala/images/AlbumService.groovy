@@ -129,4 +129,18 @@ class AlbumService {
         return albums
     }
 
+    QueryResults<Image> getAlbumImages(Album album, Map params) {
+        def c = AlbumImage.createCriteria()
+        def results = new QueryResults<Image>()
+        results.list = c.list(params) {
+            eq("album", album)
+            projections {
+                property("image")
+            }
+        }
+
+        results.totalCount = AlbumImage.countByAlbum(album)
+        return results
+    }
+
 }

@@ -8,6 +8,7 @@ import grails.converters.JSON
 @AlaSecured(value = [CASRoles.ROLE_USER], redirectUri = '/')
 class AlbumController {
 
+    def imageService
     def albumService
     def selectionService
 
@@ -97,14 +98,9 @@ class AlbumController {
         }
         params.max = params.max ?: 48
 
-        def c = AlbumImage.createCriteria()
-        def albumImages = c.list(params) {
-            eq('album', album)
-        }
-
-        def imageList = albumImages*.image
+        def imageList = albumService.getAlbumImages(album, params)
         def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
-        [album: album, albumImages: albumImages, imageList: imageList, selectedImageMap: selectedImageMap]
+        [album: album, imageList: imageList.list, selectedImageMap: selectedImageMap, totalCount: imageList.totalCount]
     }
 
     def ajaxRemoveImageFromAlbum() {
@@ -226,6 +222,21 @@ class AlbumController {
         } else {
             render([success: false, message: 'Missing or invalid album id'] as JSON)
         }
+    }
+
+    def exportAsCSV() {
+        def album = Album.get(params.int("id"))
+        if (!album) {
+            flash.message = "Missing or invalid album id!"
+            redirect(controller: 'album')
+            return
+        }
+        def previewData = []
+        def results = albumService.getAlbumImages(album, [max: 10])
+        results.list.each { image ->
+            previewData << ['imageUrl': imageService.getImageUrl(image.imageIdentifier)]
+        }
+        [album: album, previewData: previewData]
     }
 
 }

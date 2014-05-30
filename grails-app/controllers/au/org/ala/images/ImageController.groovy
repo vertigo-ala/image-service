@@ -55,23 +55,22 @@ class ImageController {
     }
 
     def list() {
-        def images
+
+        QueryResults<Image> results
 
         params.offset = params.offset ?: 0
         params.max = params.max ?: 48
         params.sort = params.sort ?: 'dateTaken'
 
         def query = params.q as String
-        int totalCount = 0
 
         if (query) {
-            def results = searchService.simpleSearch(query, params)
-
-            images = results?.images
-            totalCount = results?.totalCount
+            results = searchService.simpleSearch(query, params)
         } else {
-            images = Image.list(params)
-            totalCount = images.totalCount
+            results = new QueryResults<Image>()
+            def images = Image.list(params)
+            results.list = images
+            results.totalCount = images.totalCount
         }
 
         def userId = AuthenticationUtils.getUserId(request)
@@ -79,8 +78,7 @@ class ImageController {
         def isLoggedIn = StringUtils.isNotEmpty(userId)
         def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
 
-
-        [images: images, q: query, totalImageCount: totalCount, isLoggedIn: isLoggedIn, selectedImageMap: selectedImageMap]
+        [images: results.list, q: query, totalImageCount: results.totalCount, isLoggedIn: isLoggedIn, selectedImageMap: selectedImageMap]
     }
 
     def proxyImage() {

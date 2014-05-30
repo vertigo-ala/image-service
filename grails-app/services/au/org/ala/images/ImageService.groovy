@@ -165,14 +165,11 @@ class ImageService {
         if (!images || !key) {
             return [:]
         }
-
-        def ct = new CodeTimer("getMetadataItemValuesForImages (key ${key}) for ${images.size()} images")
         def results = ImageMetaDataItem.executeQuery("select md.value, md.image.id from ImageMetaDataItem md where md.image in (:images) and lower(name) = :key and source=:source", [images: images, key: key.toLowerCase(), source: source])
         def fr = [:]
         results.each {
             fr[it[1]] = it[0]
         }
-        ct.stop(true)
         return fr
     }
 
@@ -192,11 +189,9 @@ class ImageService {
         return imageStoreService.getImageSquareThumbUrl(imageIdentifier, backgroundColor)
     }
 
-
     public String getImageTilesRootUrl(String imageIdentifier) {
         return imageStoreService.getImageTilesRootUrl(imageIdentifier)
     }
-
 
     private static Date getImageTakenDate(byte[] bytes) {
         try {

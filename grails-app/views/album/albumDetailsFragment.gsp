@@ -21,7 +21,7 @@
 
 </style>
 
-<g:set var="buttons" value="${[[id:'btnExport', label:'Export links'],[id:'divider'],[id:'btnAddTag', label:'Tag images'], [id:'btnAddMetaData', label:'Attach meta data']]}" />
+<g:set var="buttons" value="${[[id:'btnExportAlbum', label:'Export album'], [id:'divider'],[id:'btnAddTag', label:'Tag images'], [id:'btnAddMetaData', label:'Attach meta data']]}" />
 <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_ADMIN}">
     <%
         def adminButtons = []
@@ -35,9 +35,14 @@
 </auth:ifAnyGranted>
 
 
-<g:render template="/image/imageThumbnails" model="${[images: imageList, totalImageCount: albumImages.totalCount, allowSelection: true, thumbsTitle:"Album '${album.name}' (${albumImages.totalCount} images)", paginateActionId: album.id, footerTemplate:'imageThumbFooter', toolButtons: buttons, selectedImageMap: selectedImageMap]}" />
+<g:render template="/image/imageThumbnails" model="${[images: imageList, totalImageCount: totalCount, allowSelection: true, thumbsTitle:"Album '${album.name}' (${totalCount} images)", paginateActionId: album.id, footerTemplate:'imageThumbFooter', toolButtons: buttons, selectedImageMap: selectedImageMap]}" />
 
 <script>
+
+    $("#btnExportAlbum").click(function(e) {
+        e.preventDefault();
+        window.location = "${createLink(controller:'album', action: 'exportAsCSV', id:album.id)}";
+    });
 
     $(".btnRemoveFromAlbum").click(function(e) {
         e.preventDefault();
