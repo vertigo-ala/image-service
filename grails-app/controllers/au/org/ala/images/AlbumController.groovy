@@ -4,6 +4,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
+import org.grails.plugins.csv.CSVWriter
 
 @AlaSecured(value = [CASRoles.ROLE_USER], redirectUri = '/')
 class AlbumController {
@@ -11,6 +12,7 @@ class AlbumController {
     def imageService
     def albumService
     def selectionService
+    def userPreferencesService
 
     def index() {
         def userId = AuthenticationUtils.getUserId(request)
@@ -224,19 +226,114 @@ class AlbumController {
         }
     }
 
-    def exportAsCSV() {
+    def previewCSVExport() {
+
+        def userId = AuthenticationUtils.getUserId(request)
         def album = Album.get(params.int("id"))
         if (!album) {
             flash.message = "Missing or invalid album id!"
             redirect(controller: 'album')
             return
         }
-        def previewData = []
-        def results = albumService.getAlbumImages(album, [max: 10])
-        results.list.each { image ->
-            previewData << ['imageUrl': imageService.getImageUrl(image.imageIdentifier)]
+
+        def columnDefinitions = userPreferencesService.getUserColumnDefinitions(userId)
+        def previewData = albumService.getAlbumTabularData(album, columnDefinitions, params.max ?: 10)
+
+        [album: album, previewData: previewData, columnDefinitions: columnDefinitions]
+    }
+
+    def addColumnDefinitionFragment() {
+
+        def columnDefinitions = []
+        def fields = Image.class.declaredFields
+        fields.each { field ->
+            if (field.isAnnotationPresent(SearchableProperty)) {
+                columnDefinitions << new CSVColumnDefintion(columnType: CSVColumnType.property.toString(), columnName: field.name)
+            }
         }
-        [album: album, previewData: previewData]
+        def c = ImageMetaDataItem.createCriteria()
+        def metadataNames = c.list {
+            projections {
+                distinct("name")
+            }
+        }
+
+        metadataNames?.sort( { it.toLowerCase() })?.each { key ->
+            columnDefinitions << new CSVColumnDefintion(columnType: CSVColumnType.metadata.toString(), columnName: key)
+        }
+
+        [columnDefinitions:columnDefinitions, albumId: params.id]
+    }
+
+    def addColumnDefinition() {
+        def userId = AuthenticationUtils.getUserId(request)
+        def coldefstr = params.columndef
+
+        if (userId && coldefstr) {
+            def coldef = CSVColumnDefintion.fromString(coldefstr)
+            if (coldef) {
+                def columnDefinitions = userPreferencesService.getUserColumnDefinitions(userId)
+                columnDefinitions << coldef
+                userPreferencesService.saveUserColumnDefintions(userId, columnDefinitions)
+            }
+        }
+
+        redirect(action:'previewCSVExport', id: params.id)
+    }
+
+    def removeColumnDefinition() {
+        def userId = AuthenticationUtils.getUserId(request)
+        def columndefid = params.columndefid
+
+        if (userId && columndefid) {
+            def columnDefinitions = userPreferencesService.getUserColumnDefinitions(userId)
+            columnDefinitions.removeAll {
+                it.id == columndefid
+            }
+            userPreferencesService.saveUserColumnDefintions(userId, columnDefinitions)
+        }
+
+        redirect(action:'previewCSVExport', id: params.id)
+    }
+
+    def exportAsCSV() {
+        def userId = AuthenticationUtils.getUserId(request)
+        def album = Album.get(params.int("id"))
+        if (!album) {
+            flash.message = "Missing or invalid album id!"
+            redirect(controller: 'album')
+            return
+        }
+
+        def columnDefinitions = userPreferencesService.getUserColumnDefinitions(userId)
+        def data = albumService.getAlbumTabularData(album, columnDefinitions)
+
+        response.setHeader("Content-disposition", "attachment;filename=${album.name}.csv")
+        response.contentType = "text/csv"
+
+        def bos = new OutputStreamWriter(response.outputStream)
+
+        def writer = new CSVWriter(bos, {
+            for (int i = 0; i < columnDefinitions.size(); ++i) {
+
+                imageUrl {
+                    it.imageUrl
+                }
+
+                def col = columnDefinitions[i]
+                "${col.columnName}" {
+                    it[col.columnName]
+                }
+            }
+        })
+
+        data.each {
+            writer << it
+        }
+
+        bos.flush()
+        bos.close()
+
     }
 
 }

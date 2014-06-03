@@ -41,7 +41,7 @@
 
     $("#btnExportAlbum").click(function(e) {
         e.preventDefault();
-        window.location = "${createLink(controller:'album', action: 'exportAsCSV', id:album.id)}";
+        window.location = "${createLink(controller:'album', action: 'previewCSVExport', id:album.id)}";
     });
 
     $(".btnRemoveFromAlbum").click(function(e) {

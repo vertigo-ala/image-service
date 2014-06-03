@@ -53,6 +53,10 @@
                 text-decoration: none;
             }
 
+            .icon-grey {
+                opacity: 0.5;
+            }
+
     </style>
 
         <r:script disposition='head'>

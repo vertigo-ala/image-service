@@ -143,4 +143,52 @@ class AlbumService {
         return results
     }
 
+    public List<Map> getAlbumTabularData(Album album, List<CSVColumnDefintion> columnDefinitions, int maxRows = -1, int offset = 0) {
+        def tabularData = []
+        if (!album) {
+            tabularData
+        }
+
+        def params = [:]
+        if (maxRows > 0) {
+            params.max = maxRows
+        }
+
+        if (offset > 0) {
+            params.offset = offset
+        }
+
+        def albumImagesResults = getAlbumImages(album, params)
+        def metadataColumns = columnDefinitions.findAll({ it.columnType == 'metadata'})*.columnName
+
+        def metaDataRows = []
+        if (metadataColumns) {
+            def c = ImageMetaDataItem.createCriteria()
+            // retrieve just the relevant metadata rows
+            metaDataRows = c.list {
+                inList("image", albumImagesResults.list)
+                inList("name", metadataColumns)
+            }
+        }
+
+        def metaDataMappedbyImage = metaDataRows.groupBy {
+            it.image.id
+        }
+
+        albumImagesResults.list.each { image ->
+            def map =  ['imageUrl': imageService.getImageUrl(image.imageIdentifier)]
+            def imageMetadata = metaDataMappedbyImage[image.id]
+            columnDefinitions.each { colDef ->
+                if (colDef.columnType == 'property') {
+                    map[colDef.columnName] = image[colDef.columnName]
+                } else {
+                    map[colDef.columnName] = imageMetadata?.find({ it.name == colDef.columnName })?.value
+                }
+            }
+            tabularData << map
+        }
+
+        return tabularData
+    }
+
 }
