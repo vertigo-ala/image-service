@@ -3,18 +3,25 @@
 <html>
     <head>
         <meta name="layout" content="main"/>
-        <title>ALA Image Service - View Image</title>
+        <title>ALA Image Service - Image details</title>
         <style>
+
             .property-value {
                 font-weight: bold;
             }
+
+            .audiojs {
+                width: 100%;
+            }
+
         </style>
         <r:require module="bootstrap" />
         <r:require module="jstree" />
+        <r:require module="audiojs" />
     </head>
 
     <body class="content">
-        <img:headerContent title="Image Details ${imageInstance?.originalFilename ?: imageInstance?.id}">
+        <img:headerContent title="Image details ${imageInstance?.originalFilename ?: imageInstance?.id}">
             <%
                 pageScope.crumbs = [
                 ]
@@ -26,9 +33,15 @@
                     <ul class="thumbnails">
                         <li class="span12">
                             <div class="thumbnail" style="text-align: center">
+                                <g:if test="${isImage}">
                                 <a href="${createLink(action:'view', id:imageInstance.id)}">
                                     <img src="<img:imageThumbUrl imageId="${imageInstance?.imageIdentifier}"/>" />
                                 </a>
+                                </g:if>
+                                <g:if test="${imageInstance.mimeType?.toLowerCase()?.startsWith("audio/")}">
+                                    %{--// <img src="<img:imageThumbUrl imageId="${imageInstance?.imageIdentifier}"/>" />--}%
+                                    <audio src="<img:imageUrl imageId="${imageInstance.imageIdentifier}" />"></audio>
+                                </g:if>
                             </div>
                         </li>
                     </ul>
@@ -38,18 +51,24 @@
                         Loading&nbsp;<img:spinner />
                     </div>
                 </div>
-
+                <g:if test="${isImage}">
+                <div class="well well-small">
+                    <h4>Square thumbnails</h4>
+                    <g:each in="${squareThumbs}" var="thumbUrl">
+                        <image class="img-polaroid" src="${thumbUrl}" height="80px" width="50px" title="${thumbUrl}" style="margin: 5px"></image>
+                    </g:each>
+                </div>
+                </g:if>
             </div>
             <div class="span8">
                 <div class="well well-small">
-
                     <div class="tabbable">
                         <ul class="nav nav-tabs">
                             <li class="active">
                                 <a href="#tabProperties" data-toggle="tab">Image properties</a>
                             </li>
                             <li>
-                                <a href="#tabExif" data-toggle="tab">EXIF/TIFF</a>
+                                <a href="#tabExif" data-toggle="tab">Embedded</a>
                             </li>
                             <li>
                                 <a href="#tabUserDefined" data-toggle="tab">User Defined Metadata</a>
@@ -96,7 +115,6 @@
                                         <td class="property-name">Uploaded by</td>
                                         <td class="property-value"><img:userDisplayName userId="${imageInstance.uploader}" /></td>
                                     </tr>
-
                                     <g:if test="${imageInstance.dateTaken}">
                                         <tr>
                                             <td class="property-name">Date taken/created</td>
@@ -111,33 +129,26 @@
                                         <td class="property-name">Image Identifier</td>
                                         <td class="property-value">${imageInstance.imageIdentifier}</td>
                                     </tr>
-
                                     <tr>
                                         <td class="property-name">Zoom levels</td>
                                         <td class="property-value">${imageInstance.zoomLevels}</td>
                                     </tr>
-
                                     <tr>
                                         <td class="property-name">Image URL</td>
                                         <td class="property-value"><img:imageUrl imageId="${imageInstance.imageIdentifier}" /></td>
                                     </tr>
-
                                     <tr>
                                         <td class="property-name">MD5 Hash</td>
                                         <td class="property-value">${imageInstance.contentMD5Hash}</td>
                                     </tr>
-
                                     <tr>
                                         <td class="property-name">SHA1 Hash</td>
                                         <td class="property-value">${imageInstance.contentSHA1Hash}</td>
                                     </tr>
-
                                     <tr>
                                         <td class="property-name">Size on disk (including all artifacts)</td>
                                         <td class="property-value"><img:sizeInBytes size="${sizeOnDisk}" /></td>
                                     </tr>
-
-
 
                                     <g:if test="${subimages}">
                                         <tr>
@@ -158,7 +169,10 @@
 
                                     <tr>
                                         <td colspan="2">
-                                            <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
+
+                                            <g:if test="${isImage}">
+                                                <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
+                                            </g:if>
                                             <a class="btn btn-small" href="<img:imageUrl imageId="${imageInstance.imageIdentifier}" />" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
 
                                             <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
@@ -216,6 +230,8 @@
     </auth:ifAnyGranted>
 
     $(document).ready(function() {
+
+        audiojs.createAll();
 
         $("#btnAddToAlbum").click(function(e) {
 

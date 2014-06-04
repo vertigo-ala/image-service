@@ -24,13 +24,17 @@ class ImageBackgroundTask extends BackgroundTask {
             operations.each { ImageTaskType operation ->
                 switch (operation) {
                     case ImageTaskType.Thumbnail:
-                        def thumbDimensions = imageService.generateImageThumbnails(imageInstance.imageIdentifier)
-                        imageInstance.thumbWidth = thumbDimensions.width
-                        imageInstance.thumbHeight = thumbDimensions.height
-                        imageInstance.squareThumbSize = thumbDimensions.squareThumbSize
+                        def thumbDimensions = imageService.generateImageThumbnails(imageInstance)
+                        if (thumbDimensions) {
+                            imageInstance.thumbWidth = thumbDimensions.width
+                            imageInstance.thumbHeight = thumbDimensions.height
+                            imageInstance.squareThumbSize = thumbDimensions.squareThumbSize
+                        }
                         break;
                     case ImageTaskType.TMSTile:
-                        imageService.generateTMSTiles(imageInstance.imageIdentifier)
+                        if (imageService.isImageType(imageInstance)) {
+                            imageService.generateTMSTiles(imageInstance.imageIdentifier)
+                        }
                         break;
                     case ImageTaskType.KeywordRebuild:
                         imageService.tagService.rebuildKeywords(imageInstance)

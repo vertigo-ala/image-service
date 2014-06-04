@@ -1,7 +1,7 @@
 package au.org.ala.images
 
+import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.tiling.TileFormat
-import com.sun.jna.platform.win32.WinDef
 import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import org.apache.commons.codec.binary.Base64
@@ -14,10 +14,6 @@ import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang.StringUtils
-import org.apache.tika.detect.Detector
-import org.apache.tika.metadata.Metadata
-import org.apache.tika.mime.MediaType
-import org.apache.tika.parser.AutoDetectParser
 import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.hibernate.FlushMode
@@ -141,10 +137,10 @@ class ImageService {
 
         image.save(failOnError: true)
 
-        def md = getImageMetadataFromBytes(bytes)
+        def md = getImageMetadataFromBytes(bytes, originalFilename)
         md.each { kvp ->
             if (kvp.key && kvp.value) {
-                setMetaDataItem(image, MetaDataSourceType.Embedded, kvp.key, kvp.value)
+                setMetaDataItem(image, MetaDataSourceType.Embedded, kvp.key as String, kvp.value as String)
             }
         }
 
@@ -217,19 +213,9 @@ class ImageService {
         }
     }
 
-    private static Map<String, Object> getImageMetadataFromBytes(byte[] bytes) {
-        def md = [:]
-        try {
-            IImageMetadata metadata = Imaging.getMetadata(bytes)
-            if (metadata) {
-                metadata.items.each {
-                    md[it.keyword] = it.text
-                }
-            }
-        } catch (Exception ex) {
-
-        }
-        return md
+    private static Map<String, Object> getImageMetadataFromBytes(byte[] bytes, String filename) {
+        def extractor = new MetadataExtractor()
+        return extractor.readMetadata(bytes, filename)
     }
 
     def scheduleArtifactGeneration(long imageId) {
@@ -278,8 +264,19 @@ class ImageService {
         }
     }
 
-    ThumbDimensions generateImageThumbnails(String imageIdentifier) {
-        imageStoreService.generateImageThumbnails(imageIdentifier)
+    public boolean isImageType(Image image) {
+        return image.mimeType?.toLowerCase()?.startsWith("image/");
+    }
+
+    public boolean isAudioType(Image image) {
+        return image.mimeType?.toLowerCase()?.startsWith("audio/");
+    }
+
+    ThumbDimensions generateImageThumbnails(Image image) {
+        if (isAudioType(image)) {
+            return imageStoreService.generateAudioThumbnails(image.imageIdentifier)
+        }
+        return imageStoreService.generateImageThumbnails(image.imageIdentifier)
     }
 
     void generateTMSTiles(String imageIdentifier) {
@@ -386,7 +383,7 @@ class ImageService {
                     setMetaDataItem(image, MetaDataSourceType.SystemDefined, fieldDef.fieldName, ImportFieldValueExtractor.extractValue(fieldDef, file))
                 }
             }
-            def dimensions = generateImageThumbnails(image.imageIdentifier)
+            def dimensions = generateImageThumbnails(image)
             image.thumbHeight = dimensions?.height
             image.thumbWidth = dimensions?.width
             image.squareThumbSize = dimensions?.squareThumbSize
@@ -507,25 +504,7 @@ class ImageService {
     }
 
     private static String detectMimeTypeFromBytes(byte[] bytes, String filename) {
-        def bais = new ByteArrayInputStream(bytes)
-        def bis = new BufferedInputStream(bais);
-        try {
-            AutoDetectParser parser = new AutoDetectParser();
-            Detector detector = parser.getDetector();
-            Metadata md = new Metadata();
-            if (filename) {
-                md.add(Metadata.RESOURCE_NAME_KEY, filename);
-            }
-            MediaType mediaType = detector.detect(bis, md);
-        return mediaType.toString();
-        } finally {
-            if (bais) {
-                bais.close()
-            }
-            if (bis) {
-                bis.close()
-            }
-        }
+        return new MetadataExtractor().detectContentType(bytes, filename);
     }
 
     public Image createSubimage(Image parentImage, int x, int y, int width, int height, String userId) {

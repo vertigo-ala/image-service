@@ -8,21 +8,15 @@ import au.org.ala.images.util.ImageReaderUtils
 import grails.transaction.Transactional
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.springframework.web.multipart.MultipartFile
-
 import javax.imageio.ImageIO
 import javax.imageio.ImageReadParam
-import javax.imageio.ImageReader
-import javax.imageio.stream.ImageInputStream
 import java.awt.Color
 import java.awt.Rectangle
-import java.awt.color.ColorSpace
-import java.awt.color.ICC_ColorSpace
-import java.awt.color.ICC_Profile
 import java.awt.image.BufferedImage
-import java.awt.image.ColorConvertOp
-import java.awt.image.ImageObserver
 import java.lang.reflect.Field
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 @Transactional
 class ImageStoreService {
@@ -30,6 +24,8 @@ class ImageStoreService {
     def grailsApplication
     def logService
     def auditService
+
+    public static ICON_BACKGROUND_COLORS = ['white', 'black', 'darkGray', '']
 
     ImageDescriptor storeImage(byte[] imageBytes) {
         def uuid = UUID.randomUUID().toString()
@@ -187,6 +183,15 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
+    public ThumbDimensions generateAudioThumbnails(String imageIdentifier) {
+        def servletContext = ServletContextHolder.servletContext
+        def res = servletContext.getResource('/images/audio-icon.png')
+        def imageBytes = res.bytes
+        if (imageBytes) {
+            return generateThumbnailsImpl(imageBytes, imageIdentifier)
+        }
+    }
+
     /**
      * Create a number of thumbnail artifacts for an image, one the preserves the aspect ratio of the original image, the other drawing a scale image on a transparent
      * square with a constrained maximum dimension of config item "imageservice.thumbnail.size"
@@ -194,11 +199,15 @@ class ImageStoreService {
      * @param imageIdentifier The id of the image to thumb
      */
     public ThumbDimensions generateImageThumbnails(String imageIdentifier) {
+        def imageFile = getOriginalImageFile(imageIdentifier)
+        def imageBytes = FileUtils.readFileToByteArray(imageFile)
+        return generateThumbnailsImpl(imageBytes, imageIdentifier)
+    }
+
+    private ThumbDimensions generateThumbnailsImpl(byte[] imageBytes, String imageIdentifier) {
+
         CodeTimer t = new CodeTimer("Thumbnail generation ${imageIdentifier}".toString())
 
-        def imageFile = getOriginalImageFile(imageIdentifier)
-
-        def imageBytes = FileUtils.readFileToByteArray(imageFile)
         def reader = ImageReaderUtils.findCompatibleImageReader(imageBytes)
         int size = grailsApplication.config.imageservice.thumbnail.size as Integer
         def thumbHeight = 0, thumbWidth = 0
@@ -227,33 +236,26 @@ class ImageStoreService {
                 thumbImage = ImageUtils.scaleWidth(thumbImage, size)
             } else {
                 // small images
-                thumbImage = loadImage(imageIdentifier)
+                thumbImage = reader.read(0)
                 thumbImage = ImageUtils.scaleWidth(thumbImage, size)
             }
 
-            def correctColourProfile = true // TODO: inspect image to work out if the color conversion op is actually required?
-
             if (thumbImage) {
-
-                if (correctColourProfile) {
-                    ICC_Profile ip = ICC_Profile.getInstance(ColorSpace.CS_sRGB);
-                    ICC_ColorSpace ics = new ICC_ColorSpace(ip);
-                    ColorConvertOp cco = new ColorConvertOp(ics, null);
-                    thumbImage = cco.filter(thumbImage, null);
-                }
-
                 thumbHeight = thumbImage.height
                 thumbWidth = thumbImage.width
 
                 def thumbFilename = createThumbnailPathFromUUID(imageIdentifier)
                 def thumbFile = new File(thumbFilename)
-                ImageIO.write(thumbImage, "JPG", thumbFile)
 
-                def backgroundColors = ['white', 'black', 'darkGray', '']
+                def temp = new BufferedImage(thumbImage.getWidth(), thumbImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
+                def g = temp.graphics
+                g.drawImage(thumbImage, 0,0, null)
+                ImageIO.write(temp, "JPG", thumbFile)
+                g.dispose()
 
                 // for each background color (where empty string means transparent), create a squared thumb
                 // If not transparent, keep as jpeg for speed/space!
-                backgroundColors.each { colorName ->
+                ICON_BACKGROUND_COLORS.each { colorName ->
 
                     Color backgroundColor = null
                     if (colorName) {
@@ -265,35 +267,26 @@ class ImageStoreService {
                         }
                     }
 
-                    BufferedImage temp
                     if (!backgroundColor) {
-                        temp = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR)
+                        temp = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR_PRE)
                     } else {
                         temp = new BufferedImage(size, size, BufferedImage.TYPE_3BYTE_BGR)
                     }
 
-                    def g = temp.graphics
+                    g = temp.graphics
                     if (colorName && backgroundColor) {
                         g.setColor(backgroundColor);
                         g.fillRect(0, 0, size, size)
                     }
 
-                    def observer = new ImageObserver() {
-                        @Override
-                        boolean imageUpdate(java.awt.Image img, int infoflags, int x, int y, int ww, int hh) {
-                            println "${infoflags} ${x},${y} (${ww} x ${hh})"
-                            return true
-                        }
-                    }
-
                     if (thumbHeight < size) {
                         int top = (size / 2) - (thumbHeight / 2)
-                        g.drawImage(thumbImage, 0, top, observer)
+                        g.drawImage(thumbImage, 0, top, null)
                     } else if (thumbWidth < size) {
                         int left = (size / 2) - (thumbWidth / 2)
-                        g.drawImage(thumbImage, left, 0, observer)
+                        g.drawImage(thumbImage, left, 0, null)
                     } else {
-                        g.drawImage(thumbImage, 0, 0, observer)
+                        g.drawImage(thumbImage, 0, 0, null)
                     }
 
                     g.dispose()

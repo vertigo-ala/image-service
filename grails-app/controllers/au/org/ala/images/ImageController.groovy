@@ -36,11 +36,11 @@ class ImageController {
             return
         }
 
-        def pattern = Pattern.compile('^image/(.*)$')
+        def pattern = Pattern.compile('^image/(.*)$|^audio/(.*)$')
 
         def m = pattern.matcher(file.contentType)
         if (!m.matches()) {
-            flash.errorMessage = "Invalid file type for upload. Must be an image"
+            flash.errorMessage = "Invalid file type for upload. Must be an image or audio file (content is ${file.contentType})"
             redirect(action:'upload')
             return
         }
@@ -164,7 +164,15 @@ class ImageController {
         if (userId) {
             albums = Album.findAllByUserId(userId, [sort:'name'])
         }
-        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums]
+
+        def thumbUrls = []
+        imageStoreService.ICON_BACKGROUND_COLORS.each { color ->
+            thumbUrls << imageService.getImageSquareThumbUrl(image.imageIdentifier, color)
+        }
+
+        boolean isImage = imageService.isImageType(image)
+
+        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs: thumbUrls, isImage: isImage]
     }
 
     def view() {

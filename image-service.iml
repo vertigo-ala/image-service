@@ -93,7 +93,6 @@
           <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-metadata/3.0-rc5/imageio-metadata-3.0-rc5.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-core/3.0-rc5/imageio-core-3.0-rc5.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-jpeg/3.0-rc5/imageio-jpeg-3.0-rc5.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.5/image-utils-1.5.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/javax/media/jai_imageio/1.1.1/jai_imageio-1.1.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tika/tika-core/1.4/tika-core-1.4.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-imaging/1.0-SNAPSHOT/commons-imaging-1.0-SNAPSHOT.jar!/" />
@@ -125,10 +124,42 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-el/7.0.52/tomcat-embed-el-7.0.52.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.52/tomcat-embed-jasper-7.0.52.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.52/tomcat-catalina-ant-7.0.52.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/adobe/xmp/xmpcore/5.1.2/xmpcore-5.1.2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/drewnoakes/metadata-extractor/2.6.2/metadata-extractor-2.6.2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/uwyn/jhighlight/1.0/jhighlight-1.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/googlecode/juniversalchardet/juniversalchardet/1.0.3/juniversalchardet-1.0.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/gagravarr/vorbis-java-core/0.1/vorbis-java-core-0.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/jdom/jdom/1.0/jdom-1.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/rome/rome/0.9/rome-0.9.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/de/l3s/boilerpipe/boilerpipe/1.1.0/boilerpipe-1.1.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/com/googlecode/mp4parser/isoparser/1.0-RC-1/isoparser-1.0-RC-1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm-debug-all/4.1/asm-debug-all-4.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/geronimo/specs/geronimo-stax-api_1.0_spec/1.0.1/geronimo-stax-api_1.0_spec-1.0.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/xmlbeans/xmlbeans/2.3.0/xmlbeans-2.3.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/poi/poi-ooxml-schemas/3.10-beta2/poi-ooxml-schemas-3.10-beta2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/poi/poi-ooxml/3.10-beta2/poi-ooxml-3.10-beta2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/poi/poi-scratchpad/3.10-beta2/poi-scratchpad-3.10-beta2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/poi/poi/3.10-beta2/poi-3.10-beta2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/bouncycastle/bcmail-jdk15/1.45/bcmail-jdk15-1.45.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/pdfbox/jempbox/1.8.4/jempbox-1.8.4.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/pdfbox/fontbox/1.8.4/fontbox-1.8.4.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/pdfbox/pdfbox/1.8.4/pdfbox-1.8.4.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/tukaani/xz/1.2/xz-1.2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-compress/1.5/commons-compress-1.5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/james/apache-mime4j-dom/0.7.2/apache-mime4j-dom-0.7.2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/james/apache-mime4j-core/0.7.2/apache-mime4j-core-0.7.2.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/edu/ucar/netcdf/4.2-min/netcdf-4.2-min.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/gagravarr/vorbis-java-core/0.1/vorbis-java-core-0.1-tests.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/gagravarr/vorbis-java-tika/0.1/vorbis-java-tika-0.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tika/tika-parsers/1.5/tika-parsers-1.5.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.7/image-utils-1.7.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/../ala-bie/ala-cas-client/src/main/java" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.6/image-utils-1.6-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.7/image-utils-1.7-sources.jar!/" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>

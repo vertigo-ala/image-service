@@ -59,4 +59,9 @@ modules = {
         resource url: 'js/images.js'
     }
 
+    audiojs {
+        dependsOn "jquery"
+        resource url: 'js/audiojs/audio.min.js'
+    }
+
 }

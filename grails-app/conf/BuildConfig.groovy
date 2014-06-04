@@ -80,7 +80,7 @@ grails.project.dependency.resolution = {
         runtime 'org.apache.commons:commons-imaging:1.0-SNAPSHOT'
         runtime 'org.apache.tika:tika-core:1.4'
         runtime 'javax.media:jai_imageio:1.1.1'
-        runtime 'au.org.ala:image-utils:1.5'
+        runtime 'au.org.ala:image-utils:1.7'
         compile 'org.apache.ant:ant:1.7.1'
         compile 'org.apache.ant:ant-launcher:1.7.1'
     }
