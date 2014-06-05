@@ -58,25 +58,6 @@ class ImageStoreService {
         return l.join('/')
     }
 
-    private String createThumbnailPathFromUUID(String uuid) {
-        def l = [grailsApplication.config.imageservice.imagestore.root]
-        computeAndAppendLocalDirectoryPath(uuid, l)
-        l << "thumbnail"
-        return l.join('/')
-    }
-
-    private String createSquareThumbnailPathFromUUID(String uuid, String backgroundColorName) {
-        def l = [grailsApplication.config.imageservice.imagestore.root]
-        computeAndAppendLocalDirectoryPath(uuid, l)
-        if (backgroundColorName) {
-            l << "thumbnail_square_${backgroundColorName}"
-        } else {
-            l << "thumbnail_square"
-        }
-
-        return l.join('/')
-    }
-
     private String createTilesPathFromUUID(String uuid) {
         def l = [grailsApplication.config.imageservice.imagestore.root]
         computeAndAppendLocalDirectoryPath(uuid, l)
