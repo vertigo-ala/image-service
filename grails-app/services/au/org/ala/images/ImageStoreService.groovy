@@ -1,5 +1,7 @@
 package au.org.ala.images
 
+import au.org.ala.images.thumb.ImageThumbnailer
+import au.org.ala.images.thumb.ThumbnailingResults
 import au.org.ala.images.tiling.ImageTiler
 import au.org.ala.images.tiling.ImageTilerConfig
 import au.org.ala.images.tiling.ImageTilerResults
@@ -8,7 +10,6 @@ import au.org.ala.images.util.ImageReaderUtils
 import grails.transaction.Transactional
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.springframework.web.multipart.MultipartFile
 import javax.imageio.ImageIO
 import javax.imageio.ImageReadParam
@@ -25,7 +26,7 @@ class ImageStoreService {
     def logService
     def auditService
 
-    public static ICON_BACKGROUND_COLORS = ['white', 'black', 'darkGray', '']
+    public static THUMBNAIL_BACKGROUND_COLORS = ['white', 'black', 'darkGray', '']
 
     ImageDescriptor storeImage(byte[] imageBytes) {
         def uuid = UUID.randomUUID().toString()
@@ -42,6 +43,12 @@ class ImageStoreService {
             reader.dispose()
         }
         return imgDesc
+    }
+
+    public File getImageDirectory(String uuid) {
+        def l = [grailsApplication.config.imageservice.imagestore.root]
+        computeAndAppendLocalDirectoryPath(uuid, l)
+        return new File(l.join("/"))
     }
 
     private String createOriginalPathFromUUID(String uuid) {
@@ -183,131 +190,37 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public ThumbDimensions generateAudioThumbnails(String imageIdentifier) {
+    public ThumbnailingResults generateAudioThumbnails(String imageIdentifier) {
         def servletContext = ServletContextHolder.servletContext
         def res = servletContext.getResource('/images/audio-icon.png')
         def imageBytes = res.bytes
         if (imageBytes) {
             return generateThumbnailsImpl(imageBytes, imageIdentifier)
         }
+        return null
     }
 
     /**
-     * Create a number of thumbnail artifacts for an image, one the preserves the aspect ratio of the original image, the other drawing a scale image on a transparent
-     * square with a constrained maximum dimension of config item "imageservice.thumbnail.size"
+     * Create a number of thumbnail artifacts for an image, one that preserves the aspect ratio of the original image, another drawing a scale image on a transparent
+     * square with a constrained maximum dimension of config item "imageservice.thumbnail.size", and a series of square jpeg thumbs with different coloured backgrounds
+     * (jpeg thumbs are much smaller, and load much faster than PNG).
+     *
      * The first thumbnail (preserved aspect ratio) is of type JPG to conserve disk space, whilst the square thumb is PNG as JPG does not support alpha transparency
      * @param imageIdentifier The id of the image to thumb
      */
-    public ThumbDimensions generateImageThumbnails(String imageIdentifier) {
+    public ThumbnailingResults generateImageThumbnails(String imageIdentifier) {
         def imageFile = getOriginalImageFile(imageIdentifier)
         def imageBytes = FileUtils.readFileToByteArray(imageFile)
         return generateThumbnailsImpl(imageBytes, imageIdentifier)
     }
 
-    private ThumbDimensions generateThumbnailsImpl(byte[] imageBytes, String imageIdentifier) {
-
-        CodeTimer t = new CodeTimer("Thumbnail generation ${imageIdentifier}".toString())
-
-        def reader = ImageReaderUtils.findCompatibleImageReader(imageBytes)
+    private ThumbnailingResults generateThumbnailsImpl(byte[] imageBytes, String imageIdentifier) {
+        def t = new ImageThumbnailer()
+        def destinationDirectory = getImageDirectory(imageIdentifier)
         int size = grailsApplication.config.imageservice.thumbnail.size as Integer
-        def thumbHeight = 0, thumbWidth = 0
-        if (reader) {
-            def imageParams = reader.getDefaultReadParam()
-            def height = reader.getHeight(0)
-            def width = reader.getWidth(0)
-
-            BufferedImage thumbImage
-
-            // Big images need to be thumbed via ImageReader to maintain O(1) heap use
-            if (height > 1024 || width > 1024) {
-
-                // roughly scale (subsample) the image to a max dimension of 1024
-                int ratio
-                if (height > width) {
-                    ratio = (int) (height / 1024)
-                } else {
-                    ratio = (int) (width / 1024)
-                }
-
-                imageParams.setSourceSubsampling(ratio, ratio ?: 1, 0, 0)
-                thumbImage = reader.read(0, imageParams)
-
-                // then finely scale the sub sampled image to get the final thumbnail
-                thumbImage = ImageUtils.scaleWidth(thumbImage, size)
-            } else {
-                // small images
-                thumbImage = reader.read(0)
-                thumbImage = ImageUtils.scaleWidth(thumbImage, size)
-            }
-
-            if (thumbImage) {
-                thumbHeight = thumbImage.height
-                thumbWidth = thumbImage.width
-
-                def thumbFilename = createThumbnailPathFromUUID(imageIdentifier)
-                def thumbFile = new File(thumbFilename)
-
-                def temp = new BufferedImage(thumbImage.getWidth(), thumbImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
-                def g = temp.graphics
-                g.drawImage(thumbImage, 0,0, null)
-                ImageIO.write(temp, "JPG", thumbFile)
-                g.dispose()
-
-                // for each background color (where empty string means transparent), create a squared thumb
-                // If not transparent, keep as jpeg for speed/space!
-                ICON_BACKGROUND_COLORS.each { colorName ->
-
-                    Color backgroundColor = null
-                    if (colorName) {
-                        try {
-                            Field field = Color.class.getField(colorName);
-                            backgroundColor = (Color)field.get(null);
-                        } catch (Exception e) {
-                            backgroundColor = null; // Not defined
-                        }
-                    }
-
-                    if (!backgroundColor) {
-                        temp = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR_PRE)
-                    } else {
-                        temp = new BufferedImage(size, size, BufferedImage.TYPE_3BYTE_BGR)
-                    }
-
-                    g = temp.graphics
-                    if (colorName && backgroundColor) {
-                        g.setColor(backgroundColor);
-                        g.fillRect(0, 0, size, size)
-                    }
-
-                    if (thumbHeight < size) {
-                        int top = (size / 2) - (thumbHeight / 2)
-                        g.drawImage(thumbImage, 0, top, null)
-                    } else if (thumbWidth < size) {
-                        int left = (size / 2) - (thumbWidth / 2)
-                        g.drawImage(thumbImage, left, 0, null)
-                    } else {
-                        g.drawImage(thumbImage, 0, 0, null)
-                    }
-
-                    g.dispose()
-
-                    thumbFilename = createSquareThumbnailPathFromUUID(imageIdentifier, colorName)
-                    thumbFile = new File(thumbFilename)
-                    if (colorName && backgroundColor) {
-                        ImageIO.write(temp, "JPG", thumbFile)
-                    } else {
-                        ImageIO.write(temp, "PNG", thumbFile)
-                    }
-
-                }
-
-            }
-        } else {
-            logService.log("No image readers for image ${imageIdentifier}!")
-        }
-        t.stop(true)
+        def results = t.generateThumbnails(imageBytes, destinationDirectory, size, THUMBNAIL_BACKGROUND_COLORS.toArray() as String[])
         auditService.log(imageIdentifier, "Thumbnails created", "N/A")
-        return new ThumbDimensions(height: thumbHeight, width: thumbWidth, squareThumbSize: size)
+        return results
     }
 
     public void generateTMSTiles(String imageIdentifier) {

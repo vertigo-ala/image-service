@@ -3,45 +3,39 @@ package au.org.ala.images
 class ImageBackgroundTask extends BackgroundTask {
 
     long imageId
-    ImageTaskType[] operations
+    ImageTaskType operation
     ImageService imageService
 
-    public ImageBackgroundTask(long imageId, ImageService imageService, ImageTaskType...operations) {
+    public ImageBackgroundTask(long imageId, ImageService imageService, ImageTaskType operation) {
         this.imageId = imageId
         this.imageService = imageService
-        this.operations = operations
+        this.operation = operation
     }
 
     @Override
     public void execute() {
         Image.withNewTransaction {
             Image.lock(imageId)
-
             def imageInstance = Image.get(imageId)
-
-            println "Executing image operations for ${imageInstance?.imageIdentifier}"
-
-            operations.each { ImageTaskType operation ->
-                switch (operation) {
-                    case ImageTaskType.Thumbnail:
-                        def thumbDimensions = imageService.generateImageThumbnails(imageInstance)
-                        if (thumbDimensions) {
-                            imageInstance.thumbWidth = thumbDimensions.width
-                            imageInstance.thumbHeight = thumbDimensions.height
-                            imageInstance.squareThumbSize = thumbDimensions.squareThumbSize
-                        }
-                        break;
-                    case ImageTaskType.TMSTile:
-                        if (imageService.isImageType(imageInstance)) {
-                            imageService.generateTMSTiles(imageInstance.imageIdentifier)
-                        }
-                        break;
-                    case ImageTaskType.KeywordRebuild:
-                        imageService.tagService.rebuildKeywords(imageInstance)
-                        break;
-                    default:
-                        throw new Exception("Unhandled image operation type: ${operation}")
-                }
+            switch (operation) {
+                case ImageTaskType.Thumbnail:
+                    def thumbResults = imageService.generateImageThumbnails(imageInstance)
+                    if (thumbResults) {
+                        imageInstance.thumbWidth = thumbResults.width
+                        imageInstance.thumbHeight = thumbResults.height
+                        imageInstance.squareThumbSize = thumbResults.squareThumbSize
+                    }
+                    break;
+                case ImageTaskType.TMSTile:
+                    if (imageService.isImageType(imageInstance)) {
+                        imageService.generateTMSTiles(imageInstance.imageIdentifier)
+                    }
+                    break;
+                case ImageTaskType.KeywordRebuild:
+                    imageService.tagService.rebuildKeywords(imageInstance)
+                    break;
+                default:
+                    throw new Exception("Unhandled image operation type: ${operation}")
             }
             imageInstance.save(flush: true, failOnError: true)
         }

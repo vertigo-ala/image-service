@@ -1,6 +1,7 @@
 package au.org.ala.images
 
 import au.org.ala.images.metadata.MetadataExtractor
+import au.org.ala.images.thumb.ThumbnailingResults
 import au.org.ala.images.tiling.TileFormat
 import grails.transaction.NotTransactional
 import grails.transaction.Transactional
@@ -272,7 +273,7 @@ class ImageService {
         return image.mimeType?.toLowerCase()?.startsWith("audio/");
     }
 
-    ThumbDimensions generateImageThumbnails(Image image) {
+    ThumbnailingResults generateImageThumbnails(Image image) {
         if (isAudioType(image)) {
             return imageStoreService.generateAudioThumbnails(image.imageIdentifier)
         }
@@ -558,13 +559,43 @@ class ImageService {
         if (task == null) {
             return [success:false, message:"No tiling jobs available at this time."]
         } else {
-            def image = Image.get(task.imageId)
             if (task) {
+                def image = Image.get(task.imageId)
                 // Create a new pending job
                 def ticket = UUID.randomUUID().toString()
                 def job = new OutsourcedJob(image: image, taskType: ImageTaskType.TMSTile, expectedDurationInMinutes: 15, ticket: ticket)
                 job.save()
                 return [success: true, imageId: image.imageIdentifier, jobTicket: ticket, tileFormat: TileFormat.JPEG]
+            } else {
+                return [success:false, message: "Internal error!"]
+            }
+        }
+    }
+
+    def createNextThumbnailJob() {
+
+        ImageBackgroundTask task = _backgroundQueue.find { bgt ->
+            def imageTask = bgt as ImageBackgroundTask
+            if (imageTask != null) {
+                if (imageTask.operation == ImageTaskType.Thumbnail) {
+                    if (_backgroundQueue.remove(imageTask)) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+
+        if (task == null) {
+            return [success: false, message:'No thumbnail job available at this time.']
+        } else {
+            if (task) {
+                def image = Image.get(task.imageId)
+                // Create a new pending job
+                def ticket = UUID.randomUUID().toString()
+                def job = new OutsourcedJob(image: image, taskType: ImageTaskType.Thumbnail, expectedDurationInMinutes: 15, ticket: ticket)
+                job.save()
+                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket, thumbBackgroundColors: ImageStoreService.THUMBNAIL_BACKGROUND_COLORS]
             } else {
                 return [success:false, message: "Internal error!"]
             }

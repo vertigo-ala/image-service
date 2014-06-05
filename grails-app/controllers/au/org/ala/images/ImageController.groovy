@@ -6,8 +6,6 @@ import au.org.ala.web.CASRoles
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.jasig.cas.client.util.AbstractCasFilter
-import org.jasig.cas.client.validation.Assertion
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletResponse
 import java.util.regex.Pattern
@@ -166,7 +164,7 @@ class ImageController {
         }
 
         def thumbUrls = []
-        imageStoreService.ICON_BACKGROUND_COLORS.each { color ->
+        imageStoreService.THUMBNAIL_BACKGROUND_COLORS.each { color ->
             thumbUrls << imageService.getImageSquareThumbUrl(image.imageIdentifier, color)
         }
 
