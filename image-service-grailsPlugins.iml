@@ -194,7 +194,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/gagravarr/vorbis-java-core/0.1/vorbis-java-core-0.1-tests.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/gagravarr/vorbis-java-tika/0.1/vorbis-java-tika-0.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tika/tika-parsers/1.5/tika-parsers-1.5.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.8.0/image-utils-1.8.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.8.1/image-utils-1.8.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

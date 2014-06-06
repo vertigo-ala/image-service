@@ -1,7 +1,7 @@
 package au.org.ala.images
 
 import au.org.ala.images.metadata.MetadataExtractor
-import au.org.ala.images.thumb.ThumbnailingResults
+import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
 import grails.transaction.NotTransactional
 import grails.transaction.Transactional
@@ -186,6 +186,20 @@ class ImageService {
         return imageStoreService.getImageSquareThumbUrl(imageIdentifier, backgroundColor)
     }
 
+    public List<String> getAllThumbnailUrls(String imageIdentifier) {
+        def results = []
+
+        def image = Image.findByImageIdentifier(imageIdentifier)
+        if (image) {
+            def thumbs = ImageThumbnail.findAllByImage(image)
+            thumbs?.each { thumb ->
+                results << imageStoreService.getThumbUrlByName(imageIdentifier, thumb.name)
+            }
+        }
+
+        return results
+    }
+
     public String getImageTilesRootUrl(String imageIdentifier) {
         return imageStoreService.getImageTilesRootUrl(imageIdentifier)
     }
@@ -273,11 +287,32 @@ class ImageService {
         return image.mimeType?.toLowerCase()?.startsWith("audio/");
     }
 
-    ThumbnailingResults generateImageThumbnails(Image image) {
+    public List<ThumbnailingResult> generateImageThumbnails(Image image) {
+        List<ThumbnailingResult> results
         if (isAudioType(image)) {
-            return imageStoreService.generateAudioThumbnails(image.imageIdentifier)
+            results = imageStoreService.generateAudioThumbnails(image.imageIdentifier)
+        } else {
+            results = imageStoreService.generateImageThumbnails(image.imageIdentifier)
         }
-        return imageStoreService.generateImageThumbnails(image.imageIdentifier)
+
+        // These are deprecated, but we'll update them anyway...
+        if (results) {
+            def defThumb = results.find { it.thumbnailName.equalsIgnoreCase("thumbnail")}
+            image.thumbWidth = defThumb?.width ?: 0
+            image.thumbHeight = defThumb?.height ?: 0
+            image.squareThumbSize = results.find({ it.thumbnailName.equalsIgnoreCase("thumbnail_square")})?.width ?: 0
+        }
+        results?.each { th ->
+            def imageThumb = ImageThumbnail.findByImageAndName(image, th.thumbnailName)
+            if (imageThumb) {
+                imageThumb.height = th.height
+                imageThumb.width = th.width
+                imageThumb.isSquare = th.square
+            } else {
+                imageThumb = new ImageThumbnail(image: image, name: th.thumbnailName, height: th.height, width: th.width, isSquare: th.square)
+                imageThumb.save()
+            }
+        }
     }
 
     void generateTMSTiles(String imageIdentifier) {
@@ -384,10 +419,7 @@ class ImageService {
                     setMetaDataItem(image, MetaDataSourceType.SystemDefined, fieldDef.fieldName, ImportFieldValueExtractor.extractValue(fieldDef, file))
                 }
             }
-            def dimensions = generateImageThumbnails(image)
-            image.thumbHeight = dimensions?.height
-            image.thumbWidth = dimensions?.width
-            image.squareThumbSize = dimensions?.squareThumbSize
+            generateImageThumbnails(image)
 
             image.save(flush: true, failOnError: true)
         }
@@ -595,7 +627,7 @@ class ImageService {
                 def ticket = UUID.randomUUID().toString()
                 def job = new OutsourcedJob(image: image, taskType: ImageTaskType.Thumbnail, expectedDurationInMinutes: 15, ticket: ticket)
                 job.save()
-                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket, thumbBackgroundColors: ImageStoreService.THUMBNAIL_BACKGROUND_COLORS]
+                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket]
             } else {
                 return [success:false, message: "Internal error!"]
             }

@@ -53,9 +53,11 @@
                 </div>
                 <g:if test="${isImage}">
                 <div class="well well-small">
-                    <h4>Square thumbnails</h4>
+                    <h4>Thumbnails</h4>
                     <g:each in="${squareThumbs}" var="thumbUrl">
-                        <image class="img-polaroid" src="${thumbUrl}" height="80px" width="50px" title="${thumbUrl}" style="margin: 5px"></image>
+                        <a href="${thumbUrl}" target="thumbnail">
+                            <image class="img-polaroid" src="${thumbUrl}" width="50px" title="${thumbUrl}" style="margin: 5px"></image>
+                        </a>
                     </g:each>
                 </div>
                 </g:if>
@@ -173,7 +175,7 @@
                                             <g:if test="${isImage}">
                                                 <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
                                             </g:if>
-                                            <a class="btn btn-small" href="<img:imageUrl imageId="${imageInstance.imageIdentifier}" />" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
+                                            <a class="btn btn-small" href="${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
 
                                             <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
                                                 <g:if test="${albums}">

@@ -19,12 +19,7 @@ class ImageBackgroundTask extends BackgroundTask {
             def imageInstance = Image.get(imageId)
             switch (operation) {
                 case ImageTaskType.Thumbnail:
-                    def thumbResults = imageService.generateImageThumbnails(imageInstance)
-                    if (thumbResults) {
-                        imageInstance.thumbWidth = thumbResults.width
-                        imageInstance.thumbHeight = thumbResults.height
-                        imageInstance.squareThumbSize = thumbResults.squareThumbSize
-                    }
+                    imageService.generateImageThumbnails(imageInstance)
                     break;
                 case ImageTaskType.TMSTile:
                     if (imageService.isImageType(imageInstance)) {

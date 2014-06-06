@@ -1,7 +1,8 @@
 package au.org.ala.images
 
 import au.org.ala.images.thumb.ImageThumbnailer
-import au.org.ala.images.thumb.ThumbnailingResults
+import au.org.ala.images.thumb.ThumbDefinition
+import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.ImageTiler
 import au.org.ala.images.tiling.ImageTilerConfig
 import au.org.ala.images.tiling.ImageTilerResults
@@ -16,7 +17,6 @@ import javax.imageio.ImageReadParam
 import java.awt.Color
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
-import java.lang.reflect.Field
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 @Transactional
@@ -25,8 +25,6 @@ class ImageStoreService {
     def grailsApplication
     def logService
     def auditService
-
-    public static THUMBNAIL_BACKGROUND_COLORS = ['white', 'black', 'darkGray', '']
 
     ImageDescriptor storeImage(byte[] imageBytes) {
         def uuid = UUID.randomUUID().toString()
@@ -153,6 +151,13 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
+    public String getThumbUrlByName(String imageIdentifier, String name) {
+        def path = []
+        computeAndAppendLocalDirectoryPath(imageIdentifier, path)
+        path << name
+        return grailsApplication.config.imageservice.apache.root + path.join("/")
+    }
+
     public String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
@@ -171,7 +176,7 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public ThumbnailingResults generateAudioThumbnails(String imageIdentifier) {
+    public List<ThumbnailingResult> generateAudioThumbnails(String imageIdentifier) {
         def servletContext = ServletContextHolder.servletContext
         def res = servletContext.getResource('/images/audio-icon.png')
         def imageBytes = res.bytes
@@ -189,17 +194,25 @@ class ImageStoreService {
      * The first thumbnail (preserved aspect ratio) is of type JPG to conserve disk space, whilst the square thumb is PNG as JPG does not support alpha transparency
      * @param imageIdentifier The id of the image to thumb
      */
-    public ThumbnailingResults generateImageThumbnails(String imageIdentifier) {
+    public List<ThumbnailingResult> generateImageThumbnails(String imageIdentifier) {
         def imageFile = getOriginalImageFile(imageIdentifier)
         def imageBytes = FileUtils.readFileToByteArray(imageFile)
         return generateThumbnailsImpl(imageBytes, imageIdentifier)
     }
 
-    private ThumbnailingResults generateThumbnailsImpl(byte[] imageBytes, String imageIdentifier) {
+    private List<ThumbnailingResult> generateThumbnailsImpl(byte[] imageBytes, String imageIdentifier) {
         def t = new ImageThumbnailer()
         def destinationDirectory = getImageDirectory(imageIdentifier)
         int size = grailsApplication.config.imageservice.thumbnail.size as Integer
-        def results = t.generateThumbnails(imageBytes, destinationDirectory, size, THUMBNAIL_BACKGROUND_COLORS.toArray() as String[])
+        def thumbDefs = [
+            new ThumbDefinition(size, false, null, "thumbnail"),
+            new ThumbDefinition(size, true, null, "thumbnail_square"),
+            new ThumbDefinition(size, true, Color.black, "thumbnail_square_black"),
+            new ThumbDefinition(size, true, Color.white, "thumbnail_square_white"),
+            new ThumbDefinition(size, true, Color.darkGray, "thumbnail_square_darkGray"),
+            new ThumbDefinition(650, false, null, "thumbnail_large"),
+        ]
+        def results = t.generateThumbnails(imageBytes, destinationDirectory, thumbDefs as List<ThumbDefinition>)
         auditService.log(imageIdentifier, "Thumbnails created", "N/A")
         return results
     }
@@ -285,6 +298,9 @@ class ImageStoreService {
             )
             // TODO: validate the extracted contents
             auditService.log(imageIdentifier, "Image tiles stored from zip file (outsourced job?)", "N/A")
+
+            // Now clean up!
+            FileUtils.deleteQuietly(stagingFile)
             return true
         }
         return false

@@ -83,7 +83,8 @@ class ImageController {
         def imageInstance = getImageFromParams(params)
         if (imageInstance) {
             def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
-            proxyImageRequest(imageInstance, imageUrl, response)
+            boolean contentDisposition = params.boolean("contentDisposition")
+            proxyImageRequest(imageInstance, imageUrl, response, contentDisposition)
         }
     }
 
@@ -102,11 +103,13 @@ class ImageController {
         proxyUrl(new URL(url), response)
     }
 
-    private void proxyImageRequest(Image imageInstance, String imageUrl, HttpServletResponse response) {
+    private void proxyImageRequest(Image imageInstance, String imageUrl, HttpServletResponse response, boolean addContentDisposition = false) {
 
         def u = new URL(imageUrl)
         response.setContentType(imageInstance.mimeType ?: "image/jpeg")
-        response.setHeader("Content-disposition", "attachment;filename=${imageInstance.imageIdentifier}.${imageInstance.extension ?: "jpg" }")
+        if (addContentDisposition) {
+            response.setHeader("Content-disposition", "attachment;filename=${imageInstance.imageIdentifier}.${imageInstance.extension ?: "jpg"}")
+        }
         proxyUrl(u, response)
     }
 
@@ -163,10 +166,7 @@ class ImageController {
             albums = Album.findAllByUserId(userId, [sort:'name'])
         }
 
-        def thumbUrls = []
-        imageStoreService.THUMBNAIL_BACKGROUND_COLORS.each { color ->
-            thumbUrls << imageService.getImageSquareThumbUrl(image.imageIdentifier, color)
-        }
+        def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
 
         boolean isImage = imageService.isImageType(image)
 
