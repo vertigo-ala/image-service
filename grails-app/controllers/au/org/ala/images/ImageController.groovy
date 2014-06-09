@@ -96,6 +96,14 @@ class ImageController {
         }
     }
 
+    def proxyImageThumbnailLarge() {
+        def imageInstance = getImageFromParams(params)
+        if (imageInstance) {
+            def imageUrl = imageService.getImageThumbLargeUrl(imageInstance.imageIdentifier)
+            proxyImageRequest(imageInstance, imageUrl, response)
+        }
+    }
+
     def proxyImageTile() {
         def imageIdentifier = params.id
         def url = imageService.getImageTilesRootUrl(imageIdentifier)
