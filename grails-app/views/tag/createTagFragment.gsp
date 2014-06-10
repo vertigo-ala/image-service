@@ -1,14 +1,12 @@
 <div class="form-horizontal">
+<div class="well well-small">
     <g:if test="${parentTag}">
-        <div class="alert alert-info">
             Enter a name for your new tag. It will be created under <strong>${parentTag.path}</strong>.
-        </div>
     </g:if>
     <g:else>
-        <div class="alert alert-info">
-            Enter a name for your new tag.
-        </div>
+            Enter a new tag name. Tag hierarchy elements can be delimited with '/'.
     </g:else>
+    </div>
     <div class="control-group">
         <label class="control-label" for="tag">Tag name</label>
         <div class="controls">
@@ -34,8 +32,12 @@
         e.preventDefault();
         var tagPath = $("#tag").val();
         if (tagPath) {
-            $.ajax("${createLink(controller:'webService', action:'createTagByPath')}?tagPath=" + tagPath + "&parentTagId=${parentTag?.id}").done(function() {
-                imglib.hideModal();
+            $.ajax("${createLink(controller:'webService', action:'createTagByPath')}?tagPath=" + tagPath + "&parentTagId=${parentTag?.id}").done(function(results) {
+                if (imglib.onTagCreated && results.tagId) {
+                    imglib.onTagCreated(results.tagId);
+                } else {
+                    imglib.hideModal();
+                }
             });
         }
     });

@@ -84,9 +84,11 @@ var imglib = {};
     };
 
     lib.onTagSelected = null;
+    lib.onTagCreated = null;
 
     lib.selectTag = function(onSelectFunction) {
         var opts = {
+            width: 700,
             title: "Select a tag",
             url: IMAGES_CONF.selectTagUrl
         };
@@ -95,6 +97,22 @@ var imglib = {};
             lib.hideModal();
             if (onSelectFunction) {
                 onSelectFunction(tagId);
+            }
+        };
+        imglib.showModal(opts);
+    };
+
+    lib.createNewTag = function(parentTagId, onCreatedFunction) {
+
+        var opts = {
+            title: "Create new tag from path",
+            url: IMAGES_CONF.createTagUrl + "?parentTagId=" + parentTagId
+        };
+
+        lib.onTagCreated = function(tagId) {
+            lib.hideModal();
+            if (onCreatedFunction) {
+                onCreatedFunction(tagId);
             }
         };
         imglib.showModal(opts);

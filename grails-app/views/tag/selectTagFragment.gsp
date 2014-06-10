@@ -1,13 +1,12 @@
 <div class="form-horizontal">
 
     <div class="control-group">
-        <label class="control-label" for="search">Search</label>
+        <label class="control-label" for="search">Apply an existing tag</label>
         <div class="controls">
             <input type="text" id="search" placeholder="Find tags">
-            <button id="btnSearchTags" class="btn"><i class="icon-search"></i>&nbsp;Search</button>
+            <button id="btnSearchTags" class="btn"><i class="icon-search"></i>&nbsp;Search</button>&nbsp;OR&nbsp;<button id="btnAddAndSelectTag" class="btn"><i class="icon-plus"></i>&nbsp;Create a new tag</button>
         </div>
     </div>
-
 
     <div class="well well-small">
         <div id="tagContainer"></div>
@@ -40,6 +39,17 @@
     $("#btnSearchTags").click(function(e) {
         e.preventDefault();
         loadTagTree();
+    });
+
+    $("#btnAddAndSelectTag").click(function(e) {
+        e.preventDefault();
+        var parentTagId = getSelectedTagId();
+        imglib.hideModal();
+        imglib.createNewTag(parentTagId, function(tagId) {
+            if (tagId && imglib.onTagSelected) {
+                imglib.onTagSelected(tagId);
+            }
+        });
     });
 
     $("#btnCancelAttachTag").click(function(e) {
@@ -76,6 +86,10 @@
         var q = $("#search").val();
 
         $.ajax("${createLink(controller:'webService', action:'getTagModel')}?q=" + q).done(function(rootNodes) {
+
+            if (!rootNodes || rootNodes.length == 0) {
+                $("#tagContainer").html("<div style='opacity: 0.5'>(No tags found)</div>");
+            }
 
             var tree = $("#tagTree");
 

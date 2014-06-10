@@ -169,15 +169,16 @@ class WebServiceController {
     def createTagByPath() {
         def success = false
         def tagPath = params.tagPath as String
+        def tagId = 0
         if (tagPath) {
 
             def parent = Tag.get(params.int("parentTagId"))
 
             def tag = tagService.createTagByPath(tagPath, parent)
             success = tag != null
+            tagId = tag.id
         }
-
-        renderResults([success: success])
+        renderResults([success: success, tagId: tagId])
     }
 
     def moveTag() {

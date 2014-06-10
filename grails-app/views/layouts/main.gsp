@@ -76,6 +76,7 @@
                 areYouSureUrl: "${createLink(controller:"dialog", action: "areYouSureFragment")}",
                 selectAlbumUrl: "${createLink(controller: 'album', action:'selectAlbumFragment')}",
                 selectTagUrl: "${createLink(controller: 'tag', action: 'selectTagFragment')}",
+                createTagUrl: "${createLink(controller: 'tag', action: 'createTagFragment')}",
                 imageTagsTooltipUrl: "${createLink(controller:'image', action:"imageTagsTooltipFragment")}",
                 addUserMetaDataUrl: "${createLink(controller:'dialog', action:'addUserMetadataFragment')}",
                 pleaseWaitUrl: "${createLink(controller:'dialog', action:'pleaseWaitFragment')}"
