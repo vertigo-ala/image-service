@@ -254,6 +254,7 @@ class SearchService {
     }
 
     public SearchCriteria getSearchCriteria(String id) {
+        println "here"
         return searchCriteriaList?.find { it.id == id }
     }
 
@@ -412,7 +413,7 @@ class SearchService {
                     }
                 }
             }
-            if (!params.sort) {
+            if (!params?.sort) {
                 order("id", "desc") // stable sort order
             }
             projections {
@@ -448,7 +449,7 @@ class SearchService {
                                 def matcher = metaDataPattern.matcher(criteria.value)
                                 if (matcher.matches()) {
                                     ilike("name", matcher.group(1))
-                                    ilike("value", matcher.group(2))
+                                    ilike("value", matcher.group(2)?.replaceAll('\\*', '%'))
                                 }
                             }
                         }

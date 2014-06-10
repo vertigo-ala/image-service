@@ -368,6 +368,13 @@ class ImageService {
                 albumImage.delete()
             }
 
+            // thumbnail records...
+
+            def thumbs = ImageThumbnail.findAllByImage(image)
+            thumbs.each { thumb ->
+                thumb.delete()
+            }
+
             // and delete domain object
             image.delete(flush: true, failonerror: true)
 

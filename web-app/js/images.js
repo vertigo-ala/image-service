@@ -176,6 +176,21 @@ var imglib = {};
             .replace(/&amp;/g, '&');
     };
 
+    lib.showSpinner = function(message) {
+        var spinner = $(".spinner");
+        if (message) {
+            spinner.attr("title", message);
+        } else {
+            spinner.attr("title", "");
+        }
+        spinner.css("display", "block");
+    }
+
+    lib.hideSpinner = function() {
+        var spinner = $(".spinner");
+        spinner.css("display", "none");
+    }
+
 })(imglib);
 
 

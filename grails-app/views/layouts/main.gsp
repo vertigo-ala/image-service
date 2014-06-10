@@ -57,6 +57,17 @@
                 opacity: 0.5;
             }
 
+            .spinner {
+                background: url(../images/spinner.gif) 50% 50% no-repeat transparent;
+                height: 16px;
+                width: 16px;
+                padding: 0.5em;
+                position: absolute;
+                right: 0;
+                top: 0;
+                text-indent: -9999px;
+            }
+
     </style>
 
         <r:script disposition='head'>
@@ -155,7 +166,6 @@
             <g:set var="containerClass" value="container-fluid"/>
         </g:if>
 
-
         <div class="container">
             <header id="page-header">
                 <div class="container">
@@ -190,6 +200,8 @@
         <div class="${containerClass}" id="main-content">
             <g:layoutBody/>
         </div><!--/.container-->
+
+        <div class="spinner well well-small" style="display: none"></div>
 
         <div class="container hidden-desktop">
             <%-- Borrowed from http://marcusasplund.com/optout/ --%>

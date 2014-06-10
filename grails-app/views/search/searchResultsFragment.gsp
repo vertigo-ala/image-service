@@ -9,7 +9,9 @@
 
     $("#btnSelectAllImages").click(function(e) {
         e.preventDefault();
+        imglib.showSpinner("Selecting images...")
         $.ajax("${createLink(controller: 'search', action: 'ajaxSelectAllCurrentQuery')}").done(function() {
+            imglib.hideSpinner();
             location.reload(true);
         });
     });
