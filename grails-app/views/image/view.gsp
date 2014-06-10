@@ -51,6 +51,7 @@
                 <div id="viewer-status">
                     <label class="checkbox"><g:checkBox name="showSubImages" id="showSubImages" /> Show subimages</label>
                     <span id="zoomStatus" class="pull-right"></span>
+                    <span id="mouseStatus"></span>
                 </div>
             </div>
         </div>
@@ -79,6 +80,7 @@
 
             var viewer = L.map('imageViewer', {
                 fullscreenControl: true,
+                measureControl: true,
                 minZoom: 2,
                 maxZoom: ${maxZoom},
                 zoom: 2,
@@ -115,9 +117,9 @@
 
                 viewer.on('mousemove', function(e) {
                     var ll = e.latlng;
-                    %{--var pixelx = Math.round(ll.lng * imageScaleFactor);--}%
-                    %{--var pixely = imageHeight - Math.round(ll.lat * imageScaleFactor);--}%
-                    %{--$("#mouseStatus").html( "Mouse: " + pixelx + ", " + pixely);--}%
+                    var pixelx = Math.round(ll.lng * imageScaleFactor);
+                    var pixely = imageHeight - Math.round(ll.lat * imageScaleFactor);
+                    $("#mouseStatus").html( "Mouse: " + pixelx + ", " + pixely);
                 });
 
                 viewer.on('zoomend', function(e) {

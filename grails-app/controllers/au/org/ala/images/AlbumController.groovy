@@ -6,7 +6,7 @@ import au.org.ala.web.CASRoles
 import grails.converters.JSON
 import org.grails.plugins.csv.CSVWriter
 
-@AlaSecured(value = [CASRoles.ROLE_USER], redirectUri = '/')
+@AlaSecured(value = [CASRoles.ROLE_USER, CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
 class AlbumController {
 
     def imageService

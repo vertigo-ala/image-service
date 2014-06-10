@@ -11,6 +11,8 @@ modules = {
         resource url: 'js/leaflet/Control.FullScreen.css'
         resource url: 'js/leaflet/leaflet.js'
         resource url: 'js/leaflet/Control.FullScreen.js'
+        resource url: 'js/leaflet/leaflet.measure.js'
+        resource url: 'js/leaflet/leaflet.measure.css'
     }
 
     leaflet_draw {
