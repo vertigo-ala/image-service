@@ -101,8 +101,10 @@ L.Control.Measure = L.Control.extend({
 
 			this._updateTooltipPosition(e.latlng);
 
-			var distance = e.latlng.distanceTo(this._lastPoint);
-			this._updateTooltipDistance(this._distance + distance, distance);
+			// var distance = e.latlng.distanceTo(this._lastPoint);
+            var currentPixelPoint = this._getPixelPoint(e.latlng);
+            var pixelDistance = this._lastPixelPoint.pixelDistanceTo(currentPixelPoint);
+			this._updateTooltipDistance(this._pixelDistance + pixelDistance, pixelDistance);
 		}
 	},
 
@@ -129,7 +131,7 @@ L.Control.Measure = L.Control.extend({
             this._pixelDistance += pixelDistance;
 
 			var distance = e.latlng.distanceTo(this._lastPoint);
-			this._updateTooltipDistance(this._distance + distance, distance);
+			this._updateTooltipDistance(this._pixelDistance, pixelDistance);
 
 			this._distance += distance;
 		}
@@ -218,20 +220,20 @@ L.Control.Measure = L.Control.extend({
 		var totalRound = this._round(total);
 	    var differenceRound = this._round(difference);
 
-        var text = '<div class="leaflet-measure-tooltip-total">' + totalRound + ' :: ' + imageScaleFactor + '</div>';
+        var text = '<div class="leaflet-measure-tooltip-total">' + totalRound + '</div>';
 		if(differenceRound > 0 && totalRound != differenceRound) {
 			text += '<div class="leaflet-measure-tooltip-difference">(+' + differenceRound + ')</div>';
 		}
-
-        text += "<div>Last pixel point: " + this._lastPixelPoint.x + ", " + this._lastPixelPoint.y + "  " + this._pixelDistance + "</div>";
-
 
 		this._tooltip._icon.innerHTML = text;
 	},
 
 	_round: function(val) {
 		// return Math.round((val / 1852) * 10) / 10;
-        return Math.round(val / imageScaleFactor);
+        if (!val) {
+            return 0;
+        }
+        return Math.round(val);
 	},
 
 	_onKeyDown: function (e) {
@@ -252,13 +254,16 @@ L.Control.Measure = L.Control.extend({
             x: pixelx,
             y: pixely,
             pixelDistanceTo: function(other) {
-                var xs = 0;
-                var ys = 0;
-                xs = other.x - this.x;
-                xs = xs * xs;
-                ys = other.y - this.y;
-                ys = ys * ys;
-                return Math.sqrt( xs + ys );
+                if (other) {
+                    var xs = 0;
+                    var ys = 0;
+                    xs = other.x - this.x;
+                    xs = xs * xs;
+                    ys = other.y - this.y;
+                    ys = ys * ys;
+                    return Math.sqrt(xs + ys);
+                }
+                return 0;
             }
         };
     }

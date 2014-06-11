@@ -40,6 +40,8 @@ class Image {
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The width of the thumbnail in pixels")
     Integer thumbWidth = 0
 
+    Double linearPixelScale
+
     Integer squareThumbSize
 
     static hasMany = [keywords:ImageKeyword, metadata: ImageMetaDataItem, tags: ImageTag]
@@ -64,6 +66,7 @@ class Image {
         thumbHeight nullable: true
         thumbWidth nullable: true
         squareThumbSize nullable: true
+        linearPixelScale nullable: true
     }
 
     static mapping = {
