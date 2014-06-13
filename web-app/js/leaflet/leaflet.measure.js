@@ -4,14 +4,25 @@ L.Control.Measure = L.Control.extend({
 	},
 
 	onAdd: function (map) {
-		var className = 'leaflet-control-zoom leaflet-bar leaflet-control',
-		    container = L.DomUtil.create('div', className);
 
-		this._createButton('&#8674;', 'Measure', 'leaflet-control-measure leaflet-bar-part leaflet-bar-part-top-and-bottom', container, this._toggleMeasure, this);
+		var className = 'leaflet-control-zoom leaflet-bar leaflet-control';
+		var container = L.DomUtil.create('div', className);
+
+		this._createButton('', 'Measure', 'leaflet-control-measure leaflet-bar-part leaflet-bar-part-top fa fa-arrows-h', container, this._toggleMeasure, this);
+        this._createButton('', 'Calibrate', 'viewer-custom-buttons leaflet-disabled leaflet-control-measure leaflet-bar-part leaflet-bar-bottom fa fa-sliders btnCalibrateMMPerPixels', container, this._calibrate, this);
 
 		return container;
 	},
-
+    _calibrate : function(e) {
+        this.onCalibration(this._pixelDistance);
+        this._toggleMeasure();
+    },
+    _disableCalibration: function() {
+        $(".btnCalibrateMMPerPixels").addClass("leaflet-disabled");
+    },
+    _enableCalibration: function() {
+        $(".btnCalibrateMMPerPixels").removeClass("leaflet-disabled");
+    },
 	_createButton: function (html, title, className, container, fn, context) {
 		var link = L.DomUtil.create('a', className, container);
 		link.innerHTML = html;
@@ -76,6 +87,8 @@ L.Control.Measure = L.Control.extend({
 		}
 		
 		this._restartPath();
+
+        this._disableCalibration();
 	},
 
 	_mouseMove: function(e) {
@@ -134,6 +147,8 @@ L.Control.Measure = L.Control.extend({
 			this._updateTooltipDistance(this._pixelDistance, pixelDistance);
 
 			this._distance += distance;
+
+            this._enableCalibration();
 		}
 		this._createTooltip(e.latlng);
 		
@@ -219,10 +234,16 @@ L.Control.Measure = L.Control.extend({
 	_updateTooltipDistance: function(total, difference) {
 		var totalRound = this._round(total);
 	    var differenceRound = this._round(difference);
+        var units = " pixels";
+        if (this.mmPerPixel && this.mmPerPixel != 0) {
+            units = " mm";
+            totalRound = totalRound * this.mmPerPixel;
+            differenceRound = differenceRound * this.mmPerPixel;
+        }
 
-        var text = '<div class="leaflet-measure-tooltip-total">' + totalRound + '</div>';
+        var text = '<div class="leaflet-measure-tooltip-total">' + totalRound + units + '</div>';
 		if(differenceRound > 0 && totalRound != differenceRound) {
-			text += '<div class="leaflet-measure-tooltip-difference">(+' + differenceRound + ')</div>';
+			text += '<div class="leaflet-measure-tooltip-difference">(+' + differenceRound + units + ')</div>';
 		}
 
 		this._tooltip._icon.innerHTML = text;
@@ -255,17 +276,16 @@ L.Control.Measure = L.Control.extend({
             y: pixely,
             pixelDistanceTo: function(other) {
                 if (other) {
-                    var xs = 0;
-                    var ys = 0;
-                    xs = other.x - this.x;
-                    xs = xs * xs;
-                    ys = other.y - this.y;
-                    ys = ys * ys;
-                    return Math.sqrt(xs + ys);
+                    // Distance formula!
+                    return Math.sqrt(Math.pow(other.x - this.x, 2) + Math.pow(other.y - this.y, 2));
                 }
                 return 0;
             }
         };
+    },
+    mmPerPixel: 0,
+    onCalibration: function(pixelDistance) {
+        return 0;
     }
 
 });
@@ -277,6 +297,18 @@ L.Map.mergeOptions({
 L.Map.addInitHook(function () {
 	if (this.options.measureControl) {
 		this.measureControl = new L.Control.Measure();
+
+        if (typeof this.options.measureControl === 'object') {
+            var opts = this.options.measureControl;
+            if (opts.mmPerPixel) {
+                this.measureControl.mmPerPixel = opts.mmPerPixel;
+            }
+
+            if (opts.onCalibration) {
+                this.measureControl.onCalibration = opts.onCalibration
+            }
+        }
+
 		this.addControl(this.measureControl);
 	}
 });

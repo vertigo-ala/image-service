@@ -15,8 +15,14 @@
             height: 600px;
         }
 
-        .viewer-custom-buttons.leaflet-disabled {
-            opacity: 0.75;
+        a.leaflet-disabled, .leaflet-disabled > a {
+            pointer-events: none;
+            cursor: default;
+        }
+
+        a.viewer-custom-buttons, .viewer-custom-buttons > a {
+            background-image: none;
+            font-weight: normal;
         }
 
         #viewer-status {
@@ -80,7 +86,17 @@
 
             var viewer = L.map('imageViewer', {
                 fullscreenControl: true,
-                measureControl: true,
+                measureControl: {
+                    mmPerPixel: ${imageInstance?.mmPerPixel ?: 0},
+                    onCalibration: function(pixels) {
+                        var opts = {
+                            url:"${createLink(controller:'dialog', action:'calibrateImageFragment', id:imageInstance.id)}?pixelLength=" + Math.round(pixels),
+                            title: 'Calibrate image scale'
+                        };
+                        imglib.showModal(opts);
+                    }
+                },
+
                 minZoom: 2,
                 maxZoom: ${maxZoom},
                 zoom: 2,
@@ -149,7 +165,7 @@
                 });
                 viewer.addControl(drawControl);
 
-                $(".leaflet-draw-toolbar").last().append('<a id="btnCreateSubimage" class="viewer-custom-buttons leaflet-disabled" href="#" title="Draw a rectangle to create a sub image"><i class="icon-picture"></i></a>');
+                $(".leaflet-draw-toolbar").last().append('<a id="btnCreateSubimage" class="viewer-custom-buttons leaflet-disabled fa fa-picture-o" href="#" title="Draw a rectangle to create a sub image"></a>');
 
                 $("#btnCreateSubimage").click(function(e) {
                     e.preventDefault();

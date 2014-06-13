@@ -136,8 +136,20 @@
                                         <td class="property-value">${imageInstance.zoomLevels}</td>
                                     </tr>
                                     <tr>
+                                        <td class="property-name">Linear scale</td>
+                                        <td class="property-value">
+                                            <g:if test="${imageInstance.mmPerPixel}">
+                                            ${imageInstance.mmPerPixel} mm per pixel
+                                            </g:if>
+                                            <g:else>
+                                                &lt;not calibrated&gt;
+                                            </g:else>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td class="property-name">Image URL</td>
-                                        <td class="property-value"><img:imageUrl imageId="${imageInstance.imageIdentifier}" /></td>
+                                        <td class="property-value"><img:imageUrl imageId="${imageInstance.imageIdentifier}" />
                                     </tr>
                                     <tr>
                                         <td class="property-name">MD5 Hash</td>

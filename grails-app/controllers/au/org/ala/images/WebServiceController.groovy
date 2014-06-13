@@ -684,5 +684,20 @@ class WebServiceController {
         renderResults([success:false, message:'POST with content type "application/JSON" required.'])
     }
 
+    def calibrateImageScale() {
+
+        def userId = AuthenticationUtils.getUserId(request)
+        def image = Image.findByImageIdentifier(params.imageId)
+        def units = params.units ?: "mm"
+        def pixelLength = params.double("pixelLength") ?: 0
+        def actualLength = params.double("actualLength") ?: 0
+        if (image && units && pixelLength && actualLength) {
+            def pixelsPerMM = imageService.calibrateImageScale(image, pixelLength, actualLength, units, userId)
+            renderResults([success: true, message:"Image is scaled at ${pixelsPerMM} pixels per mm"])
+            return
+        }
+        renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
+    }
+
 
 }

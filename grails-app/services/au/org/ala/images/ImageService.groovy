@@ -645,4 +645,29 @@ class ImageService {
         }
     }
 
+    def calibrateImageScale(Image image, double pixelLength, double actualLength, String units, String userId) {
+
+        double scale = 1.0
+        switch (units) {
+            case "inches":
+                scale = 25.4
+                break;
+            case "metres":
+                scale = 1000
+                break;
+            case "feet":
+                scale = 304.8
+                break;
+            default: // unrecognized units, or mm
+                break;
+        }
+
+        def mmPerPixel = pixelLength / (actualLength * scale)
+
+        image.mmPerPixel = mmPerPixel
+        image.save()
+
+        return mmPerPixel
+    }
+
 }

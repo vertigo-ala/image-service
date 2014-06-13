@@ -16,4 +16,10 @@ class DialogController {
     def pleaseWaitFragment() {
         [message: params.message ?: "Please wait..."]
     }
+
+    def calibrateImageFragment() {
+        def image = Image.get(params.int('id'))
+        def pixelLength = params.pixelLength
+        [imageInstance: image, pixelLength: pixelLength]
+    }
 }
