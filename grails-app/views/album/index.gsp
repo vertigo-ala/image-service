@@ -91,9 +91,15 @@
             e.preventDefault();
             var albumId = $(this).closest("[albumId]").attr("albumId");
             if (albumId) {
-                $.ajax("${createLink(action:"ajaxDeleteAlbum")}/" + albumId).done(function(result) {
-                    if (result.success) {
-                        $("[albumId='" + albumId + "']").remove();
+                imglib.areYouSure({
+                    title:'Delete album?',
+                    message: 'Are you sure you wish to delete this album',
+                    affirmativeAction: function() {
+                        $.ajax("${createLink(action:"ajaxDeleteAlbum")}/" + albumId).done(function(result) {
+                            if (result.success) {
+                                $("[albumId='" + albumId + "']").remove();
+                            }
+                        });
                     }
                 });
             }

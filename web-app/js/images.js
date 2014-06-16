@@ -56,9 +56,17 @@ var imglib = {};
 
     lib.areYouSure = function(options) {
 
+        if (!options.title) {
+            options.title = "Are you sure?"
+        }
+
+        if (!options.message) {
+            options.message = options.title;
+        }
+
         var modalOptions = {
             url: IMAGES_CONF.areYouSureUrl + "?message=" + encodeURIComponent(options.message),
-            title: options.title ? options.title : "Are you sure?"
+            title: options.title
         };
 
         lib.areYouSureOptions.affirmativeAction = options.affirmativeAction;

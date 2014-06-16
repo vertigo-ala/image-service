@@ -232,29 +232,21 @@ L.Control.Measure = L.Control.extend({
 	},
 
 	_updateTooltipDistance: function(total, difference) {
-		var totalRound = this._round(total);
-	    var differenceRound = this._round(difference);
+		var displayTotal = total;
+	    var displayDifference = difference;
         var units = " pixels";
         if (this.mmPerPixel && this.mmPerPixel != 0) {
             units = " mm";
-            totalRound = totalRound * this.mmPerPixel;
-            differenceRound = differenceRound * this.mmPerPixel;
+            displayTotal = displayTotal / this.mmPerPixel;
+            displayDifference = displayDifference / this.mmPerPixel;
         }
 
-        var text = '<div class="leaflet-measure-tooltip-total">' + totalRound + units + '</div>';
-		if(differenceRound > 0 && totalRound != differenceRound) {
-			text += '<div class="leaflet-measure-tooltip-difference">(+' + differenceRound + units + ')</div>';
+        var text = '<div class="leaflet-measure-tooltip-total">' + displayTotal.toFixed(2) + units + '</div>';
+		if(displayDifference > 0 && displayTotal != displayDifference) {
+			text += '<div class="leaflet-measure-tooltip-difference">(+' + displayDifference.toFixed(2) + units + ')</div>';
 		}
 
 		this._tooltip._icon.innerHTML = text;
-	},
-
-	_round: function(val) {
-		// return Math.round((val / 1852) * 10) / 10;
-        if (!val) {
-            return 0;
-        }
-        return Math.round(val);
 	},
 
 	_onKeyDown: function (e) {

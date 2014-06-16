@@ -1,3 +1,4 @@
+<%@ page import="au.org.ala.web.CASRoles" %>
 <style>
 
 .image-tag button.close {
@@ -12,13 +13,19 @@
             <h4>Tags</h4>
         </td>
         <td>
+            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN},${CASRoles.ROLE_USER}">
             <button id="btnAttachTag" class="btn btn-small btn-success pull-right"><i class="icon-plus icon-white"></i>&nbsp;Add tag</button>
+            </auth:ifAnyGranted>
         </td>
     </tr>
 </table>
 
 <g:each in="${tags}" var="tag">
-    <div class="badge image-tag" style="white-space: pre-wrap">${tag.label}&nbsp;&nbsp;<button type="button" class="close btnDetachTag" tagId="${tag.id}">&times;</button></div>
+    <g:set var="deleteButtonContent" value="" />
+    <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN},${CASRoles.ROLE_USER}">
+        <g:set var="deleteButtonContent"><button type="button" class="close btnDetachTag" tagId="${tag.id}">&times;</button></g:set>
+    </auth:ifAnyGranted>
+    <div class="badge image-tag" style="white-space: pre-wrap">${tag.label}&nbsp;&nbsp;${raw(deleteButtonContent)}</div>
 </g:each>
 
 <script>
