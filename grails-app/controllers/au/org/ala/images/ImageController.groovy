@@ -84,7 +84,7 @@ class ImageController {
         if (imageInstance) {
             def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
             boolean contentDisposition = params.boolean("contentDisposition")
-            proxyImageRequest(imageInstance, imageUrl, response, contentDisposition)
+            proxyImageRequest(response, imageInstance, imageUrl, (int) imageInstance.fileSize ?: 0, contentDisposition)
         }
     }
 
@@ -92,7 +92,7 @@ class ImageController {
         def imageInstance = getImageFromParams(params)
         if (imageInstance) {
             def imageUrl = imageService.getImageThumbUrl(imageInstance.imageIdentifier)
-            proxyImageRequest(imageInstance, imageUrl, response)
+            proxyImageRequest(response, imageInstance, imageUrl, 0)
         }
     }
 
@@ -100,7 +100,7 @@ class ImageController {
         def imageInstance = getImageFromParams(params)
         if (imageInstance) {
             def imageUrl = imageService.getImageThumbLargeUrl(imageInstance.imageIdentifier)
-            proxyImageRequest(imageInstance, imageUrl, response)
+            proxyImageRequest(response, imageInstance, imageUrl, 0)
         }
     }
 
@@ -111,13 +111,18 @@ class ImageController {
         proxyUrl(new URL(url), response)
     }
 
-    private void proxyImageRequest(Image imageInstance, String imageUrl, HttpServletResponse response, boolean addContentDisposition = false) {
+    private void proxyImageRequest(HttpServletResponse response, Image imageInstance, String imageUrl, int contentLength, boolean addContentDisposition = false) {
 
         def u = new URL(imageUrl)
         response.setContentType(imageInstance.mimeType ?: "image/jpeg")
         if (addContentDisposition) {
             response.setHeader("Content-disposition", "attachment;filename=${imageInstance.imageIdentifier}.${imageInstance.extension ?: "jpg"}")
         }
+
+        if (contentLength) {
+            response.setContentLength(contentLength)
+        }
+
         proxyUrl(u, response)
     }
 
@@ -229,7 +234,12 @@ class ImageController {
     private Image getImageFromParams(GrailsParameterMap params) {
         def image = Image.get(params.int("id"))
         if (!image) {
-            image = Image.findByImageIdentifier(params.imageId as String)
+            String guid = params.id // maybe the id is a guid?
+            if (!guid) {
+                guid = params.imageId
+            }
+
+            image = Image.findByImageIdentifier(guid)
         }
         return image
     }

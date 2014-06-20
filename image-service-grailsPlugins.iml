@@ -5,12 +5,12 @@
       <configuration>
         <webroots>
           <root url="file://$MODULE_DIR$/target/work/plugins/database-migration-1.4.0/grails-app/views" relative="/" />
-          <root url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7/web-app" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/csv-0.3.1/web-app" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/rest-0.7/web-app" relative="/" />
           <root url="file://$MODULE_DIR$/target/work/plugins/jquery-1.8.3/web-app" relative="/" />
-          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/web-app" relative="/" />
-          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/views" relative="/" />
+          <root url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.8/web-app" relative="/" />
+          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/web-app" relative="/" />
+          <root url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/grails-app/views" relative="/" />
         </webroots>
         <sourceRoots />
       </configuration>
@@ -26,13 +26,13 @@
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5">
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/src/groovy" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/i18n" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/controllers" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/services" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.5/grails-app/taglib" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6">
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/src/groovy" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/grails-app/i18n" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/grails-app/controllers" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/grails-app/services" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/ala-web-theme-0.6/grails-app/taglib" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/target/work/plugins/cache-1.1.1">
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/cache-1.1.1/src/java" isTestSource="false" />
@@ -52,9 +52,8 @@
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/database-migration-1.4.0/src/groovy" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/database-migration-1.4.0/grails-app/controllers" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/target/work/plugins/hibernate-3.6.10.13">
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/hibernate-3.6.10.13/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/hibernate-3.6.10.13/grails-app/i18n" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/target/work/plugins/hibernate-3.6.10.16">
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/hibernate-3.6.10.16/src/java" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/target/work/plugins/jquery-1.8.3">
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/jquery-1.8.3/src/groovy" isTestSource="false" />
@@ -67,34 +66,32 @@
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/quartz-1.0.1/src/groovy" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/quartz-1.0.1/grails-app/services" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7">
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7/src/groovy" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7/grails-app/i18n" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.7/grails-app/taglib" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.8">
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.8/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.8/src/groovy" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.8/grails-app/i18n" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/resources-1.2.8/grails-app/taglib" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/target/work/plugins/rest-0.7">
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/rest-0.7/src/groovy" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/target/work/plugins/scaffolding-2.0.1">
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/scaffolding-2.0.1/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/scaffolding-2.0.1/src/groovy" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/target/work/plugins/scaffolding-2.0.3">
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/scaffolding-2.0.3/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/scaffolding-2.0.3/src/groovy" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/target/work/plugins/svn-1.0.2">
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/svn-1.0.2/src/groovy" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/target/work/plugins/tomcat-7.0.52.1">
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/tomcat-7.0.52.1/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/tomcat-7.0.52.1/src/groovy" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/target/work/plugins/tomcat-7.0.54">
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/tomcat-7.0.54/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/tomcat-7.0.54/src/groovy" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/target/work/plugins/webxml-1.4.1">
       <sourceFolder url="file://$MODULE_DIR$/target/work/plugins/webxml-1.4.1/src/groovy" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="grails-2.3.8" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="grails-2.3.8" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="grails-2.3.8" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="grails-2.3.10" level="application" />
     <orderEntry type="module-library" exported="">
       <library name="Grails User Library (image-service-grailsPlugins)">
         <CLASSES>
@@ -120,10 +117,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/hibernate/hibernate-core/3.6.10.Final/hibernate-core-3.6.10.Final.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-orm/3.2.8.RELEASE/spring-orm-3.2.8.RELEASE.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm-plugin-support/3.0.6.RELEASE/grails-datastore-gorm-plugin-support-3.0.6.RELEASE.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/antlr/antlr/2.7.7/antlr-2.7.7.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm-hibernate-core/3.0.6.RELEASE/grails-datastore-gorm-hibernate-core-3.0.6.RELEASE.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm-hibernate/3.0.6.RELEASE/grails-datastore-gorm-hibernate-3.0.6.RELEASE.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/net/sf/ehcache/ehcache-core/2.4.8/ehcache-core-2.4.8.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/hibernate/hibernate-ehcache/3.6.10.Final/hibernate-ehcache-3.6.10.Final.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/twelvemonkeys/imageio/imageio-psd/3.0-rc5/imageio-psd-3.0-rc5.jar!/" />
@@ -158,13 +152,7 @@
           <root url="jar://$MAVEN_REPOSITORY$/com/jcraft/jsch.agentproxy.usocket-jna/0.0.7/jsch.agentproxy.usocket-jna-0.0.7.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/jcraft/jsch.agentproxy.connector-factory/0.0.7/jsch.agentproxy.connector-factory-0.0.7.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/jna/platform/3.5.2/platform-3.5.2.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-core/7.0.52/tomcat-embed-core-7.0.52.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/eclipse/jdt/core/compiler/ecj/3.7.2/ecj-3.7.2.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-websocket/7.0.52/tomcat-embed-websocket-7.0.52.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-logging-log4j/7.0.52/tomcat-embed-logging-log4j-7.0.52.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-el/7.0.52/tomcat-embed-el-7.0.52.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.52/tomcat-embed-jasper-7.0.52.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.52/tomcat-catalina-ant-7.0.52.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/adobe/xmp/xmpcore/5.1.2/xmpcore-5.1.2.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/drewnoakes/metadata-extractor/2.6.2/metadata-extractor-2.6.2.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/com/uwyn/jhighlight/1.0/jhighlight-1.0.jar!/" />
@@ -195,6 +183,18 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/gagravarr/vorbis-java-tika/0.1/vorbis-java-tika-0.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tika/tika-parsers/1.5/tika-parsers-1.5.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/au/org/ala/image-utils/1.8.1/image-utils-1.8.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-simple/3.1.1.RELEASE/grails-datastore-simple-3.1.1.RELEASE.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm/3.1.1.RELEASE/grails-datastore-gorm-3.1.1.RELEASE.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-core/3.1.1.RELEASE/grails-datastore-core-3.1.1.RELEASE.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm-plugin-support/3.1.1.RELEASE/grails-datastore-gorm-plugin-support-3.1.1.RELEASE.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm-hibernate-core/3.1.1.RELEASE/grails-datastore-gorm-hibernate-core-3.1.1.RELEASE.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/grails/grails-datastore-gorm-hibernate/3.1.1.RELEASE/grails-datastore-gorm-hibernate-3.1.1.RELEASE.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-core/7.0.53/tomcat-embed-core-7.0.53.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-websocket/7.0.53/tomcat-embed-websocket-7.0.53.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-logging-log4j/7.0.53/tomcat-embed-logging-log4j-7.0.53.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-el/7.0.53/tomcat-embed-el-7.0.53.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.53/tomcat-embed-jasper-7.0.53.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.53/tomcat-catalina-ant-7.0.53.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -233,6 +233,10 @@ L.Control.Measure = L.Control.extend({
 
 	_updateTooltipDistance: function(total, difference) {
 		var displayTotal = total;
+
+        if (!displayTotal) {
+            displayTotal = difference;
+        }
 	    var displayDifference = difference;
         var units = " pixels";
         if (this.mmPerPixel && this.mmPerPixel != 0) {
