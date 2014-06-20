@@ -1,5 +1,5 @@
 <%@ page import="au.org.ala.web.CASRoles" %>
-<!doctype html>
+<!DOCTYPE html>
 <html>
     <head>
         <meta name="layout" content="main"/>
@@ -88,6 +88,9 @@
                 fullscreenControl: true,
                 measureControl: {
                     mmPerPixel: ${imageInstance?.mmPerPixel ?: 0},
+                    imageScaleFactor: imageScaleFactor,
+                    imageWidth: imageWidth,
+                    imageHeight: imageHeight,
                     onCalibration: function(pixels) {
                         var opts = {
                             url:"${createLink(controller:'dialog', action:'calibrateImageFragment', id:imageInstance.id)}?pixelLength=" + Math.round(pixels),

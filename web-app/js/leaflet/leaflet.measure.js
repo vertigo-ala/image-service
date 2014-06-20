@@ -265,8 +265,9 @@ L.Control.Measure = L.Control.extend({
 	},
 
     _getPixelPoint: function(latlng) {
-        var pixelx = Math.round(latlng.lng * imageScaleFactor);
-        var pixely = imageHeight - Math.round(latlng.lat * imageScaleFactor);
+
+        var pixelx = Math.round(latlng.lng * this.imageScaleFactor);
+        var pixely = this.imageHeight - Math.round(latlng.lat * this.imageScaleFactor);
         return {
             x: pixelx,
             y: pixely,
@@ -280,6 +281,9 @@ L.Control.Measure = L.Control.extend({
         };
     },
     mmPerPixel: 0,
+    imageScaleFactor: 0,
+    imageHeight: 0,
+    imageWidth: 0,
     onCalibration: function(pixelDistance) {
         return 0;
     }
@@ -299,7 +303,15 @@ L.Map.addInitHook(function () {
             if (opts.mmPerPixel) {
                 this.measureControl.mmPerPixel = opts.mmPerPixel;
             }
-
+            if (opts.imageScaleFactor) {
+                this.measureControl.imageScaleFactor = opts.imageScaleFactor;
+            }
+            if (opts.imageHeight) {
+                this.measureControl.imageHeight = opts.imageHeight;
+            }
+            if (opts.imageWidth) {
+                this.measureControl.imageWidth = opts.imageWidth;
+            }
             if (opts.onCalibration) {
                 this.measureControl.onCalibration = opts.onCalibration
             }

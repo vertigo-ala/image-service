@@ -250,6 +250,9 @@ class WebServiceController {
             results.dateTaken = formatDate(date: image.dateTaken, format:"yyyy-MM-dd HH:mm:ss")
             results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
             results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
+            results.mmPerPixel = image.mmPerPixel
+            results.description = image.description
+            results.copyright = image.copyright
 
             if (params.boolean("includeTags")) {
                 results.tags = []
@@ -286,6 +289,7 @@ class WebServiceController {
                 render(results as XML)
             }
         }
+        response.addHeader("Access-Control-Allow-Origin", "")
         response.status = responseCode
     }
 

@@ -268,4 +268,9 @@ class ImageController {
         [imageInstance: imageInstance, x: params.x, y: params.y, width: params.width, height: params.height, metadata: metadata]
     }
 
+    def viewer() {
+        def imageInstance = getImageFromParams(params)
+        [imageInstance: imageInstance]
+    }
+
 }

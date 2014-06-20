@@ -66,4 +66,9 @@ modules = {
         resource url: 'js/audiojs/audio.min.js'
     }
 
+    viewer {
+        dependsOn "jquery"
+        resource url: 'js/ala-image-viewer.js'
+    }
+
 }
