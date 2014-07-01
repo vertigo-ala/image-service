@@ -662,7 +662,7 @@ class ImageService {
                 break;
         }
 
-        def mmPerPixel = pixelLength / (actualLength * scale)
+        def mmPerPixel = (actualLength * scale) / pixelLength
 
         image.mmPerPixel = mmPerPixel
         image.save()

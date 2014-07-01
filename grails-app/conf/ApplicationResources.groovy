@@ -5,33 +5,10 @@ modules = {
         resource url:'js/application.js'
     }
 
-    leaflet {
-        dependsOn 'jquery'
-        resource url: 'js/leaflet/leaflet.css'
-        resource url: 'js/leaflet/Control.FullScreen.css'
-        resource url: 'js/leaflet/leaflet.js'
-        resource url: 'js/leaflet/Control.FullScreen.js'
-        resource url: 'js/leaflet/leaflet.measure.js'
-        resource url: 'js/leaflet/leaflet.measure.css'
-    }
-
-    leaflet_draw {
-        dependsOn 'leaflet'
-        resource 'js/leaflet.draw/leaflet.draw.css'
-        resource 'js/leaflet.draw/leaflet.draw.js'
-
-    }
-
     jstree {
         dependsOn 'jquery'
         resource url: 'js/jstree/jstree.min.js'
         resource url: 'js/jstree/themes/default/style.min.css'
-    }
-
-    qtip {
-        dependsOn 'jquery'
-        resource url: 'js/qtip/jquery.qtip.min.css'
-        resource url: 'js/qtip/jquery.qtip.min.js'
     }
 
     handlebars {
@@ -61,14 +38,11 @@ modules = {
         resource url: 'js/images.js'
     }
 
-    audiojs {
+    qtip {
         dependsOn "jquery"
-        resource url: 'js/audiojs/audio.min.js'
+        resource "js/qtip/jquery.qtip.min.js"
+        resource "js/qtip/jquery.qtip.min.css"
     }
 
-    viewer {
-        dependsOn "jquery"
-        resource url: 'js/ala-image-viewer.js'
-    }
 
 }

@@ -7,19 +7,13 @@ grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 grails.project.war.file = "target/${appName}.war"
 
+// grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
+
 grails.project.fork = [
-    // configure settings for compilation JVM, note that if you alter the Groovy version forked compilation is required
-    //  compile: [maxMemory: 256, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
     test: false,
-    // configure settings for the test-app JVM, uses the daemon by default
-//    test: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
-    // configure settings for the run-app JVM
-//    run: [maxMemory: 4096, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
-        run: false,
-    // configure settings for the run-war JVM
-    war: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
-    // configure settings for the Console UI JVM
-    console: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256]
+    run: false,
+    war: false,
+    console: false
 ]
 
 grails.project.dependency.resolver = "maven" // or ivy
@@ -66,8 +60,9 @@ grails.project.dependency.resolution = {
         runtime ":database-migration:1.4.0"
         runtime ":jquery:1.8.3"
         runtime ":resources:1.2.8"
-        runtime ":ala-web-theme:0.6"
+        runtime ":ala-web-theme:0.7"
         compile ":csv:0.3.1"
+        runtime ":images-client-plugin:0.1"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0.1"
         //runtime ":cached-resources:1.1"

@@ -5,7 +5,7 @@
     <div class="control-group">
         <div class="controls">
             <g:textField class="input-small" name="pixelLength" value="${pixelLength}"/> pixels =
-            <g:textField class="input-small" name="mmLength" value="${imageInstance?.mmPerPixel ?: ''}" />
+            <g:textField class="input-small" name="mmLength" value="" />
             <g:select name="units" class="input-small" from="${['mm','inches', 'metres','feet']}" value="mm"/>
         </div>
     </div>

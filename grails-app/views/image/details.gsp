@@ -1,9 +1,11 @@
 <%@ page import="au.org.ala.web.CASRoles" %>
+
+<g:set var="mediaTitle" value="${isImage ? 'Image' : 'Media'}" />
 <!doctype html>
 <html>
     <head>
         <meta name="layout" content="main"/>
-        <title>ALA Image Service - Image details</title>
+        <title>ALA Image Service - ${mediaTitle} details</title>
         <style>
 
             .property-value {
@@ -19,9 +21,8 @@
         <r:require module="jstree" />
         <r:require module="audiojs" />
     </head>
-
     <body class="content">
-        <img:headerContent title="Image details ${imageInstance?.originalFilename ?: imageInstance?.id}">
+        <img:headerContent title="${mediaTitle} details ${imageInstance?.originalFilename ?: imageInstance?.id}">
             <%
                 pageScope.crumbs = [
                 ]
@@ -67,7 +68,7 @@
                     <div class="tabbable">
                         <ul class="nav nav-tabs">
                             <li class="active">
-                                <a href="#tabProperties" data-toggle="tab">Image properties</a>
+                                <a href="#tabProperties" data-toggle="tab">${mediaTitle} properties</a>
                             </li>
                             <li>
                                 <a href="#tabExif" data-toggle="tab">Embedded</a>
@@ -101,10 +102,12 @@
                                             </td>
                                         </tr>
                                     </g:if>
+                                    <g:if test="${isImage}">
                                     <tr>
                                         <td class="property-name">Dimensions (w x h)</td>
                                         <td class="property-value">${imageInstance.width} x ${imageInstance.height}</td>
                                     </tr>
+                                    </g:if>
                                     <tr>
                                         <td class="property-name">File size</td>
                                         <td class="property-value"><img:sizeInBytes size="${imageInstance.fileSize}" /></td>
@@ -131,6 +134,7 @@
                                         <td class="property-name">Image Identifier</td>
                                         <td class="property-value">${imageInstance.imageIdentifier}</td>
                                     </tr>
+                                    <g:if test="${isImage}">
                                     <tr>
                                         <td class="property-name">Zoom levels</td>
                                         <td class="property-value">${imageInstance.zoomLevels}</td>
@@ -146,9 +150,9 @@
                                             </g:else>
                                         </td>
                                     </tr>
-
+                                    </g:if>
                                     <tr>
-                                        <td class="property-name">Image URL</td>
+                                        <td class="property-name">${mediaTitle} URL</td>
                                         <td class="property-value"><img:imageUrl imageId="${imageInstance.imageIdentifier}" />
                                     </tr>
                                     <tr>
