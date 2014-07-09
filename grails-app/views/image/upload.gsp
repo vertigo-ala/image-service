@@ -16,6 +16,13 @@
         </img:headerContent>
 
         <div class="row-fluid">
+            <div class="span12 alert">
+
+                <button type="button" class="btn" id="btnUploadFromCSV">Upload from CSV</button>
+            </div>
+        </div>
+
+        <div class="row-fluid">
             <div class="span12">
                 <div class="well">
                     <g:form action="storeImage" controller="image" method="post" enctype="multipart/form-data">
@@ -25,5 +32,20 @@
                 </div>
             </div>
         </div>
+        <r:script>
+
+            $(document).ready(function() {
+                $("#btnUploadFromCSV").click(function(e) {
+                    var opts = {
+                        url:"${createLink(controller:'imageClient', action:'uploadFromCSVFragment')}",
+                        title:"Upload images from CSV"
+                    };
+
+                    imglib.showModal(opts);
+                });
+            });
+
+        </r:script>
     </body>
 </html>
+

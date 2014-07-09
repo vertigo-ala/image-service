@@ -7,7 +7,7 @@ grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 grails.project.war.file = "target/${appName}.war"
 
-// grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
+grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
 
 grails.project.fork = [
     test: false,
