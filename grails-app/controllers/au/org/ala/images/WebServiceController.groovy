@@ -20,10 +20,12 @@ class WebServiceController {
     def deleteImage() {
         def image = Image.findByImageIdentifier(params.id as String)
         def success = false
+        def message = ""
         if (image) {
-            success = imageService.deleteImage(image, AuthenticationUtils.getUserId(request) ?: '<unknown>')
+            success = imageService.scheduleImageDeletion(image.id, AuthenticationUtils.getUserId(request))
+            message = "Image scheduled for deletion."
         }
-        renderResults(["success": success])
+        renderResults(["success": success, message: message])
     }
 
     private long forEachImageId(closure) {
@@ -46,6 +48,7 @@ class WebServiceController {
 
     def scheduleThumbnailGeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
+        def userId = AuthenticationUtils.getUserId(request)
         def results = [success: true]
 
         if (params.id && !imageInstance) {
@@ -53,11 +56,11 @@ class WebServiceController {
             results.message = "Could not find image ${params.id}"
         } else {
             if (imageInstance) {
-                imageService.scheduleThumbnailGeneration(imageInstance.id)
+                imageService.scheduleThumbnailGeneration(imageInstance.id, userId)
                 results.message = "Image thumbnail generation scheduled for image ${imageInstance.id}"
             } else {
                 def count = forEachImageId { imageId ->
-                    imageService.scheduleThumbnailGeneration(imageId)
+                    imageService.scheduleThumbnailGeneration(imageId, userId)
                 }
                 results.message = "Image thumbnail generation scheduled for ${count} images."
             }
@@ -69,6 +72,7 @@ class WebServiceController {
     def scheduleArtifactGeneration() {
 
         def imageInstance = Image.findByImageIdentifier(params.id as String)
+        def userId = AuthenticationUtils.getUserId(request)
         def results = [success: true]
 
         if (params.id && !imageInstance) {
@@ -76,11 +80,11 @@ class WebServiceController {
             results.message = "Could not find image ${params.id}"
         } else {
             if (imageInstance) {
-                imageService.scheduleArtifactGeneration(imageInstance.id)
+                imageService.scheduleArtifactGeneration(imageInstance.id, userId)
                 results.message = "Image artifact generation scheduled for image ${imageInstance.id}"
             } else {
                 def count = forEachImageId { imageId ->
-                    imageService.scheduleArtifactGeneration(imageId)
+                    imageService.scheduleArtifactGeneration(imageId, userId)
                 }
                 results.message = "Image artifact generation scheduled for ${count} images."
             }
@@ -91,19 +95,20 @@ class WebServiceController {
 
     def scheduleKeywordRegeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
+        def userId = AuthenticationUtils.getUserId(request)
         def results = [success:true]
         if (params.id && !imageInstance) {
             results.success = false
             results.message = "Could not find image ${params.id}"
         } else {
             if (imageInstance) {
-                imageService.scheduleKeywordRebuild(imageInstance.id)
+                imageService.scheduleKeywordRebuild(imageInstance.id, userId)
                 results.message = "Image keyword rebuild scheduled for image ${imageInstance.id}"
             } else {
                 def imageList = Image.findAll()
                 long count = 0
                 imageList.each { image ->
-                    imageService.scheduleKeywordRebuild(image.id)
+                    imageService.scheduleKeywordRebuild(image.id, userId)
                     count++
                 }
                 results.message = "Image keyword rebuild scheduled for ${count} images."
@@ -533,7 +538,7 @@ class WebServiceController {
 
     def cancelTileJob() {
 
-
+        def userId = AuthenticationUtils.getUserId(request)
         def ticket = params.jobTicket ?: params.ticket
         if (!ticket) {
             renderResults([success:false, message:'No job ticket specified'])
@@ -550,7 +555,7 @@ class WebServiceController {
 
         // Push the job back on the queue
         if (job.taskType == ImageTaskType.TMSTile) {
-            imageService.scheduleTileGeneration(job.image.id)
+            imageService.scheduleTileGeneration(job.image.id, userId)
         }
 
         job.delete()
@@ -648,7 +653,7 @@ class WebServiceController {
                 }
             }
 
-            imageService.scheduleArtifactGeneration(image.id)
+            imageService.scheduleArtifactGeneration(image.id, userId)
             renderResults([success: true, imageId: image?.imageIdentifier])
         } else {
             renderResults([success: false, message: "Failed to store image!"])
@@ -673,10 +678,10 @@ class WebServiceController {
             def results = imageService.batchUploadFromUrl(imageList, userId)
 
             imageList.each { srcImage ->
-                def newImage = results[srcImage.sourceUrl]
+                def newImage = results[srcImage.sourceUrl ?: srcImage.imageUrl]
                 if (newImage && newImage.success) {
                     imageService.setMetadataItems(newImage.image, srcImage, MetaDataSourceType.SystemDefined, userId)
-                    imageService.scheduleArtifactGeneration(newImage.image.id)
+                    imageService.scheduleArtifactGeneration(newImage.image.id, userId)
                     newImage.image = null
                 }
             }

@@ -24,7 +24,7 @@
             <table class="table">
                 <tr>
                     <td>
-                        Import/Thumbnailing queue size
+                        Import/Thumbnail/Delete queue size
                     </td>
                     <td>
                         <span id="statQueueSize"><img:spinner dark="true"/></span>

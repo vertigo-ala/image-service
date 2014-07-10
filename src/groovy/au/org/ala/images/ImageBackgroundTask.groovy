@@ -5,11 +5,13 @@ class ImageBackgroundTask extends BackgroundTask {
     long imageId
     ImageTaskType operation
     ImageService imageService
+    String userId
 
-    public ImageBackgroundTask(long imageId, ImageService imageService, ImageTaskType operation) {
+    public ImageBackgroundTask(long imageId, ImageService imageService, ImageTaskType operation, String userId) {
         this.imageId = imageId
         this.imageService = imageService
         this.operation = operation
+        this.userId = userId ?: "<unknown>"
     }
 
     @Override
@@ -29,10 +31,15 @@ class ImageBackgroundTask extends BackgroundTask {
                 case ImageTaskType.KeywordRebuild:
                     imageService.tagService.rebuildKeywords(imageInstance)
                     break;
+                case ImageTaskType.Delete:
+                    imageService.deleteImage(imageInstance, userId)
+                    break;
                 default:
                     throw new Exception("Unhandled image operation type: ${operation}")
             }
-            imageInstance.save(flush: true, failOnError: true)
+            if (operation != ImageTaskType.Delete) {
+                imageInstance.save(flush: true, failOnError: true)
+            }
         }
     }
 

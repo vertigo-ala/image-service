@@ -162,8 +162,9 @@ class AlbumController {
 
     def ajaxScheduleTileGeneration() {
         def album = Album.get(params.int("id"))
+        def userId = AuthenticationUtils.getUserId(request)
         if (album) {
-            albumService.scheduleTileRegeneration(album)
+            albumService.scheduleTileRegeneration(album, userId)
             render([success:true] as JSON)
             return
         }
@@ -172,8 +173,9 @@ class AlbumController {
 
     def ajaxScheduleThumbnailGeneration() {
         def album = Album.get(params.int("id"))
+        def userId = AuthenticationUtils.getUserId(request)
         if (album) {
-            albumService.scheduleThumbnailRegeneration(album)
+            albumService.scheduleThumbnailRegeneration(album, userId)
             render([success:true] as JSON)
             return
         }

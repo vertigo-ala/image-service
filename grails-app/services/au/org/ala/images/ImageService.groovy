@@ -77,7 +77,7 @@ class ImageService {
             sessionFactory.currentSession.setFlushMode(FlushMode.MANUAL)
             try {
                 imageSources.each { imageSource ->
-                    def imageUrl = imageSource.sourceUrl as String
+                    def imageUrl = (imageSource.sourceUrl ?: imageSource.imageUrl) as String
                     if (imageUrl) {
                         def result = [success: false]
                         try {
@@ -237,21 +237,25 @@ class ImageService {
         return extractor.readMetadata(bytes, filename)
     }
 
-    def scheduleArtifactGeneration(long imageId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail))
-        _tilingQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.TMSTile))
+    def scheduleArtifactGeneration(long imageId, String userId) {
+        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail, userId))
+        _tilingQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.TMSTile, userId))
     }
 
-    def scheduleThumbnailGeneration(long imageId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail))
+    def scheduleThumbnailGeneration(long imageId, String userId) {
+        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail, userId))
     }
 
-    def scheduleTileGeneration(long imageId) {
-        _tilingQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.TMSTile))
+    def scheduleTileGeneration(long imageId, String userId) {
+        _tilingQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.TMSTile, userId))
     }
 
-    def scheduleKeywordRebuild(long imageId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.KeywordRebuild))
+    def scheduleKeywordRebuild(long imageId, String userId) {
+        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.KeywordRebuild, userId))
+    }
+
+    def scheduleImageDeletion(long imageId, String userId) {
+        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Delete, userId))
     }
 
     def schedulePollInbox(String userId) {
@@ -441,7 +445,7 @@ class ImageService {
                 file.deleteOnExit()
             }
             // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
-            scheduleTileGeneration(image.id)
+            scheduleTileGeneration(image.id, userId)
         }
     }
 
@@ -573,7 +577,7 @@ class ImageService {
             auditService.log(parentImage, "Subimage created ${subimage.imageIdentifier}", userId)
             auditService.log(subimage, "Subimage created from parent image ${parentImage.imageIdentifier}", userId)
 
-            scheduleArtifactGeneration(subimage.id)
+            scheduleArtifactGeneration(subimage.id, userId)
 
             return subimage
         }

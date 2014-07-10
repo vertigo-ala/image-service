@@ -152,7 +152,7 @@ class SelectionController {
             count = selectionService.deleteSelectedImages(userId)
         }
 
-        flash.message = "${count} images deleted"
+        flash.message = "${count} images scheduled for deletion"
         redirect(action:'list')
     }
 

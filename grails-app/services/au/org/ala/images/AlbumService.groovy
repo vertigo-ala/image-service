@@ -73,18 +73,18 @@ class AlbumService {
         }
     }
 
-    def scheduleTileRegeneration(Album album) {
+    def scheduleTileRegeneration(Album album, String userId) {
         if (album) {
             withImageIds(album) { imageId ->
-                imageService.scheduleTileGeneration(imageId)
+                imageService.scheduleTileGeneration(imageId, userId)
             }
         }
     }
 
-    def scheduleThumbnailRegeneration(Album album) {
+    def scheduleThumbnailRegeneration(Album album, String userId) {
         if (album) {
             withImageIds(album) { imageId ->
-                imageService.scheduleThumbnailGeneration(imageId)
+                imageService.scheduleThumbnailGeneration(imageId, userId)
             }
         }
     }
@@ -94,7 +94,8 @@ class AlbumService {
             withImageIds(album) { imageId ->
                 def image = Image.get(imageId)
                 if (image) {
-                    imageService.deleteImage(image, userId)
+                    removeImageFromAlbum(album, image)
+                    imageService.scheduleImageDeletion(image.id, userId)
                 }
             }
         }

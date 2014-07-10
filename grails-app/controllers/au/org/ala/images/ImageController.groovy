@@ -46,7 +46,7 @@ class ImageController {
         def userId = AuthenticationUtils.getUserId(request) ?: "<anonymous>"
         def image = imageService.storeImage(file, userId)
         if (image) {
-            imageService.scheduleArtifactGeneration(image.id)
+            imageService.scheduleArtifactGeneration(image.id, userId)
         }
         flash.message = "Image uploaded with identifier: ${image?.imageIdentifier}"
         redirect(controller:'image', action:'upload')
@@ -147,15 +147,16 @@ class ImageController {
     def scheduleArtifactGeneration() {
 
         def imageInstance = getImageFromParams(params)
+        def userId = AuthenticationUtils.getUserId(request)
 
         if (imageInstance) {
-            imageService.scheduleArtifactGeneration(imageInstance.id)
+            imageService.scheduleArtifactGeneration(imageInstance.id, userId)
             flash.message = "Image artifact generation scheduled for image ${imageInstance.id}"
         } else {
             def imageList = Image.findAll()
             long count = 0
             imageList.each { image ->
-                imageService.scheduleArtifactGeneration(image.id)
+                imageService.scheduleArtifactGeneration(image.id, userId)
                 count++
             }
             flash.message = "Image artifact generation scheduled for ${count} images."

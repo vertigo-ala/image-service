@@ -35,7 +35,7 @@ class CheckOutsourcedTasksJob {
                         logService.log("Outsourced job (ticket ${job.ticket} for image ${job.image.imageIdentifier}) has expired! Returning to queue.")
                         // new to rescheduled job
                         if (job.taskType == ImageTaskType.TMSTile) {
-                            imageService.scheduleTileGeneration(job.image.id)
+                            imageService.scheduleTileGeneration(job.image.id, "<unknown>")
                         }
                         job.delete()
                     }
