@@ -33,7 +33,8 @@
 
         $(document).ready(function() {
             var options = {
-                imageServiceBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}"
+                imageServiceBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}",
+                auxDataUrl : "${auxDataUrl}"
             };
 
             imgvwr.viewImage($("#imageViewer"), "${imageInstance.imageIdentifier}", options);

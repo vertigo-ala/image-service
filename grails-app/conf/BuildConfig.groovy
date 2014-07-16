@@ -7,7 +7,7 @@ grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 grails.project.war.file = "target/${appName}.war"
 
-grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
+// grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
 
 grails.project.fork = [
     test: false,
@@ -62,7 +62,7 @@ grails.project.dependency.resolution = {
         runtime ":resources:1.2.8"
         runtime ":ala-web-theme:0.7"
         compile ":csv:0.3.1"
-        runtime ":images-client-plugin:0.1"
+        runtime ":images-client-plugin:0.2.0"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0.1"
         //runtime ":cached-resources:1.1"
@@ -75,7 +75,7 @@ grails.project.dependency.resolution = {
         runtime 'org.apache.commons:commons-imaging:1.0-SNAPSHOT'
         runtime 'org.apache.tika:tika-core:1.4'
         runtime 'javax.media:jai_imageio:1.1.1'
-        runtime 'au.org.ala:image-utils:1.8.1'
+        runtime 'au.org.ala:image-utils:1.8.2'
         compile 'org.apache.ant:ant:1.7.1'
         compile 'org.apache.ant:ant-launcher:1.7.1'
     }

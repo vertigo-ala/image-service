@@ -178,7 +178,7 @@ class SelectionController {
         def selected = []
         if (userId) {
             def album = selectionService.getOrCreateUserSelection(userId)
-            albumService.scheduleTileRegeneration(album)
+            albumService.scheduleTileRegeneration(album, userId)
         }
 
         flash.message = "Scheduled tile generation for selected images."

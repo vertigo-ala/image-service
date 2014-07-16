@@ -138,7 +138,7 @@
                     var ll = e.latlng;
                     var pixelx = Math.round(ll.lng * imageScaleFactor);
                     var pixely = imageHeight - Math.round(ll.lat * imageScaleFactor);
-                    $("#mouseStatus").html( "Mouse: " + pixelx + ", " + pixely);
+//                    $("#mouseStatus").html( "Mouse: " + pixelx + ", " + pixely);
                 });
 
                 viewer.on('zoomend', function(e) {

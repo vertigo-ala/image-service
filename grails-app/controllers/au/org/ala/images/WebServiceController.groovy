@@ -243,37 +243,59 @@ class WebServiceController {
         def image = Image.findByImageIdentifier(params.id as String)
         if (image) {
             results.success = true
-            results.height = image.height
-            results.width = image.width
-            results.tileZoomLevels = image.zoomLevels
-            results.mimeType = image.mimeType
-            results.originalFileName = image.originalFilename
-            results.sizeInBytes = image.fileSize
-            results.copyright = image.copyright ?: ''
-            results.attribute = image.attribution ?: ''
-            results.dateUploaded = formatDate(date: image.dateUploaded, format:"yyyy-MM-dd HH:mm:ss")
-            results.dateTaken = formatDate(date: image.dateTaken, format:"yyyy-MM-dd HH:mm:ss")
-            results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
-            results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
-            results.mmPerPixel = image.mmPerPixel
-            results.description = image.description
-            results.copyright = image.copyright
+            addImageInfoToMap(image, results, params.boolean("includeTags"), params.boolean("includeMetadata"))
+        }
 
-            if (params.boolean("includeTags")) {
-                results.tags = []
-                def imageTags = ImageTag.findAllByImage(image)
-                imageTags?.each { imageTag ->
-                    results.tags << imageTag.tag.path
-                }
-            }
+        renderResults(results)
+    }
 
-            if (params.boolean("includeMetadata")) {
-                results.metadata = []
-                def metaDataList = ImageMetaDataItem.findAllByImage(image)
-                metaDataList?.each { md ->
-                    results.metadata << [key: md.name, value: md.value, source: md.source]
-                }
+    private addImageInfoToMap(Image image, Map results, Boolean includeTags, Boolean includeMetadata) {
+
+        results.height = image.height
+        results.width = image.width
+        results.tileZoomLevels = image.zoomLevels ?: 0
+        results.mimeType = image.mimeType
+        results.originalFileName = image.originalFilename
+        results.sizeInBytes = image.fileSize
+        results.copyright = image.copyright ?: ''
+        results.attribution = image.attribution ?: ''
+        results.dateUploaded = formatDate(date: image.dateUploaded, format:"yyyy-MM-dd HH:mm:ss")
+        results.dateTaken = formatDate(date: image.dateTaken, format:"yyyy-MM-dd HH:mm:ss")
+        results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
+        results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
+        results.mmPerPixel = image.mmPerPixel ?: ''
+        results.description = image.description ?: ''
+        results.copyright = image.copyright ?: ''
+
+        if (includeTags) {
+            results.tags = []
+            def imageTags = ImageTag.findAllByImage(image)
+            imageTags?.each { imageTag ->
+                results.tags << imageTag.tag.path
             }
+        }
+
+        if (includeMetadata) {
+            results.metadata = []
+            def metaDataList = ImageMetaDataItem.findAllByImage(image)
+            metaDataList?.each { md ->
+                results.metadata << [key: md.name, value: md.value, source: md.source]
+            }
+        }
+
+    }
+
+    def imagePopupInfo() {
+        def results = [success:false]
+
+        def image = Image.findByImageIdentifier(params.id as String)
+        if (image) {
+            results.success = true
+            results.data = [:]
+            addImageInfoToMap(image, results.data, false, false)
+            results.link = createLink(controller: "image", action:'details', id: image.id)
+            results.linkText = "Image details..."
+            results.title = "Image properties"
         }
 
         renderResults(results)

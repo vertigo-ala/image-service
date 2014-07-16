@@ -54,11 +54,13 @@ class ImageController {
 
     def list() {
 
+        def ct = new CodeTimer("Image list")
         QueryResults<Image> results
 
         params.offset = params.offset ?: 0
         params.max = params.max ?: 48
-        params.sort = params.sort ?: 'dateTaken'
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
 
         def query = params.q as String
 
@@ -76,6 +78,7 @@ class ImageController {
         def isLoggedIn = StringUtils.isNotEmpty(userId)
         def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
 
+        ct.stop(true)
         [images: results.list, q: query, totalImageCount: results.totalCount, isLoggedIn: isLoggedIn, selectedImageMap: selectedImageMap]
     }
 
@@ -271,7 +274,7 @@ class ImageController {
 
     def viewer() {
         def imageInstance = getImageFromParams(params)
-        [imageInstance: imageInstance]
+        [imageInstance: imageInstance, auxDataUrl: params.infoUrl]
     }
 
 }
