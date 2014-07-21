@@ -31,9 +31,7 @@ class ImageService {
     def grailsApplication
     def logService
     def auditService
-
     def sessionFactory
-
 
     private static Queue<BackgroundTask> _backgroundQueue = new ConcurrentLinkedQueue<BackgroundTask>()
     private static Queue<BackgroundTask> _tilingQueue = new ConcurrentLinkedQueue<BackgroundTask>()
@@ -238,12 +236,12 @@ class ImageService {
     }
 
     def scheduleArtifactGeneration(long imageId, String userId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail, userId))
+        scheduleBackgroundTask(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail, userId))
         _tilingQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.TMSTile, userId))
     }
 
     def scheduleThumbnailGeneration(long imageId, String userId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail, userId))
+        scheduleBackgroundTask(new ImageBackgroundTask(imageId, this, ImageTaskType.Thumbnail, userId))
     }
 
     def scheduleTileGeneration(long imageId, String userId) {
@@ -251,16 +249,20 @@ class ImageService {
     }
 
     def scheduleKeywordRebuild(long imageId, String userId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.KeywordRebuild, userId))
+        scheduleBackgroundTask(new ImageBackgroundTask(imageId, this, ImageTaskType.KeywordRebuild, userId))
     }
 
     def scheduleImageDeletion(long imageId, String userId) {
-        _backgroundQueue.add(new ImageBackgroundTask(imageId, this, ImageTaskType.Delete, userId))
+        scheduleBackgroundTask(new ImageBackgroundTask(imageId, this, ImageTaskType.Delete, userId))
+    }
+
+    def scheduleBackgroundTask(BackgroundTask task) {
+        _backgroundQueue.add(task)
     }
 
     def schedulePollInbox(String userId) {
         def task = new PollInboxBackgroundTask(this, userId)
-        _backgroundQueue.add(task)
+        scheduleBackgroundTask(task)
         return task.batchId
     }
 
@@ -503,6 +505,14 @@ class ImageService {
             logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
         }
 
+        return false
+    }
+
+    def setMetadataItemsByImageId(Long imageId, Map<String, String> metadata, MetaDataSourceType source, String userId) {
+        def image = Image.get(imageId)
+        if (image) {
+            return setMetadataItems(image, metadata, source, userId)
+        }
         return false
     }
 

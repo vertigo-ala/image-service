@@ -163,7 +163,7 @@ class SelectionController {
         def selected = []
         if (userId) {
             def album = selectionService.getOrCreateUserSelection(userId)
-            albumService.scheduleThumbnailRegeneration(album)
+            albumService.scheduleThumbnailRegeneration(album, userId)
         }
 
         flash.message = "Scheduled thumbnail generation for selected images."
