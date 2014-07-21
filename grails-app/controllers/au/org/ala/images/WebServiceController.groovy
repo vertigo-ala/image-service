@@ -16,6 +16,7 @@ class WebServiceController {
     def tagService
     def searchService
     def logService
+    def batchService
 
     def deleteImage() {
         def image = Image.findByImageIdentifier(params.id as String)
@@ -730,5 +731,40 @@ class WebServiceController {
         renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
     }
 
+    def scheduleUploadFromUrls() {
+
+        def userId = AuthenticationUtils.getUserId(request)
+        def body = request.JSON
+
+        if (body) {
+            List<Map<String, String>> imageList = body.images
+            if (!imageList) {
+                renderResults([success:false, message:'You must supply a list of objects called "images", each of which must contain a "sourceUrl" key, along with optional meta data items!'], HttpStatus.SC_BAD_REQUEST)
+                return
+            }
+
+            def batchId = batchService.createNewBatch()
+            int imageCount = 0
+            imageList.each { srcImage ->
+                batchService.addTaskToBatch(batchId, new UploadFromUrlTask(srcImage, imageService, userId))
+                imageCount++
+            }
+
+            renderResults([success: true, message: "${imageCount} urls scheduled for upload (batch id ${batchId}).", batchId: batchId])
+            return
+        }
+
+        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
+    }
+
+    def getBatchStatus() {
+        def status = batchService.getBatchStatus(params.batchId)
+        if (status) {
+            renderResults([success:true, taskCount: status.taskCount, tasksCompleted: status.tasksCompleted, batchId: status.batchId, timeStarted: status.timeStarted.getTime(), timeFinished: status.timeFinished?.getTime() ?: 0])
+            return
+        }
+
+        renderResults([success:false, message:'Missing or invalid batchId'])
+    }
 
 }
