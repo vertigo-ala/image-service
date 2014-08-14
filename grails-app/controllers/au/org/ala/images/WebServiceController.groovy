@@ -676,6 +676,12 @@ class WebServiceController {
                 }
             }
 
+            // Callers have the option to generate thumbs immediately (although it will block). And they will be regenerated later as part of general artifact generation
+            // This is useful, though, if the uploader needs to link to the thumbnail straight away
+            if (params.synchronousThumbnail) {
+                imageService.generateImageThumbnails(image)
+            }
+
             imageService.scheduleArtifactGeneration(image.id, userId)
             renderResults([success: true, imageId: image?.imageIdentifier])
         } else {
