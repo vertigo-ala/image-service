@@ -477,14 +477,14 @@ class ImageService {
         return value
     }
 
-    def setMetaDataItem(Image image, MetaDataSourceType source, String key, String value) {
+    def setMetaDataItem(Image image, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
 
         value = sanitizeString(value)
 
         if (image && StringUtils.isNotEmpty(key?.trim()) && StringUtils.isNotEmpty(value?.trim())) {
 
             if (value.length() > 8000) {
-                auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", "<unknown>")
+                auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", userId)
                 return false
             }
             
@@ -498,7 +498,7 @@ class ImageService {
                 image.addToMetadata(md)
             }
 
-            auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", "<unknown>")
+            auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
             image.save()
             return true
         } else {
@@ -517,6 +517,9 @@ class ImageService {
     }
 
     def setMetadataItems(Image image, Map<String, String> metadata, MetaDataSourceType source, String userId) {
+        if (!userId) {
+            userId = "<unknown>"
+        }
         metadata.each { kvp ->
             def value = sanitizeString(kvp.value)
             def key = kvp.key
@@ -524,7 +527,7 @@ class ImageService {
             if (image && StringUtils.isNotEmpty(key?.trim()) && StringUtils.isNotEmpty(value?.trim())) {
 
                 if (value.length() > 8000) {
-                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", "<unknown>")
+                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", userId)
                     return false
                 }
 
@@ -538,7 +541,7 @@ class ImageService {
                     image.addToMetadata(md)
                 }
 
-                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", "<unknown>")
+                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
                 image.save()
                 return true
             } else {
@@ -548,7 +551,7 @@ class ImageService {
         }
     }
 
-    def removeMetaDataItem(Image image, String key, MetaDataSourceType source) {
+    def removeMetaDataItem(Image image, String key, MetaDataSourceType source, String userId="<unknown>") {
         def count = 0
         def items = ImageMetaDataItem.findAllByImageAndNameAndSource(image, key, source)
         if (items) {
@@ -557,7 +560,7 @@ class ImageService {
                 md.delete()
             }
         }
-        auditService.log(image, "Delete metadata item ${key} (${count} items)", "<unknown>")
+        auditService.log(image, "Delete metadata item ${key} (${count} items)", userId)
         return count > 0
     }
 

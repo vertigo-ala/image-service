@@ -7,6 +7,8 @@ import org.apache.http.HttpStatus
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartRequest
 
+import javax.servlet.http.HttpServletRequest
+
 class WebServiceController {
 
     static allowedMethods = [findImagesByMetadata: 'POST']
@@ -23,7 +25,8 @@ class WebServiceController {
         def success = false
         def message = ""
         if (image) {
-            success = imageService.scheduleImageDeletion(image.id, AuthenticationUtils.getUserId(request))
+            def userId = getUserIdForRequest(request)
+            success = imageService.scheduleImageDeletion(image.id, userId)
             message = "Image scheduled for deletion."
         }
         renderResults(["success": success, message: message])
@@ -49,7 +52,7 @@ class WebServiceController {
 
     def scheduleThumbnailGeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def results = [success: true]
 
         if (params.id && !imageInstance) {
@@ -73,7 +76,7 @@ class WebServiceController {
     def scheduleArtifactGeneration() {
 
         def imageInstance = Image.findByImageIdentifier(params.id as String)
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def results = [success: true]
 
         if (params.id && !imageInstance) {
@@ -96,7 +99,7 @@ class WebServiceController {
 
     def scheduleKeywordRegeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def results = [success:true]
         if (params.id && !imageInstance) {
             results.success = false
@@ -363,7 +366,7 @@ class WebServiceController {
             return
         }
 
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
 
         def subimage = imageService.createSubimage(image, x, y, width, height, userId)
         renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
@@ -404,9 +407,41 @@ class WebServiceController {
             return
         }
 
-        def success = imageService.setMetaDataItem(image, MetaDataSourceType.UserDefined, key, value)
+        def userId = getUserIdForRequest(request)
+
+        def success = imageService.setMetaDataItem(image, MetaDataSourceType.UserDefined, key, value, userId)
 
         renderResults([success:success])
+    }
+
+    private getUserIdForRequest(HttpServletRequest request) {
+        // First check the CAS filter cookie thing
+        def userId = AuthenticationUtils.getUserId(request)
+        // If not found (i.e. urls not mapped), look for standard ALA auth header
+        if (!userId) {
+            userId = request.getHeader("X-ALA-userId")
+        }
+
+        // If still cannot be found look for it as a parameter
+        if (!userId) {
+            userId = params.userId
+        }
+
+        return userId
+    }
+
+    def bulkAddUserMetadataToImage(String id) {
+        def image = Image.findByImageIdentifier(id)
+        def userId = getUserIdForRequest(request)
+        if (!image) {
+            renderResults([success:false, message:"Image not found: ${params.id}"])
+            return
+        }
+
+        def metadata = request.getJSON() as Map<String, String>
+        def results = imageService.setMetadataItems(image, metadata, MetaDataSourceType.UserDefined, userId)
+
+        renderResults([success:results != null])
     }
 
     def removeUserMetadataFromImage() {
@@ -421,9 +456,8 @@ class WebServiceController {
             renderResults([success:false, message:"Metadata key/name not supplied!"])
             return
         }
-
-        def success = imageService.removeMetaDataItem(image, key, MetaDataSourceType.UserDefined)
-
+        def userId = getUserIdForRequest(request)
+        def success = imageService.removeMetaDataItem(image, key, MetaDataSourceType.UserDefined, userId)
 
         renderResults([success: success])
     }
@@ -631,7 +665,7 @@ class WebServiceController {
 
         Image image = null
 
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def url = params.imageUrl ?: params.url
 
         if (url) {
@@ -691,7 +725,7 @@ class WebServiceController {
 
     def uploadImagesFromUrls() {
 
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def body = request.JSON
 
         if (body) {
@@ -724,7 +758,7 @@ class WebServiceController {
 
     def calibrateImageScale() {
 
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def image = Image.findByImageIdentifier(params.imageId)
         def units = params.units ?: "mm"
         def pixelLength = params.double("pixelLength") ?: 0
@@ -739,7 +773,7 @@ class WebServiceController {
 
     def scheduleUploadFromUrls() {
 
-        def userId = AuthenticationUtils.getUserId(request)
+        def userId = getUserIdForRequest(request)
         def body = request.JSON
 
         if (body) {

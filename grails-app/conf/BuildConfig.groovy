@@ -28,8 +28,6 @@ grails.project.dependency.resolution = {
     legacyResolve false // whether to do a secondary resolve on plugin installation, not advised and here for backwards compatibility
 
     repositories {
-        inherits true // Whether to inherit repository definitions from plugins
-
 
         grailsPlugins()
         grailsHome()
@@ -62,7 +60,7 @@ grails.project.dependency.resolution = {
         runtime ":resources:1.2.8"
         runtime ":ala-web-theme:0.8.1"
         compile ":csv:0.3.1"
-        runtime ":images-client-plugin:0.2.1"
+        runtime ":images-client-plugin:0.2.2"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0.1"
         //runtime ":cached-resources:1.1"
