@@ -180,6 +180,7 @@
                                     <auth:ifLoggedIn>
                                         <span id="albums-div" style="display: inline-block"></span>
                                         <span id="selectionContext" style="display: inline-block"></span>
+                                        <a href="${createLink(controller:'image', action:'stagedImages')}" class="btn btn-small btn-success"><i class="icon-plus icon-white"></i>Upload</a>
                                     </auth:ifLoggedIn>
                                     <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                                         <a href="${createLink(controller:'admin', action:'index')}" class="btn btn-warning btn-small"><i class="icon-cog icon-white"></i>Admin</a>

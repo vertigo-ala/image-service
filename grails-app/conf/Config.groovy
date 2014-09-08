@@ -133,7 +133,7 @@ environments {
     production {
         grails.logging.jul.usebridge = true
         grails.serverURL = "http://images.ala.org.au"
-        imageservice.apache.root = "http://images.ala.org.au/data/images/store/"
+        imageservice.apache.root = "http://images.ala.org.au/images/store/"
     }
 }
 

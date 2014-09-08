@@ -30,6 +30,16 @@ class SettingService {
         return getBoolSetting()
     }
 
+    @ImageServiceSetting(name = 'stagedimages.purge.stalefiles', description = "Should the service automatically purge old staged files", defaultValue = "true")
+    public boolean getPurgeStagedFilesEnabled() {
+        return getBoolSetting()
+    }
+
+    @ImageServiceSetting(name = 'stagedimages.file.lifespan.hours', description = "How long should a user staged file hang around before being cleaned up (in hours)", defaultValue = "24")
+    public Integer getStagedFileLifespanInHours() {
+        return getIntSetting()
+    }
+
     public setSettingValue(String name, String value) {
         def setting = Setting.findByName(name)
         if (!setting) {
@@ -87,6 +97,12 @@ class SettingService {
     private String getStringSetting() {
         def setting = getSettingFromStack()
         return setting.value
+    }
+
+    private Integer getIntSetting() {
+        def setting = getSettingFromStack()
+
+        return Integer.parseInt(setting.value)
     }
 
     private synchronized Setting getOrCreateSetting(String key, SettingType type, String defaultValue, String description) {

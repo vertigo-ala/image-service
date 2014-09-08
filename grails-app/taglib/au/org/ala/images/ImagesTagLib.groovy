@@ -12,6 +12,7 @@ class ImagesTagLib {
     def groovyPageLocator
     def authService
     def searchCriteriaService
+    def markdownService
 
     /**
      * @attr title
@@ -25,10 +26,6 @@ class ImagesTagLib {
         def mb = new MarkupBuilder(out)
         def bodyContent = body.call()
         def crumbLabel = attrs.crumbLabel ?: attrs.title
-
-//        if (attrs.selectedNavItem) {
-//            sitemesh.parameter(name: 'selectedNavItem', value: attrs.selectedNavItem)
-//        }
 
         sitemesh.captureContent(tag:'page-header') {
 
@@ -227,6 +224,42 @@ class ImagesTagLib {
             displayName = authService.getUserForUserId(userId)?.displayName
         }
         out << (displayName ?: userId ?: '&lt;Unknown&gt;')
+    }
+
+    /**
+     * @attr markdown defaults to true, will invoke the markdown service
+     * @attr tooltipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
+     * @atrr tipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
+     * @attr targetPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
+     */
+    def helpText = { attrs, body ->
+        def mb = new MarkupBuilder(out)
+        def helpText = (body() as String)?.trim()?.replaceAll("[\r\n]", "");
+        if (helpText) {
+            helpText = markdownService.markdown(helpText)
+            def attributes = [href:'#', class:'fieldHelp', title:helpText, tabindex: "-1"]
+            if (attrs.tooltipPosition) {
+                attributes.tooltipPosition = attrs.tooltipPosition
+            }
+            if (attrs.tipPosition) {
+                attributes.tipPosition = attrs.tipPosition
+            }
+            if (attrs.targetPosition) {
+                attributes.targetPosition = attrs.targetPosition
+            }
+
+            if (attrs.width) {
+                attributes.width = attrs.width
+            }
+
+            mb.a(attributes) {
+                span(class:'help-container') {
+                    mkp.yieldUnescaped('&nbsp;')
+                }
+            }
+        } else {
+            mb.mkp.yieldUnescaped("&nbsp;")
+        }
     }
 
 }

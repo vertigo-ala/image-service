@@ -22,4 +22,13 @@ class DialogController {
         def pixelLength = params.pixelLength
         [imageInstance: image, pixelLength: pixelLength]
     }
+
+    def selectImagesForStagingFragment() {
+        [userId: params.userId]
+    }
+
+    def uploadStagedImagesDataFileFragment() {
+        [userId: params.userId]
+    }
+
 }

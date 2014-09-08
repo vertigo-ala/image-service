@@ -7,7 +7,7 @@ grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 grails.project.war.file = "target/${appName}.war"
 
-// grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
+grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
 
 grails.project.fork = [
     test: false,
@@ -61,6 +61,7 @@ grails.project.dependency.resolution = {
         runtime ":ala-web-theme:0.8.1"
         compile ":csv:0.3.1"
         runtime ":images-client-plugin:0.2.2"
+        compile ":markdown:1.1.1"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0.1"
         //runtime ":cached-resources:1.1"
