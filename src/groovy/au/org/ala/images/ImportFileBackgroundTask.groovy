@@ -16,6 +16,6 @@ class ImportFileBackgroundTask extends BackgroundTask {
 
     @Override
     void execute() {
-        imageService.importFile(imageFile, batchId, userId);
+        imageService.importFileFromInbox(imageFile, batchId, userId);
     }
 }

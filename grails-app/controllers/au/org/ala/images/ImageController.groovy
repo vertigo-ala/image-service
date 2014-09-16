@@ -20,6 +20,7 @@ class ImageController {
     def selectionService
     def logService
     def imageStagingService
+    def batchService
 
     def index() { }
 
@@ -287,10 +288,10 @@ class ImageController {
             throw new Exception("Must be logged in to use this service")
         }
 
-        def fileList = imageStagingService.getFileList(userId, params)
+        def stagedFiles = imageStagingService.buildStagedImageData(userId, params)
         def columns = StagingColumnDefinition.findAllByUserId(userId, [sort:'id', order:'asc'])
 
-        [fileList: fileList, userId: userId, hasDataFile: imageStagingService.hasDataFileUploaded(userId), dataFileUrl: imageStagingService.getDataFileUrl(userId), dataFileColumns: columns]
+        [stagedFiles: stagedFiles, userId: userId, hasDataFile: imageStagingService.hasDataFileUploaded(userId), dataFileUrl: imageStagingService.getDataFileUrl(userId), dataFileColumns: columns]
     }
 
     @AlaSecured(value = [CASRoles.ROLE_USER, CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
@@ -385,8 +386,7 @@ class ImageController {
         if (fieldName) {
 
             def fieldType = (params.fieldType as StagingColumnType) ?: StagingColumnType.Literal
-            def format = params.format ?: ""
-
+            def format = params.definition ?: ""
             def fieldDefinition = StagingColumnDefinition.get(params.int("columnDefinitionId"))
             if (fieldDefinition) {
                 // this is a 'save', not a 'create'
@@ -430,6 +430,26 @@ class ImageController {
         if (fieldDefinition) {
             fieldDefinition.delete()
         }
+        redirect(action:"stagedImages")
+    }
+
+    @AlaSecured(value = [CASRoles.ROLE_USER, CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
+    def uploadStagedImages() {
+        def userId = AuthenticationUtils.getUserId(request)
+        if (!userId) {
+            throw new Exception("Must be logged in to use this service")
+        }
+
+        def stagedFiles = imageStagingService.buildStagedImageData(userId, [:])
+
+        def batchId = batchService.createNewBatch()
+        int imageCount = 0
+        stagedFiles.each { stagedFileMap ->
+            def stagedFile = StagedFile.get(stagedFileMap.id)
+            batchService.addTaskToBatch(batchId, new UploadFromStagedImageTask(stagedFile, stagedFileMap, imageStagingService, batchId))
+            imageCount++
+        }
+
         redirect(action:"stagedImages")
     }
 

@@ -111,7 +111,7 @@ class ImageService {
     }
 
     @NotTransactional
-    private Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType, String uploaderId) {
+    Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType, String uploaderId) {
 
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
 
@@ -405,7 +405,7 @@ class ImageService {
         return files
     }
 
-    def importFile(File file, String batchId, String userId) {
+    Image importFileFromInbox(File file, String batchId, String userId) {
 
         CodeTimer ct = new CodeTimer("Import file ${file?.absolutePath}")
 
@@ -449,6 +449,7 @@ class ImageService {
             // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
             scheduleTileGeneration(image.id, userId)
         }
+        return Image
     }
 
     def pollInbox(String batchId, String userId) {
@@ -564,7 +565,7 @@ class ImageService {
         return count > 0
     }
 
-    private static String detectMimeTypeFromBytes(byte[] bytes, String filename) {
+    static String detectMimeTypeFromBytes(byte[] bytes, String filename) {
         return new MetadataExtractor().detectContentType(bytes, filename);
     }
 

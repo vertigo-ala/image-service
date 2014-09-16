@@ -1,3 +1,4 @@
+<%@ page import="au.org.ala.images.StagingColumnType" %>
 <!doctype html>
 <html>
     <head>
@@ -19,6 +20,7 @@
         }
 
         </style>
+
     </head>
 
     <body class="content">
@@ -27,58 +29,57 @@
         </img:headerContent>
 
         <div class="well well-small">
-        <div class="row-fluid">
-            <div class="span3">
-                <h4><span class="numberCircle">1</span>&nbsp;Upload Images</h4>
+            <div class="row-fluid">
+                <div class="span3">
+                    <h4><span class="numberCircle">1</span>&nbsp;Upload Images</h4>
+                    <p>
+                        Upload your images to the staging area
+                    </p>
+                </div>
+                <div class="span3">
+                    <h4><span class="numberCircle">2</span>&nbsp;Upload data file</h4>
+                    <p>
+                        Upload a csv file containing metadata for each image. The first column in the csv file must be <code>filename</code>, and the filenames in this column will be matched exactly against the names of staged files.
+                    </p>
+                </div>
+                <div class="span3">
+                    <h4><span class="numberCircle">3</span>&nbsp;Configure columns</h4>
                 <p>
-                    Upload your images to the staging area
+                    Add and configure columns in the table below. Only columns that are configured will be attached to each record
+                    <img:helpText>
+                        <p>Field values can be derived from the image filename, or portions thereof, or can also be read from a separate csv datafile keyed by the image filename.</p>
+                        <p><strong>Note:</strong> Only data displayed in the staged images table will be loaded</p>
+                    </img:helpText>
                 </p>
+                </div>
+                <div class="span3">
+                    <h4><span class="numberCircle">4</span>&nbsp;Upload images</h4>
+                    Review the staged images table, upload the images to the image service
+                </div>
             </div>
-            <div class="span3">
-                <h4><span class="numberCircle">2</span>&nbsp;Upload data file</h4>
-                <p>
-                    Upload a csv file containing Darwin Core data for each image. The first column in the csv file must be <code>filename</code>, and the filenames in this column will be matched exactly against the names of staged files.
-                </p>
-            </div>
-            <div class="span3">
-                <h4><span class="numberCircle">3</span>&nbsp;Configure columns</h4>
-            <p>
-                Add and configure columns in the table below. Only columns that are configured will be attached to each record
-                <img:helpText>
-                    <p>Field values can be derived from the image filename, or portions thereof, or can also be read from a separate csv datafile keyed by the image filename.</p>
-                    <p><strong>Note:</strong> Only data displayed in the staged images table will be loaded</p>
-                </img:helpText>
-            </p>
-            </div>
-            <div class="span3">
-                <h4><span class="numberCircle">4</span>&nbsp;Create occurrence records</h4>
-                Review the staged images table, and create the records
-            </div>
-        </div>
-        <div class="row-fluid">
-            <div class="span3" style="text-align: center">
-                <button id="btnSelectImages" class="btn">Select files</button>
-            </div>
-            <div class="span3" style="text-align: center">
-                <g:if test="${hasDataFile}">
-                    <button class="btn btn-warning" id="btnClearDataFile">Clear data file</button>
-                    <a href="${dataFileUrl}">View data file</a>
-                </g:if>
-                <g:else>
-                    <button class="btn" id="btnUploadDataFile"><i class="icon-upload"></i>&nbsp;Upload data file</button>
-                </g:else>
-            </div>
-            <div class="span3" style="text-align: center">
-                <button class="btnAddFieldDefinition btn"><i class="icon-plus"></i> Add column</button>
-            </div>
-            <div class="span3" style="text-align: center">
-                <button id="btnLoadTasks" class="btn btn-primary" style="margin-left: 10px">Create tasks from staged images</button>
+            <div class="row-fluid">
+                <div class="span3" style="text-align: center">
+                    <button id="btnSelectImages" class="btn">Select files</button>
+                </div>
+                <div class="span3" style="text-align: center">
+                    <g:if test="${hasDataFile}">
+                        <button class="btn btn-warning" id="btnClearDataFile">Clear data file</button>
+                        <a href="${dataFileUrl}">View data file</a>
+                    </g:if>
+                    <g:else>
+                        <button class="btn" id="btnUploadDataFile"><i class="icon-upload"></i>&nbsp;Upload data file</button>
+                    </g:else>
+                </div>
+                <div class="span3" style="text-align: center">
+                    <button class="btnAddFieldDefinition btn"><i class="icon-plus"></i> Add column</button>
+                </div>
+                <div class="span3" style="text-align: center">
+                    <button id="btnUploadStagedImages" class="btn btn-primary" style="margin-left: 10px">Upload staged images</button>
+                </div>
             </div>
         </div>
 
-    </div>
-
-        <div class="staged-files-list">
+        <div class="staged-files-list" style="overflow-x: scroll">
             <table class="table table-condensed table-bordered table-striped">
                 <thead>
                     <th>Filename</th>
@@ -86,12 +87,14 @@
                     <g:each in="${dataFileColumns}" var="field">
                         <th columnDefinitionId="${field.id}">
                             <div class="label" style="display: block">
-                                <span style="font-weight: normal">${field.fieldDefinitionType} <b>${field.format}</b></span>
-                                <a href="#" class="btnEditField pull-right" title="Edit column definition"><i class="icon-edit icon-white"></i></a>
-                                <g:if test="${field.fieldName != 'externalIdentifier'}">
-                                    <a href="#" class="btnDeleteField pull-right" title="Remove column"><i class="icon-remove icon-white"></i></a>
-                                </g:if>
+                                <g:set var="fieldTypeIcon" value="${[ (StagingColumnType.Literal) : "icon-font", (StagingColumnType.NameRegex): 'icon-asterisk'][field.fieldDefinitionType] ?: 'icon-file'}" />
+                                <i class="icon-white ${fieldTypeIcon}"></i>
+                                <span style="text-align: right">
+                                <a href="#" class="btnEditField" title="Edit column definition"><i class="icon-edit icon-white"></i></a>
+                                <a href="#" class="btnDeleteField" title="Remove column"><i class="icon-remove icon-white"></i></a>
+                                </span>
                                 <br/>
+                                <div style="font-weight: normal">${field.format}</div>
                                 ${field.fieldName}
                             </div>
                         </th>
@@ -99,17 +102,17 @@
                     <th style="width: 40px"></th>
                 </thead>
                 <tbody>
-                    <g:each in="${fileList}" var="stagedFile">
+                    <g:each in="${stagedFiles}" var="stagedFile">
                         <tr stagedFileId="${stagedFile.id}">
                             <td>
-                                ${stagedFile.filename}
+                                <a href="${stagedFile.stagedFileUrl}">${stagedFile.filename}</a>
                             </td>
                             <td>
                                 <img:formatDateTime date="${stagedFile.dateStaged}" />
                             </td>
                             <g:each in="${dataFileColumns}" var="field">
                                 <td>
-
+                                    ${stagedFile[field.fieldName]}
                                 </td>
                             </g:each>
                             <td>
@@ -186,8 +189,13 @@
                     }
                 });
 
+                $("#btnUploadStagedImages").click(function(e) {
+                    e.preventDefault();
+                    window.location.href = "${createLink(controller:'image', action:'uploadStagedImages')}";
+                });
 
             });
+
         </r:script>
 
     </body>

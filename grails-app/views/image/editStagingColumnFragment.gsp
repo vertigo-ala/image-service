@@ -31,7 +31,8 @@
     <div class="control-group">
         <label class="control-label" for="fieldName">Field name</label>
         <div class="controls">
-            <g:select name="fieldName" from="${DarwinCoreField.values().sort({ it.name() })}" value="${fieldDefinition?.fieldName}"/>
+            <g:textField name="fieldName" value="${fieldDefinition?.fieldName}" />
+            %{--<g:select name="fieldName" from="${DarwinCoreField.values().sort({ it.name() })}" value="${fieldDefinition?.fieldName}"/>--}%
         </div>
     </div>
 
@@ -45,6 +46,30 @@
 
     <script>
 
+        jQuery("#fieldName").autocomplete("${createLink(controller:'webService', action:'darwinCoreTerms')}", {
+            dataType: 'jsonp',
+            parse: function (data) {
+                var rows = new Array();
+                for (var i = 0; i < data.length; i++) {
+                    rows[i] = {
+                        data: data[i],
+                        value: data[i].name,
+                        result: data[i].name
+                    };
+                }
+                return rows;
+            },
+            matchSubset: false,
+            formatItem: function (row, i, n) {
+                return row.name;
+            },
+//            cacheLength: 10,
+            minChars: 2,
+            scroll: false,
+//            max: 10,
+            selectFirst: false
+        });
+
         $("#btnCancelEditFieldDefinition").click(function(e) {
             e.preventDefault();
             imglib.hideModal();
@@ -57,7 +82,7 @@
             var format = encodeURIComponent($("#definition").val());
 
             if (fieldName) {
-                window.location = "${createLink(controller:'image', action:'saveStagingColumnDefinition', params:[columnDefinitionId: fieldDefinition?.id])}&fieldName=" + fieldName + "&fieldType=" + fieldType + "&format=" + format
+                window.location = "${createLink(controller:'image', action:'saveStagingColumnDefinition', params:[columnDefinitionId: fieldDefinition?.id])}&fieldName=" + fieldName + "&fieldType=" + fieldType + "&definition=" + format;
             }
         });
 
@@ -66,7 +91,9 @@
         });
 
         $("#dataFileColumn").change(function() {
-            $("#fieldName").val($("#dataFileColumn").val());
+            var value = $("#dataFileColumn").val();
+            $("#fieldName").val(value);
+            $("#definition").val(value);
         });
 
         function updateFormatOptions() {
@@ -93,10 +120,6 @@
                 }
             }
         }
-
-        $("#dataFileColumn").change(function() {
-            $("#definition").val($("#dataFileColumn").val());
-        });
 
         updateFormatOptions();
 

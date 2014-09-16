@@ -786,6 +786,9 @@ class WebServiceController {
             def batchId = batchService.createNewBatch()
             int imageCount = 0
             imageList.each { srcImage ->
+                if (!srcImage.containsKey("importBatchId")) {
+                    srcImage["importBatchId"] = batchId
+                }
                 batchService.addTaskToBatch(batchId, new UploadFromUrlTask(srcImage, imageService, userId))
                 imageCount++
             }
@@ -805,6 +808,19 @@ class WebServiceController {
         }
 
         renderResults([success:false, message:'Missing or invalid batchId'])
+    }
+
+    def darwinCoreTerms() {
+        def terms = []
+
+        def filter = params.q ? { DarwinCoreField dwc -> dwc.name().toLowerCase().contains(params.q.toLowerCase()) } : { DarwinCoreField dwc -> true}
+
+        DarwinCoreField.values().each {
+            if (filter(it)) {
+                terms.add([name: it.name(), label: it.label])
+            }
+        }
+        renderResults(terms)
     }
 
 }

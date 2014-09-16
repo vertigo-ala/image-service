@@ -44,5 +44,4 @@ modules = {
         resource "js/qtip/jquery.qtip.min.css"
     }
 
-
 }

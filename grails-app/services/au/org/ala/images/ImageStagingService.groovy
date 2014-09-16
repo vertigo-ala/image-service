@@ -1,9 +1,15 @@
 package au.org.ala.images
 
+import grails.plugin.cache.GrailsAnnotationCacheOperationSource
 import grails.transaction.Transactional
+import org.apache.commons.io.ByteOrderMark
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.input.BOMInputStream
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.grails.plugins.csv.CSVMapReader
 import org.springframework.web.multipart.MultipartFile
+
+import java.util.regex.Pattern
 
 @Transactional
 class ImageStagingService {
@@ -11,8 +17,12 @@ class ImageStagingService {
     def grailsApplication
     def settingService
     def logService
+    def imageService
+    def imageStoreService
+    def auditService
 
     ResultsPageList<StagedFile> getFileList(String userId, GrailsParameterMap params) {
+
         if (!userId) {
             return new ResultsPageList<StagedFile>([], 0)
         }
@@ -120,6 +130,11 @@ class ImageStagingService {
         return root + "/staging/${userId}/datafile/datafile.txt"
     }
 
+    public String getStagedFileUrl(StagedFile stagedFile) {
+        def root = grailsApplication.config.imageservice.apache.root
+        return root + "/staging/${stagedFile.userId}/${stagedFile.filename}"
+    }
+
     def deleteDataFile(String userId) {
         def f = new File(getStagingDataFile(userId))
         if (f.exists()) {
@@ -136,6 +151,177 @@ class ImageStagingService {
             }
         }
         return []
+    }
+
+    /**
+     * Build a cache of regex patterns already compiled, to avoid having to recompile each expression for every row
+     * @param fieldDefinitions
+     * @return
+     */
+    private static Map<StagingColumnDefinition, Pattern> createPatternMap(List<StagingColumnDefinition> fieldDefinitions) {
+        def patternMap = [:]
+        fieldDefinitions.each { field ->
+            Pattern pattern = null
+            switch (field.fieldDefinitionType) {
+                case StagingColumnType.NameRegex:
+                    try {
+                        pattern = Pattern.compile(field.format)
+                    } catch (Exception ex) {
+                        println ex.message
+                    }
+                    break
+            }
+            if (pattern) {
+                patternMap[field] = pattern
+            }
+        }
+        return patternMap
+    }
+
+    private Map<String, Map<String, String>> getDataFileValues(String userId) {
+        def dataFile = new File(getStagingDataFile(userId))
+        def dataFileMap = [:]
+        def dataFileColumns = []
+        if (dataFile.exists()) {
+            FileInputStream fis = new FileInputStream(dataFile)
+            BOMInputStream bomInputStream = new BOMInputStream(fis, ByteOrderMark.UTF_8) // Ignore any UTF-8 Byte Order Marks, as they will stuff up the mapping!
+            try {
+                new CSVMapReader(new InputStreamReader(bomInputStream)).each { Map map ->
+                    if (map.filename) {
+                        if (!dataFileColumns) {
+                            map.each {
+                                if (it.key != 'filename') {
+                                    dataFileColumns << it.key
+                                }
+                            }
+                        }
+                        def filename = map.get('filename')
+                        if (filename) {
+                            dataFileMap[filename] = map
+                        }
+                    }
+                }
+            } finally {
+                if (bomInputStream) {
+                    bomInputStream.close()
+                }
+
+                if (fis) {
+                    fis.close()
+                }
+            }
+        }
+        return dataFileMap
+    }
+
+    def buildStagedImageData(String userId, Map params) {
+
+        if (!params) {
+            params = [sort:'id', order:'asc']
+        }
+
+        def stagedFiles = StagedFile.findAllByUserId(userId, params)
+        def fieldDefinitions = StagingColumnDefinition.findAllByUserId(userId, [sort:'id', order:'asc'])
+        def dataFileMap = getDataFileValues(userId)
+        def patternMap = createPatternMap(fieldDefinitions)
+        def images = []
+
+        stagedFiles.each { stagedFile ->
+
+            def localFile = new File(getStagedFileLocalPath(stagedFile))
+            if (!localFile.exists()) {
+                logService.log("Staged File ${stagedFile.filename} for user ${stageFile().userId} does not exist on disk (${localFile.getAbsolutePath()}")
+            } else {
+                def imageMap = [id: stagedFile.id, filename: stagedFile.filename, stagedFileUrl: getStagedFileUrl(stagedFile), dateStaged: stagedFile.dateStaged]
+                images << imageMap
+                fieldDefinitions.each { field ->
+                    def value = ""
+                    switch (field.fieldDefinitionType) {
+                        case StagingColumnType.NameRegex:
+                            Pattern pattern = patternMap[field] as Pattern
+                            if (field.format && pattern) {
+                                def matcher = pattern.matcher(stagedFile.filename)
+                                if (matcher.matches()) {
+                                    if (matcher.groupCount() >= 1) {
+                                        value = matcher.group(1)
+                                    }
+                                }
+                            } else {
+                                value = stagedFile.filename
+                            }
+                            break;
+                        case StagingColumnType.Literal:
+                            value = field.format
+                            break;
+                        case StagingColumnType.DataFileColumn:
+                            def values = dataFileMap[stagedFile.filename]
+                            if (values) {
+                                value = values[field.format ?: field.fieldName]
+                            }
+                            break;
+                        default:
+                            value = "err"
+                            break;
+                    } // switch
+                    imageMap[field.fieldName] = value
+                }
+            } // if file exists
+        } // for each file
+
+        return images
+    }
+
+    public Image importFileFromStagedFile(StagedFile stagedFile, String batchId, Map<String, String> metadata) {
+
+        def file = new File(getStagedFileLocalPath(stagedFile))
+
+        if (!file.exists()) {
+            logService.log("Local file ${file.getAbsoluteFile()} could not be found! Import aborted")
+            return null
+        }
+
+        Image image = null
+
+        Image.withNewTransaction {
+
+            // Create the image domain object
+            def bytes = file.getBytes()
+            def mimeType = imageService.detectMimeTypeFromBytes(bytes, file.name)
+            image = imageService.storeImageBytes(bytes, file.name, file.length(),mimeType, stagedFile.userId)
+
+            auditService.log(image, "Imported from ${file.absolutePath}", stagedFile.userId)
+
+            if (image && batchId) {
+                imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined,  "importBatchId", batchId)
+            }
+
+            // Is there any extra data to be applied to this image?
+            def filterList = ['id', 'filename', 'stagedFileUrl']
+            if (metadata) {
+                metadata.each { md ->
+                    if (!filterList.contains(md.key)) {
+                        imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, md.key, md?.value?.toString())
+                    }
+                }
+            }
+            imageService.generateImageThumbnails(image)
+
+            image.save(flush: true, failOnError: true)
+        }
+
+        // If we get here, and the image is not null, it means it has been committed to the database and we can remove the file from the inbox
+        if (image) {
+            if (!FileUtils.deleteQuietly(file)) {
+                file.deleteOnExit()
+            }
+            // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
+            imageService.scheduleTileGeneration(image.id, stagedFile.userId)
+
+            // and delete the staged file...
+            stagedFile.delete()
+        }
+
+        return image
     }
 
 }
