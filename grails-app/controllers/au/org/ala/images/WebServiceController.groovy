@@ -4,6 +4,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import grails.converters.JSON
 import grails.converters.XML
 import org.apache.http.HttpStatus
+import org.grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartRequest
 
@@ -771,6 +772,18 @@ class WebServiceController {
         renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
     }
 
+    def setHarvestable() {
+        def userId = getUserIdForRequest(request)
+        def image = Image.findByImageIdentifier(params.imageId)
+        if (image) {
+            imageService.setHarvestable(image, (params.value ?: params.harvest ?: "").toBoolean(), userId)
+            renderResults([success: true, message:"Image harvestable now set to ${image.harvestable}", harvestable: image.harvestable])
+        } else {
+            renderResults([success:false, message:'Missing one or more required parameters: imageId, value'])
+        }
+
+    }
+
     def scheduleUploadFromUrls() {
 
         def userId = getUserIdForRequest(request)
@@ -821,6 +834,32 @@ class WebServiceController {
             }
         }
         renderResults(terms)
+    }
+
+    def harvest() {
+
+        def harvestResults = imageService.getHarvestTabularData()
+
+        response.setHeader("Content-disposition", "attachment;filename=images-harvest.csv")
+        response.contentType = "text/csv"
+
+        def bos = new OutputStreamWriter(response.outputStream)
+
+        def writer = new CSVWriter(bos, {
+            for (int i = 0; i < harvestResults.columnHeaders.size(); ++i) {
+                def col = harvestResults.columnHeaders[i]
+                "${col}" {
+                    it[col] ?: ""
+                }
+            }
+        })
+
+        harvestResults.data.each {
+            writer << it
+        }
+
+        bos.flush()
+        bos.close()
     }
 
 }

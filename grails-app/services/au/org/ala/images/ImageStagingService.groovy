@@ -271,7 +271,7 @@ class ImageStagingService {
         return images
     }
 
-    public Image importFileFromStagedFile(StagedFile stagedFile, String batchId, Map<String, String> metadata) {
+    public Image importFileFromStagedFile(StagedFile stagedFile, String batchId, Map<String, String> metadata, Boolean harvestable = true) {
 
         def file = new File(getStagedFileLocalPath(stagedFile))
 
@@ -305,6 +305,8 @@ class ImageStagingService {
                 }
             }
             imageService.generateImageThumbnails(image)
+
+            image.harvestable = harvestable
 
             image.save(flush: true, failOnError: true)
         }

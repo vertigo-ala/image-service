@@ -40,6 +40,9 @@ class Image {
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The width of the thumbnail in pixels")
     Integer thumbWidth = 0
 
+    @SearchableProperty(valueType = CriteriaValueType.Boolean, description = "Should be harvested by the ALA")
+    Boolean harvestable = false
+
     Double mmPerPixel
 
     Integer squareThumbSize
@@ -67,6 +70,7 @@ class Image {
         thumbWidth nullable: true
         squareThumbSize nullable: true
         mmPerPixel nullable: true
+        harvestable nullable: true
     }
 
     static mapping = {

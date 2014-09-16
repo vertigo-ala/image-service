@@ -32,6 +32,7 @@ class ImageService {
     def logService
     def auditService
     def sessionFactory
+    def imageService
 
     private static Queue<BackgroundTask> _backgroundQueue = new ConcurrentLinkedQueue<BackgroundTask>()
     private static Queue<BackgroundTask> _tilingQueue = new ConcurrentLinkedQueue<BackgroundTask>()
@@ -686,6 +687,63 @@ class ImageService {
         image.save()
 
         return mmPerPixel
+    }
+
+    def setHarvestable(Image image, Boolean harvestable, String userId) {
+        image.setHarvestable(harvestable)
+        auditService.log(image, "Harvestable set to ${harvestable}", userId)
+    }
+
+    /**
+     *
+     * @param maxRows
+     * @param offset
+     * @return a map with two keys - 'data' a list of maps containing the harvestable data, and 'columnHeadings', a list of strings with the distinct list of columns
+     */
+    def getHarvestTabularData(int maxRows = -1, int offset = 0) {
+        def tabularData = []
+
+        def params = [:]
+        if (maxRows > 0) {
+            params.max = maxRows
+        }
+
+        if (offset > 0) {
+            params.offset = offset
+        }
+
+        def images = Image.findAllByHarvestable(true)
+        def c = ImageMetaDataItem.createCriteria()
+        // retrieve just the relevant metadata rows
+        def metaDataRows = c.list {
+            inList("image", images)
+            or {
+                eq("source", MetaDataSourceType.SystemDefined)
+                eq("source", MetaDataSourceType.UserDefined)
+            }
+        }
+
+        def metaDataMappedbyImage = metaDataRows.groupBy {
+            it.image.id
+        }
+
+        def columnHeaders = ['imageUrl', 'occurrenceId']
+
+        images.each { image ->
+            def map =  [occurrenceId: image.imageIdentifier, 'imageUrl': imageService.getImageUrl(image.imageIdentifier)]
+            def imageMetadata = metaDataMappedbyImage[image.id]
+            imageMetadata.each { md ->
+                if (md.value) {
+                    map[md.name] = md.value
+                    if (!columnHeaders.contains(md.name)) {
+                        columnHeaders << md.name
+                    }
+                }
+            }
+            tabularData << map
+        }
+
+        return [data: tabularData, columnHeaders: columnHeaders]
     }
 
 }

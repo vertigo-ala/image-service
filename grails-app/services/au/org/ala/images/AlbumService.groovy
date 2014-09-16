@@ -147,7 +147,7 @@ class AlbumService {
     public List<Map> getAlbumTabularData(Album album, List<CSVColumnDefintion> columnDefinitions, int maxRows = -1, int offset = 0) {
         def tabularData = []
         if (!album) {
-            tabularData
+            return tabularData
         }
 
         def params = [:]

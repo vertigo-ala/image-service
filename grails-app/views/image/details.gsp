@@ -20,6 +20,7 @@
         <r:require module="bootstrap" />
         <r:require module="jstree" />
         <r:require module="audiojs" />
+        <r:require module="bootstrap-switch" />
     </head>
     <body class="content">
         <img:headerContent title="${mediaTitle} details ${imageInstance?.originalFilename ?: imageInstance?.id}">
@@ -184,6 +185,17 @@
                                         </tr>
                                     </g:if>
 
+                                    <tr>
+                                        <td class="property-name">Harvested as occurrence record?</td>
+                                        <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                                            <td>
+                                                <g:checkBox name="chkIsHarvestable" data-size="small" data-on-text="Yes" data-off-text="No" checked="${imageInstance.harvestable}" />
+                                            </td>
+                                        </auth:ifAnyGranted>
+                                        <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">
+                                            <td class="property-value">${imageInstance.harvestable ? "Yes" : "No"}</td>
+                                        </auth:ifNotGranted>
+                                    </tr>
 
                                     <tr>
                                         <td colspan="2">
@@ -248,6 +260,19 @@
     </auth:ifAnyGranted>
 
     $(document).ready(function() {
+
+        $('input:checkbox').bootstrapSwitch();
+
+        $('input:checkbox').on('switchChange.bootstrapSwitch', function(event, state) {
+            var name = $(this).attr("name");
+            if (name) {
+                if (name == 'chkIsHarvestable') {
+                    $.ajax("${createLink(controller:'webService', action:'setHarvestable', params: [imageId: imageInstance.imageIdentifier])}").done(function(data) {
+                        console.log(data);
+                    });
+                }
+            }
+        });
 
         audiojs.createAll();
 
