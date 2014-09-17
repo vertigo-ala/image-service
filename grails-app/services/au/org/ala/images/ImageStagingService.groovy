@@ -309,6 +309,7 @@ class ImageStagingService {
             image.harvestable = harvestable
 
             image.save(flush: true, failOnError: true)
+            imageService.scheduleImageIndex(image.id)
         }
 
         // If we get here, and the image is not null, it means it has been committed to the database and we can remove the file from the inbox
