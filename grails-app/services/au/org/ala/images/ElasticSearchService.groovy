@@ -3,6 +3,7 @@ package au.org.ala.images
 import grails.converters.JSON
 import grails.transaction.NotTransactional
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.elasticsearch.action.delete.DeleteResponse
 import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchType
@@ -45,17 +46,16 @@ class ElasticSearchService {
 
     public deleteIndex() {
         try {
+            def ct = new CodeTimer("Index deletion")
             node.client().admin().indices().prepareDelete("images").execute().get()
-        } catch (Exception ex) {
-            // failed to delete index - maybe because it didn't exist
+            ct.stop(true)
+        } catch (Exception) {
+            // failed to delete index - maybe because it didn't exist?
         }
     }
 
     def indexImage(Image image) {
-
         def ct = new CodeTimer("Index Image ${image.id}")
-        logService.log("Indexing image ${image.id}")
-
         // only add the fields that are searchable. They are marked with an annotation
         def fields = Image.class.declaredFields
         def data = [:]
@@ -73,13 +73,14 @@ class ElasticSearchService {
 
         def json = (data as JSON).toString()
 
-        IndexResponse response = client.prepareIndex("images", "image", image.id.toString())
-                .setSource(json)
-                .execute()
-                .actionGet();
-
-        logService.log(response.toString())
+        IndexResponse response = client.prepareIndex("images", "image", image.id.toString()).setSource(json).execute().actionGet();
         ct.stop(true)
+    }
+
+    def deleteImage(Image image) {
+        if (image) {
+            DeleteResponse response = client.prepareDelete("images", "image", image.id.toString()).execute().actionGet();
+        }
     }
 
     public QueryResults<Image> search(Map query, GrailsParameterMap params) {
@@ -130,6 +131,6 @@ class ElasticSearchService {
     }
 
     def ping() {
-        logService.log("ElasticSearch Service alive.")
+        logService.log("ElasticSearch Service is ${node ? '' : 'NOT' } alive.")
     }
 }

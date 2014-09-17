@@ -139,11 +139,7 @@ class ImageService {
         image.save(failOnError: true)
 
         def md = getImageMetadataFromBytes(bytes, originalFilename)
-        md.each { kvp ->
-            if (kvp.key && kvp.value) {
-                setMetaDataItem(image, MetaDataSourceType.Embedded, kvp.key as String, kvp.value as String)
-            }
-        }
+        setMetadataItems(image, md, MetaDataSourceType.Embedded, uploaderId)
 
         ct.stop(true)
         return image
@@ -387,8 +383,14 @@ class ImageService {
                 thumb.delete()
             }
 
+            // Delete from the index...
+            elasticSearchService.deleteImage(image)
+
             // and delete domain object
             image.delete(flush: true, failonerror: true)
+
+
+
 
             // Finally need to delete images on disk. This might fail (if the file is held open somewhere), but that's ok, we can clean up later.
             imageStoreService.deleteImage(image?.imageIdentifier)
@@ -455,7 +457,7 @@ class ImageService {
             // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
             scheduleTileGeneration(image.id, userId)
         }
-        return Image
+        return image
     }
 
     def pollInbox(String batchId, String userId) {
@@ -523,14 +525,13 @@ class ImageService {
         return false
     }
 
-    def setMetadataItems(Image image, Map<String, String> metadata, MetaDataSourceType source, String userId) {
+    def setMetadataItems(Image image, Map<String, Object> metadata, MetaDataSourceType source, String userId) {
         if (!userId) {
             userId = "<unknown>"
         }
         metadata.each { kvp ->
-            def value = sanitizeString(kvp.value)
+            def value = sanitizeString(kvp.value?.toString())
             def key = kvp.key
-
             if (image && StringUtils.isNotEmpty(key?.trim()) && StringUtils.isNotEmpty(value?.trim())) {
 
                 if (value.length() > 8000) {
@@ -549,13 +550,13 @@ class ImageService {
                 }
 
                 auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
-                image.save()
-                return true
             } else {
                 logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
             }
-
         }
+        image.save()
+        scheduleImageIndex(image.id)
+        return true
     }
 
     def removeMetaDataItem(Image image, String key, MetaDataSourceType source, String userId="<unknown>") {
@@ -566,6 +567,7 @@ class ImageService {
                 count++
                 md.delete()
             }
+            scheduleImageIndex(image.id)
         }
         auditService.log(image, "Delete metadata item ${key} (${count} items)", userId)
         return count > 0
@@ -598,6 +600,7 @@ class ImageService {
             auditService.log(subimage, "Subimage created from parent image ${parentImage.imageIdentifier}", userId)
 
             scheduleArtifactGeneration(subimage.id, userId)
+            scheduleImageIndex(subimage.id)
 
             return subimage
         }
@@ -690,12 +693,15 @@ class ImageService {
 
         image.mmPerPixel = mmPerPixel
         image.save()
+        scheduleImageIndex(image.id)
 
         return mmPerPixel
     }
 
     def setHarvestable(Image image, Boolean harvestable, String userId) {
         image.setHarvestable(harvestable)
+        image.save()
+        scheduleImageIndex(image.id)
         auditService.log(image, "Harvestable set to ${harvestable}", userId)
     }
 
