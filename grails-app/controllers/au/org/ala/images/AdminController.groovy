@@ -164,7 +164,6 @@ class AdminController {
         def name = params.name
         def value = params.value
         if (name && value) {
-            println "${name} = ${value}"
             try {
                 settingService.setSettingValue(name, value)
                 flash.message = "${name} set to ${value}"

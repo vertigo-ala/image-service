@@ -254,7 +254,6 @@ class SearchService {
     }
 
     public SearchCriteria getSearchCriteria(String id) {
-        println "here"
         return searchCriteriaList?.find { it.id == id }
     }
 

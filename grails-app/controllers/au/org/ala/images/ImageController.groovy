@@ -271,8 +271,6 @@ class ImageController {
         def imageInstance = getImageFromParams(params)
         def metadata = ImageMetaDataItem.findAllByImage(imageInstance)
 
-        println params
-
         [imageInstance: imageInstance, x: params.x, y: params.y, width: params.width, height: params.height, metadata: metadata]
     }
 

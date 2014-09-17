@@ -236,7 +236,6 @@ class TagService {
     def loadTagsFromFile(MultipartFile file) {
         file.inputStream?.eachCsvLine {
             def line = it.join(",")
-            println line
             createTagByPath(line, null)
         }
         return 0

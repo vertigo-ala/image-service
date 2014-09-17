@@ -83,7 +83,6 @@ class ElasticSearchService {
     }
 
     public QueryResults<Image> search(Map query, GrailsParameterMap params) {
-        println query.toString()
 
         Map qmap = null
         Map fmap = null
@@ -114,13 +113,19 @@ class ElasticSearchService {
             b.setSize(params.int("max"))
         }
 
+        def ct = new CodeTimer("Index search")
         SearchResponse searchResponse = b.execute().actionGet();
+        ct.stop(true)
+
+        ct = new CodeTimer("Object retrieval")
         def list = []
         if (searchResponse.hits) {
             searchResponse.hits.each { hit ->
                 list << Image.get(hit.id.toLong())
             }
         }
+        ct.stop(true)
+
         return new QueryResults<Image>(list: list, totalCount: searchResponse?.hits?.totalHits ?: 0)
     }
 
