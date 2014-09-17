@@ -1,8 +1,14 @@
 modules = {
 
+    imglib {
+        dependsOn "jquery"
+        resource url: 'js/images.js'
+    }
+
     application {
         dependsOn 'jquery','imglib'
         resource url:'js/application.js'
+        resource url:'css/img-bootstrap.css'
     }
 
     jstree {
@@ -31,11 +37,6 @@ modules = {
         dependsOn "bootstrap, jquery"
         resource url: 'js/bootstrap-switch/bootstrap-switch.css'
         resource url: 'js/bootstrap-switch/bootstrap-switch.js'
-    }
-
-    imglib {
-        dependsOn "jquery"
-        resource url: 'js/images.js'
     }
 
     qtip {

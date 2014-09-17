@@ -25,7 +25,7 @@
 
     <body class="content">
 
-        <img:headerContent title="Staged images ${userId}">
+        <img:headerContent title="Image upload">
         </img:headerContent>
 
         <div class="well well-small">
@@ -74,6 +74,15 @@
                     <button class="btnAddFieldDefinition btn"><i class="icon-plus"></i> Add column</button>
                 </div>
                 <div class="span3" style="text-align: center">
+                    <div style="margin-bottom: 10px">
+                        <g:checkBox name="areOccurrences" id="areOccurrences" checked="${true}"/> Treat as occurrence records
+                        <img:helpText>
+                            If checked, these images will be the basis of an occurrence record, and will be harvested by the ALA Biocache.
+                            <p/>
+                            Metadata attached to the image will form the fields of the record, and Darwin Core terms are preferred.
+                        </img:helpText>
+                    </div>
+
                     <button id="btnUploadStagedImages" class="btn btn-primary" style="margin-left: 10px">Upload staged images</button>
                 </div>
             </div>
@@ -127,6 +136,8 @@
         <r:script>
 
             $(document).ready(function () {
+
+                imglib.bindTooltips("a.fieldHelp", 650);
 
                 $(".btnDeleteStagedFile").click(function (e) {
                     e.preventDefault();
@@ -191,7 +202,8 @@
 
                 $("#btnUploadStagedImages").click(function(e) {
                     e.preventDefault();
-                    window.location.href = "${createLink(controller:'image', action:'uploadStagedImages')}";
+                    var areOccurrences = $("#areOccurrences").is(':checked');
+                    window.location.href = "${createLink(controller:'image', action:'uploadStagedImages')}?harvestable=" + areOccurrences;
                 });
 
             });

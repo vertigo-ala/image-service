@@ -440,13 +440,15 @@ class ImageController {
             throw new Exception("Must be logged in to use this service")
         }
 
+        def harvestable = params.boolean("harvestable")
+
         def stagedFiles = imageStagingService.buildStagedImageData(userId, [:])
 
         def batchId = batchService.createNewBatch()
         int imageCount = 0
         stagedFiles.each { stagedFileMap ->
             def stagedFile = StagedFile.get(stagedFileMap.id)
-            batchService.addTaskToBatch(batchId, new UploadFromStagedImageTask(stagedFile, stagedFileMap, imageStagingService, batchId))
+            batchService.addTaskToBatch(batchId, new UploadFromStagedFileTask(stagedFile, stagedFileMap, imageStagingService, batchId, harvestable))
             imageCount++
         }
 

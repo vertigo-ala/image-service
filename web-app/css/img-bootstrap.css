@@ -1,0 +1,14 @@
+span.help-container {
+    background: url(../images/help.png) right 0 no-repeat;
+    padding: 5px 20px 0 0;
+}
+
+span.help-container:hover {
+    background-position:right -81px;
+}
+
+a.fieldHelp {
+    text-decoration: none;
+    display: inline-block;
+    vertical-align: top;
+}

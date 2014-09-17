@@ -230,7 +230,7 @@ class ImageStagingService {
 
             def localFile = new File(getStagedFileLocalPath(stagedFile))
             if (!localFile.exists()) {
-                logService.log("Staged File ${stagedFile.filename} for user ${stageFile().userId} does not exist on disk (${localFile.getAbsolutePath()}")
+                logService.log("Staged File ${stagedFile.filename} for user ${stagedFile.userId} does not exist on disk (${localFile.getAbsolutePath()}")
             } else {
                 def imageMap = [id: stagedFile.id, filename: stagedFile.filename, stagedFileUrl: getStagedFileUrl(stagedFile), dateStaged: stagedFile.dateStaged]
                 images << imageMap
@@ -271,7 +271,7 @@ class ImageStagingService {
         return images
     }
 
-    public Image importFileFromStagedFile(StagedFile stagedFile, String batchId, Map<String, String> metadata, Boolean harvestable = true) {
+    public Image importFileFromStagedFile(StagedFile stagedFile, String batchId, Map<String, String> metadata, Boolean harvestable) {
 
         def file = new File(getStagedFileLocalPath(stagedFile))
 

@@ -26,24 +26,3 @@ class UploadFromUrlTask extends BackgroundTask {
     }
 
 }
-
-class UploadFromStagedImageTask extends BackgroundTask {
-
-    private StagedFile _stagedFile
-    private Map<String, String> _metaData
-    private ImageStagingService _imageStagingService
-    private String _batchId
-
-    public UploadFromStagedImageTask(StagedFile stagedFile, Map<String, String> metadata, ImageStagingService imageStagingService, String batchId) {
-        _stagedFile = stagedFile
-        _metaData = metadata
-        _imageStagingService = imageStagingService
-        _batchId = batchId
-    }
-
-    @Override
-    void execute() {
-        this.yieldResult(_imageStagingService.importFileFromStagedFile(_stagedFile, _batchId, _metaData))
-    }
-
-}

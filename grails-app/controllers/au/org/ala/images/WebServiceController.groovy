@@ -840,26 +840,30 @@ class WebServiceController {
 
         def harvestResults = imageService.getHarvestTabularData()
 
-        response.setHeader("Content-disposition", "attachment;filename=images-harvest.csv")
-        response.contentType = "text/csv"
+        if (harvestResults) {
+            response.setHeader("Content-disposition", "attachment;filename=images-harvest.csv")
+            response.contentType = "text/csv"
 
-        def bos = new OutputStreamWriter(response.outputStream)
+            def bos = new OutputStreamWriter(response.outputStream)
 
-        def writer = new CSVWriter(bos, {
-            for (int i = 0; i < harvestResults.columnHeaders.size(); ++i) {
-                def col = harvestResults.columnHeaders[i]
-                "${col}" {
-                    it[col] ?: ""
+            def writer = new CSVWriter(bos, {
+                for (int i = 0; i < harvestResults.columnHeaders.size(); ++i) {
+                    def col = harvestResults.columnHeaders[i]
+                    "${col}" {
+                        it[col] ?: ""
+                    }
                 }
+            })
+
+            harvestResults.data.each {
+                writer << it
             }
-        })
 
-        harvestResults.data.each {
-            writer << it
+            bos.flush()
+            bos.close()
+        } else {
+            renderResults([success:"false", message:'No harvestable images found'])
         }
-
-        bos.flush()
-        bos.close()
     }
 
 }

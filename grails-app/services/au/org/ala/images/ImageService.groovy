@@ -701,7 +701,6 @@ class ImageService {
      * @return a map with two keys - 'data' a list of maps containing the harvestable data, and 'columnHeadings', a list of strings with the distinct list of columns
      */
     def getHarvestTabularData(int maxRows = -1, int offset = 0) {
-        def tabularData = []
 
         def params = [:]
         if (maxRows > 0) {
@@ -713,6 +712,10 @@ class ImageService {
         }
 
         def images = Image.findAllByHarvestable(true)
+        if (!images) {
+            return [columnHeaders: ["imageUrl", "occurrenceId"], data: []]
+        }
+
         def c = ImageMetaDataItem.createCriteria()
         // retrieve just the relevant metadata rows
         def metaDataRows = c.list {
@@ -728,6 +731,8 @@ class ImageService {
         }
 
         def columnHeaders = ['imageUrl', 'occurrenceId']
+
+        def tabularData = []
 
         images.each { image ->
             def map =  [occurrenceId: image.imageIdentifier, 'imageUrl': imageService.getImageUrl(image.imageIdentifier)]
