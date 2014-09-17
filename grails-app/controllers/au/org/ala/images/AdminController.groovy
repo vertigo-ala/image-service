@@ -3,6 +3,7 @@ package au.org.ala.images
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
+import groovy.json.JsonSlurper
 import org.springframework.web.multipart.MultipartFile
 
 import java.util.regex.Pattern
@@ -14,6 +15,7 @@ class AdminController {
     def imageService
     def settingService
     def tagService
+    def elasticSearchService
 
     def index() {
         redirect(action:'dashboard')
@@ -67,6 +69,11 @@ class AdminController {
     }
 
     def localIngest() {
+    }
+
+    def reindexImages() {
+        imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService))
+        redirect(action:'tools')
     }
 
     def fieldDefinitionsFragment() {
@@ -191,6 +198,25 @@ class AdminController {
         flash.message = "${count} tags loaded from file"
 
         redirect(action:'tags')
+    }
+
+    def indexSearch() {
+        QueryResults<Image> results = null
+        if (params.q) {
+            Map map = null
+            try {
+                map = new JsonSlurper().parseText(params.q)
+            } catch (Exception ex) {
+                flash.message = "Invalid JSON! - " + ex.message
+                return
+            }
+
+            params.max = params.max ?: 48
+            params.offset = params.offset ?: 0
+
+            results = elasticSearchService.search(map, params)
+        }
+        [results: results, query: params.q]
     }
 
 }

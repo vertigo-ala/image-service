@@ -1,3 +1,5 @@
+import au.org.ala.images.Image
+
 import javax.imageio.ImageIO
 import javax.imageio.spi.IIORegistry
 
@@ -6,6 +8,7 @@ class BootStrap {
     def grailsApplication
     def logService
     def settingService
+    def elasticSearchService
 
     def init = { servletContext ->
 
@@ -23,6 +26,7 @@ class BootStrap {
 
         settingService.ensureSettingsCreated()
 
+        elasticSearchService.ping()
     }
 
     def destroy = {

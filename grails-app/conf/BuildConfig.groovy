@@ -78,6 +78,7 @@ grails.project.dependency.resolution = {
         runtime 'au.org.ala:image-utils:1.8.2'
         compile 'org.apache.ant:ant:1.7.1'
         compile 'org.apache.ant:ant-launcher:1.7.1'
+        compile 'org.elasticsearch:elasticsearch:1.3.2'
     }
 
 }

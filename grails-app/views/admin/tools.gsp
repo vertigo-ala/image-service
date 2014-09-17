@@ -46,6 +46,25 @@
             </td>
         </tr>
 
+        <tr>
+            <td>
+                <button id="btnReindexAllImages" class="btn">Reindex All Images</button>
+            </td>
+            <td>
+                Rebuild the full text index used for searching for images
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <button id="btnSearchIndex" class="btn">Search image index</button>
+            </td>
+            <td>
+                Find image by the elastic search index (Advanced)
+            </td>
+        </tr>
+
+
     </table>
 </body>
 <r:script>
@@ -74,6 +93,17 @@
             e.preventDefault();
             window.location = "${createLink(action:'localIngest')}";
         });
+
+        $("#btnReindexAllImages").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'reindexImages')}";
+        });
+
+        $("#btnSearchIndex").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'indexSearch')}";
+        });
+
 
     });
 

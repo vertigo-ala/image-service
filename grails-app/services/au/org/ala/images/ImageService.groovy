@@ -33,6 +33,7 @@ class ImageService {
     def auditService
     def sessionFactory
     def imageService
+    def elasticSearchService
 
     private static Queue<BackgroundTask> _backgroundQueue = new ConcurrentLinkedQueue<BackgroundTask>()
     private static Queue<BackgroundTask> _tilingQueue = new ConcurrentLinkedQueue<BackgroundTask>()
@@ -255,6 +256,10 @@ class ImageService {
 
     def scheduleImageDeletion(long imageId, String userId) {
         scheduleBackgroundTask(new ImageBackgroundTask(imageId, this, ImageTaskType.Delete, userId))
+    }
+
+    def scheduleImageIndex(long imageId) {
+        scheduleBackgroundTask(new IndexImageBackgroundTask(imageId, elasticSearchService))
     }
 
     def scheduleBackgroundTask(BackgroundTask task) {
@@ -749,6 +754,10 @@ class ImageService {
         }
 
         return [data: tabularData, columnHeaders: columnHeaders]
+    }
+
+    def deleteIndex() {
+        elasticSearchService.deleteIndex()
     }
 
 }

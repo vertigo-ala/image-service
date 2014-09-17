@@ -114,6 +114,8 @@ grails.exceptionresolver.params.exclude = ['password']
 // configure auto-caching of queries by default (if false you can cache individual queries with 'cache: true')
 grails.hibernate.cache.queries = false
 
+elasticsearch.location="/data/images/elasticsearch"
+
 imageservice.imagestore.root = "/data/images/store"
 imageservice.imagestore.inbox = "/data/images/incoming"
 imageservice.thumbnail.size = 300
