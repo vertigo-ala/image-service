@@ -48,6 +48,15 @@
 
         <tr>
             <td>
+                <button id="btnDeleteIndex" class="btn">Re-initialise Index</button>
+            </td>
+            <td>
+                Reinitialize the index
+            </td>
+        </tr>
+
+        <tr>
+            <td>
                 <button id="btnReindexAllImages" class="btn">Reindex All Images</button>
             </td>
             <td>
@@ -93,6 +102,12 @@
             e.preventDefault();
             window.location = "${createLink(action:'localIngest')}";
         });
+
+        $("#btnDeleteIndex").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'reinitialiseImageIndex')}";
+        });
+
 
         $("#btnReindexAllImages").click(function(e) {
             e.preventDefault();

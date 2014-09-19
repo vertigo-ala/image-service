@@ -71,6 +71,11 @@ class AdminController {
     def localIngest() {
     }
 
+    def reinitialiseImageIndex() {
+        imageService.deleteIndex()
+        redirect(action:'tools')
+    }
+
     def reindexImages() {
         imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService))
         redirect(action:'tools')

@@ -2,6 +2,7 @@ package au.org.ala.images
 
 import grails.converters.JSON
 import grails.transaction.NotTransactional
+import groovy.json.JsonSlurper
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.elasticsearch.action.delete.DeleteResponse
 import org.elasticsearch.action.index.IndexResponse
@@ -44,14 +45,17 @@ class ElasticSearchService {
         }
     }
 
-    public deleteIndex() {
+    public reinitialiseIndex() {
         try {
             def ct = new CodeTimer("Index deletion")
             node.client().admin().indices().prepareDelete("images").execute().get()
             ct.stop(true)
-        } catch (Exception) {
+
+        } catch (Exception ex) {
+            println ex
             // failed to delete index - maybe because it didn't exist?
         }
+        addMappings()
     }
 
     def indexImage(Image image) {
@@ -128,6 +132,46 @@ class ElasticSearchService {
         ct.stop(true)
 
         return new QueryResults<Image>(list: list, totalCount: searchResponse?.hits?.totalHits ?: 0)
+    }
+
+    def addMappings() {
+        def mappingJson = '''
+        {
+            "mappings": {
+                "image": {
+                    "dynamic_templates": [
+                    {
+                        "ids" : {
+                            "path_match": "metadata.*Id",
+                            "mapping": { "type": "string", "index" : "not_analyzed" }
+                        }
+                    },
+                    {
+                        "uids" : {
+                            "path_match": "metadata.*Uid",
+                            "mapping": { "type": "string", "index" : "not_analyzed" }
+                        }
+                    }
+                    ],
+                    "_all": {
+                        "enabled": true,
+                        "store": "yes"
+                    },
+                    "properties": {
+                        "imageIdentifier" : { "type" : "string", "index" : "not_analyzed" },
+                        "originalFilename" : { "type" : "string", "index" : "not_analyzed" },
+                        "mimeType" : { "type" : "string", "index" : "not_analyzed" },
+                    }
+                }
+            }
+        }
+        '''
+
+        def parsedJson = new JsonSlurper().parseText(mappingJson)
+        def mappingsDoc = (parsedJson as JSON).toString()
+        client.admin().indices().prepareCreate("images").setSource(mappingsDoc).execute().actionGet()
+
+        client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet()
     }
 
     def ping() {

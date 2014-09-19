@@ -763,7 +763,7 @@ class ImageService {
     }
 
     def deleteIndex() {
-        elasticSearchService.deleteIndex()
+        elasticSearchService.reinitialiseIndex()
     }
 
 }
