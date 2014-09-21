@@ -10,6 +10,7 @@ import java.util.regex.Pattern
 class SearchService {
 
     public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
+    def elasticSearchService
 
     def getImageField(String fieldName) {
         def fields = Image.class.declaredFields
@@ -101,6 +102,8 @@ class SearchService {
     }
 
     QueryResults<Image> simpleSearch(String query, GrailsParameterMap params) {
+
+        return elasticSearchService.simpleImageSearch(query, params)
 
         if (query.contains(":")) {
             // metadata search
@@ -425,41 +428,8 @@ class SearchService {
         }
     }
 
-    def searchUsingCriteria(GrailsParameterMap params) {
-
-        def criteriaList = searchCriteriaList
-        def metaDataPattern = Pattern.compile("^(.*)[:](.*)\$")
-        // split out by criteria type
-        def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
-        def c = Image.createCriteria()
-        def l = c.list(params ?: [:]) {
-            and {
-                def list = criteriaMap[CriteriaType.ImageProperty]
-                if (list) {
-                    SearchCriteriaUtils.buildCriteria(delegate, list)
-                }
-                list = criteriaMap[CriteriaType.ImageMetadata]
-                if (list) {
-                    metadata {
-                        and {
-                            for (int i = 0; i < list.size(); ++i) {
-                                def criteria = list[i]
-                                // need to split the metadata name out of the value...
-                                def matcher = metaDataPattern.matcher(criteria.value)
-                                if (matcher.matches()) {
-                                    ilike("name", matcher.group(1))
-                                    ilike("value", matcher.group(2)?.replaceAll('\\*', '%'))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (!params.sort) {
-                order("id", "desc") // stable sort order
-            }
-        }
-        return l
+    def QueryResults<Image> searchUsingCriteria(GrailsParameterMap params) {
+        return elasticSearchService.searchUsingCriteria(searchCriteriaList, params)
     }
 
 

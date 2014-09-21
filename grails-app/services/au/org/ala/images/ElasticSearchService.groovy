@@ -10,8 +10,11 @@ import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.index.query.FilterBuilders
+import org.elasticsearch.index.query.QueryBuilders
 
 import javax.annotation.PreDestroy
+import java.util.regex.Pattern
 
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder
 import javax.annotation.PostConstruct
@@ -85,6 +88,11 @@ class ElasticSearchService {
         if (image) {
             DeleteResponse response = client.prepareDelete("images", "image", image.id.toString()).execute().actionGet();
         }
+    }
+
+    public QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
+        def qmap = [query: [filtered: [query:[query_string: [query: query]]]]]
+        return search(qmap, params)
     }
 
     public QueryResults<Image> search(Map query, GrailsParameterMap params) {
@@ -173,6 +181,62 @@ class ElasticSearchService {
 
         client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet()
     }
+
+    def searchUsingCriteria(List<SearchCriteria> criteriaList, GrailsParameterMap params) {
+
+        def metaDataPattern = Pattern.compile("^(.*)[:](.*)\$")
+        // split out by criteria type
+        def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
+
+
+        def filter  = criteriaList ? FilterBuilders.boolFilter() : FilterBuilders.matchAllFilter()
+
+        def list = criteriaMap[CriteriaType.ImageProperty]
+        if (list) {
+            ESSearchCriteriaUtils.buildCriteria(filter, list)
+        }
+
+        list = criteriaMap[CriteriaType.ImageMetadata]
+        if (list) {
+            for (int i = 0; i < list.size(); ++i) {
+                def criteria = list[i]
+                // need to split the metadata name out of the value...
+                def matcher = metaDataPattern.matcher(criteria.value)
+                if (matcher.matches()) {
+                    filter.must(FilterBuilders.queryFilter(QueryBuilders.queryString("${matcher.group(1)}:${matcher.group(2)?.replaceAll('\\*', '%')}")))
+                }
+            }
+        }
+
+        def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
+        searchRequestBuilder.setPostFilter(filter)
+
+        if (params.offset) {
+            searchRequestBuilder.setFrom(params.int("offset"))
+        }
+
+        if (params.max) {
+            searchRequestBuilder.setSize(params.int("max"))
+        }
+
+        println searchRequestBuilder.toString()
+
+        def ct = new CodeTimer("Index search")
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+        ct.stop(true)
+
+        ct = new CodeTimer("Object retrieval")
+        def imageList = []
+        if (searchResponse.hits) {
+            searchResponse.hits.each { hit ->
+                imageList << Image.get(hit.id.toLong())
+            }
+        }
+        ct.stop(true)
+
+        return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
+    }
+
 
     def ping() {
         logService.log("ElasticSearch Service is ${node ? '' : 'NOT' } alive.")

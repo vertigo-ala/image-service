@@ -132,14 +132,14 @@ class SearchController {
 
         params.max = params.max ?: 48
 
-        def imageList = searchService.searchUsingCriteria(params)
+        def searchResults = searchService.searchUsingCriteria(params)
         def userId = AuthenticationUtils.getUserId(request)
         def selectedImageMap = [:]
         if (userId) {
             selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
         }
 
-        [imageList: imageList, totalCount: imageList?.totalCount, selectedImageMap: selectedImageMap]
+        [imageList: searchResults.list, totalCount: searchResults.totalCount, selectedImageMap: selectedImageMap]
     }
 
     @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)
