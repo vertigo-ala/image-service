@@ -61,7 +61,6 @@ grails.project.dependency.resolution = {
         runtime ":ala-web-theme:0.8.1"
         compile ":csv:0.3.1"
         runtime ":images-client-plugin:0.2.2"
-        compile ":markdown:1.1.1"
         compile ":jquery-ui:1.8.24"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0.1"

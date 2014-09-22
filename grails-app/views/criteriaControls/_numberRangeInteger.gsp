@@ -46,7 +46,6 @@
         <g:if test="${units}">
             <span>&nbsp;(${units})</span>
         </g:if>
-        <span class="numberRangeOtherField"> - OR field <g:select id="cmbCriteria" name="otherField" from="${criteriaDefinitions}" optionValue="name" optionKey="fieldName" noSelection="${[0:"<Select Field>"]}" value="${evaluator?.otherField}" /></span>
     </div>
     <g:hiddenField name="units" value="${units}" />
 </div>

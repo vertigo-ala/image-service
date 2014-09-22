@@ -154,14 +154,6 @@
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/embed/tomcat-embed-jasper/7.0.53/tomcat-embed-jasper-7.0.53.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/apache/tomcat/tomcat-catalina-ant/7.0.53/tomcat-catalina-ant-7.0.53.jar!/" />
           <root url="file://$MODULE_DIR$/lib" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/jsoup/jsoup/1.6.1/jsoup-1.6.1.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.0.1/commons-lang3-3.0.1.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/asm/asm-analysis/3.3.1/asm-analysis-3.3.1.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/asm/asm-tree/3.3.1/asm-tree-3.3.1.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/asm/asm-util/3.3.1/asm-util-3.3.1.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/parboiled/parboiled-java/1.0.2/parboiled-java-1.0.2.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/parboiled/parboiled-core/1.0.2/parboiled-core-1.0.2.jar!/" />
-          <root url="jar://$MAVEN_REPOSITORY$/org/pegdown/pegdown/1.1.0/pegdown-1.1.0.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm-commons/4.1/asm-commons-4.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm/4.1/asm-4.1.jar!/" />
           <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr-runtime/3.5/antlr-runtime-3.5.jar!/" />

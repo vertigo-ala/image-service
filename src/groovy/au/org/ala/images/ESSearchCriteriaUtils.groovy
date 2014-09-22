@@ -199,19 +199,15 @@ public class ESSearchCriteriaUtils {
 
         public static Pattern IntegerPattern = Pattern.compile("^(eq|gt|lt)\\s([-]{0,1}\\d+)\$")
         public static Pattern IntegerRangePattern = Pattern.compile("^(bt)\\s([-]{0,1}\\d+)[:]([-]{0,1}\\d+)\$")
-        public static Pattern IntegerFieldPattern = Pattern.compile("^(eq|gt|lt)\\sfield[(](\\w+)[)]\$")
 
         String operator
         T value1
         T value2
-        String otherField
 
         protected abstract T parseString(String s);
 
         public ESNumberCriteriaTranslator(String pattern) {
             def m = IntegerPattern.matcher(pattern)
-
-            otherField = null
 
             if (m.matches()) {
                 operator = m.group(1)
@@ -225,24 +221,13 @@ public class ESSearchCriteriaUtils {
                     value1 = Math.min(num1, num2)
                     value2 = Math.max(num1, num2)
                 } else {
-                    m = IntegerFieldPattern.matcher(pattern)
-                    if (m.matches()) {
-                        operator = m.group(1)
-                        otherField = m.group(2)
-                        value1 = null
-                        value2 = null
-                    } else {
-                        throw new RuntimeException("Unrecognized number range criteria format: " + pattern)
-                    }
+                    throw new RuntimeException("Unrecognized number range criteria format: " + pattern)
                 }
             }
         }
 
         public String displayString(Closure<String> formatValue) {
             def value = value1
-            if (otherField) {
-                value = otherField
-            }
 
             switch (operator) {
                 case "eq":

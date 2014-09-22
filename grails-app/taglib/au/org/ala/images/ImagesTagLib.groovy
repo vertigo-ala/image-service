@@ -12,7 +12,6 @@ class ImagesTagLib {
     def groovyPageLocator
     def authService
     def searchCriteriaService
-    def markdownService
 
     /**
      * @attr title
@@ -236,7 +235,7 @@ class ImagesTagLib {
         def mb = new MarkupBuilder(out)
         def helpText = (body() as String)?.trim()?.replaceAll("[\r\n]", "");
         if (helpText) {
-            helpText = markdownService.markdown(helpText)
+            // helpText = markdownService.markdown(helpText)
             def attributes = [href:'#', class:'fieldHelp', title:helpText, tabindex: "-1"]
             if (attrs.tooltipPosition) {
                 attributes.tooltipPosition = attrs.tooltipPosition

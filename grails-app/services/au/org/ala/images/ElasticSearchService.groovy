@@ -9,6 +9,9 @@ import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.Client
+import org.elasticsearch.cluster.ClusterState
+import org.elasticsearch.cluster.metadata.IndexMetaData
+import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.index.query.FilterBuilders
 import org.elasticsearch.index.query.QueryBuilders
@@ -237,6 +240,17 @@ class ElasticSearchService {
         return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
     }
 
+    def getMetadataKeys() {
+        ClusterState cs = client.admin().cluster().prepareState().execute().actionGet().getState();
+        IndexMetaData imd = cs.getMetaData().index("images")
+        Map mdd = imd.mapping("image").sourceAsMap()
+        Map metadata = mdd?.properties?.metadata?.properties
+        def names = []
+        if (metadata) {
+            names = metadata.collect { it.key }
+        }
+        return names
+    }
 
     def ping() {
         logService.log("ElasticSearch Service is ${node ? '' : 'NOT' } alive.")

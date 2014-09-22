@@ -12,6 +12,7 @@ class SearchController {
     def searchService
     def searchCriteriaService
     def selectionService
+    def elasticSearchService
 
     def index() {
         boolean hasCriteria = searchService.getSearchCriteriaList()?.size() > 0
@@ -54,13 +55,7 @@ class SearchController {
     def imageMetadataCriteriaFragment() {
         def criteriaDefinition = SearchCriteriaDefinition.get(params.int("searchCriteriaDefinitionId"))
         def criteria = searchService.getSearchCriteria(params.criteriaId)
-        def c = ImageMetaDataItem.createCriteria()
-        def metadataNames = c.list {
-            projections {
-                distinct("name")
-                order("name")
-            }
-        }
+        def metadataNames = elasticSearchService.getMetadataKeys()
         def metadataItemName = ""
         def metadataItemValue = ""
 
