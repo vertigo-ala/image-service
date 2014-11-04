@@ -222,7 +222,36 @@ class ElasticSearchService {
             searchRequestBuilder.setSize(params.int("max"))
         }
 
-        println searchRequestBuilder.toString()
+        def ct = new CodeTimer("Index search")
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+        ct.stop(true)
+
+        ct = new CodeTimer("Object retrieval")
+        def imageList = []
+        if (searchResponse.hits) {
+            searchResponse.hits.each { hit ->
+                imageList << Image.get(hit.id.toLong())
+            }
+        }
+        ct.stop(true)
+
+        return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
+    }
+
+    public QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
+
+        // egregious hack until I can work out case insensitive *terms*
+        if (key.equalsIgnoreCase("occurrenceid")) {
+            key = "occurrenceId"
+        }
+
+        def filter = FilterBuilders.orFilter()
+        values.each { value ->
+            filter.add(FilterBuilders.termFilter(key, value))
+        }
+
+        def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
+        searchRequestBuilder.setPostFilter(filter)
 
         def ct = new CodeTimer("Index search")
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();

@@ -20,6 +20,7 @@ class WebServiceController {
     def searchService
     def logService
     def batchService
+    def elasticSearchService
 
     def deleteImage() {
         def image = Image.findByImageIdentifier(params.id as String)
@@ -568,10 +569,10 @@ class WebServiceController {
                 return
             }
 
-            def images = searchService.findImagesByMetadata(key, values, params)
+            def images = elasticSearchService.searchByMetadata(key, values, params)
             def results = [:]
-            def keyValues = imageService.getMetadataItemValuesForImages(images, key)
-            images?.each { image ->
+            def keyValues = imageService.getMetadataItemValuesForImages(images.list, key)
+            images?.list?.each { image ->
                 def map = imageService.getImageInfoMap(image)
                 def keyValue = keyValues[image.id]
                 def list = results[keyValue]
@@ -582,7 +583,7 @@ class WebServiceController {
                 list << map
             }
 
-            renderResults([success: true, images: results, count:images?.size() ?: 0])
+            renderResults([success: true, images: results, count:images?.totalCount ?: 0])
             return
         }
 
