@@ -26,3 +26,6 @@
 
 # "temporary" build files
 /target
+
+/.idea
+*.iml
