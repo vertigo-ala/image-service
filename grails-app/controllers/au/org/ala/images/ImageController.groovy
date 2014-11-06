@@ -71,10 +71,11 @@ class ImageController {
         if (query) {
             results = searchService.simpleSearch(query, params)
         } else {
-            results = new QueryResults<Image>()
-            def images = Image.list(params)
-            results.list = images
-            results.totalCount = images.totalCount
+            results = searchService.allImages(params)
+//            results = new QueryResults<Image>()
+//            def images = Image.list(params)
+//            results.list = images
+//            results.totalCount = images.totalCount
         }
 
         def userId = AuthenticationUtils.getUserId(request)

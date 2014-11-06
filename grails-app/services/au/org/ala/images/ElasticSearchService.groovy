@@ -17,6 +17,7 @@ import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.index.query.FilterBuilder
 import org.elasticsearch.index.query.FilterBuilders
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.search.sort.SortOrder
 
 import javax.annotation.PreDestroy
 import java.util.regex.Pattern
@@ -101,7 +102,6 @@ class ElasticSearchService {
     }
 
     public QueryResults<Image> search(Map query, GrailsParameterMap params) {
-
         Map qmap = null
         Map fmap = null
         if (query.query) {
@@ -123,28 +123,7 @@ class ElasticSearchService {
             b.setPostFilter(fmap)
         }
 
-        if (params.offset) {
-            b.setFrom(params.int("offset"))
-        }
-
-        if (params.max) {
-            b.setSize(params.int("max"))
-        }
-
-        def ct = new CodeTimer("Index search")
-        SearchResponse searchResponse = b.execute().actionGet();
-        ct.stop(true)
-
-        ct = new CodeTimer("Object retrieval")
-        def list = []
-        if (searchResponse.hits) {
-            searchResponse.hits.each { hit ->
-                list << Image.get(hit.id.toLong())
-            }
-        }
-        ct.stop(true)
-
-        return new QueryResults<Image>(list: list, totalCount: searchResponse?.hits?.totalHits ?: 0)
+        return executeSearch(b, params)
     }
 
     def addMappings() {
@@ -213,7 +192,7 @@ class ElasticSearchService {
             }
         }
 
-        return executeSearch(filter, params)
+        return executeFilterSearch(filter, params)
     }
 
     public QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
@@ -224,12 +203,16 @@ class ElasticSearchService {
             filter.add(FilterBuilders.termFilter(key.toLowerCase(), value))
         }
 
-        return executeSearch(filter, params)
+        return executeFilterSearch(filter, params)
     }
 
-    private QueryResults<Image> executeSearch(FilterBuilder filterBuilder, GrailsParameterMap params) {
+    private QueryResults<Image> executeFilterSearch(FilterBuilder filterBuilder, GrailsParameterMap params) {
         def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
         searchRequestBuilder.setPostFilter(filterBuilder)
+        return executeSearch(searchRequestBuilder, params)
+    }
+
+    private static QueryResults<Image> executeSearch(SearchRequestBuilder searchRequestBuilder, GrailsParameterMap params) {
 
         if (params?.offset) {
             searchRequestBuilder.setFrom(params.int("offset"))
@@ -239,11 +222,16 @@ class ElasticSearchService {
             searchRequestBuilder.setSize(params.int("max"))
         }
 
+        if (params?.sort) {
+            def order = params?.order == "asc" ? SortOrder.ASC : SortOrder.DESC
+            searchRequestBuilder.addSort(params.sort as String, order)
+        }
+
         def ct = new CodeTimer("Index search")
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         ct.stop(true)
 
-        ct = new CodeTimer("Object retrieval")
+        ct = new CodeTimer("Object retrieval (${searchResponse.hits.hits.length} of ${searchResponse.hits.totalHits} hits)")
         def imageList = []
         if (searchResponse.hits) {
             searchResponse.hits.each { hit ->

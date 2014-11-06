@@ -13,12 +13,20 @@ class SearchService {
 
     public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
 
-    QueryResults<Image> simpleSearch(String query, GrailsParameterMap params) {
+    public QueryResults<Image> simpleSearch(String query, GrailsParameterMap params) {
         return elasticSearchService.simpleImageSearch(query, params)
     }
 
-    def findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
+    public QueryResults<Image> findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
         return elasticSearchService.searchByMetadata(metaDataKey, values, params)
+    }
+
+    def QueryResults<Image> searchUsingCriteria(GrailsParameterMap params) {
+        return elasticSearchService.searchUsingCriteria(searchCriteriaList, params)
+    }
+
+    public QueryResults<Image> allImages(GrailsParameterMap params) {
+        return elasticSearchService.simpleImageSearch("*", params)
     }
 
     public void saveSearchCriteria(String id, GrailsParameterMap params) {
@@ -260,10 +268,6 @@ class SearchService {
         if (closure) {
             closure(l ?: [])
         }
-    }
-
-    def QueryResults<Image> searchUsingCriteria(GrailsParameterMap params) {
-        return elasticSearchService.searchUsingCriteria(searchCriteriaList, params)
     }
 
     private static HttpSession getSession() {
