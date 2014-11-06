@@ -9,182 +9,16 @@ import java.util.regex.Pattern
 
 class SearchService {
 
-    public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
     def elasticSearchService
 
-    def getImageField(String fieldName) {
-        def fields = Image.class.declaredFields
-
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(SearchableProperty)) {
-                if (field.name.equalsIgnoreCase(fieldName)) {
-                    return field
-                }
-            }
-        }
-        return null
-    }
-
-    public QueryResults<Image> searchByImageProperty(String query, GrailsParameterMap params) {
-
-        def results = new QueryResults<Image>()
-
-        if (query.contains("=")) {
-
-            def field = getImageField(query.substring(0, query.indexOf("=")))
-            if (field) {
-
-                def value = query.substring(query.indexOf("=") + 1)?.toLowerCase()
-
-                try {
-                    switch (field.type) {
-                        case Integer.class:
-                            value = Integer.parseInt(value)
-                            break
-                        case Long.class:
-                            value = Long.parseLong(value)
-                            break
-                        case String.class:
-                            value = value.replaceAll('[*]', '%')
-                            break
-                        default:
-                            //
-                            println "Unhandled property type! ${field.name} - ${field.type.name}"
-                    }
-                } catch (Exception ex) {
-                    // couldn't coerce the value to the right type...
-                    return results // empty
-                }
-
-                def c = Image.createCriteria()
-                def imageList = c.list(params) {
-                    if (field.type.isAssignableFrom(String)) {
-                        ilike(field.name, value)
-                    } else {
-                        eq(field.name, value)
-                    }
-                }
-                results.list = imageList
-                results.totalCount = imageList.totalCount
-            }
-        }
-
-        return results
-    }
-
-    QueryResults<Image> searchByMetadataQuery(String query, GrailsParameterMap params) {
-
-        def results = new QueryResults<Image>()
-
-        if (query.contains(":")) {
-
-            def key = query.substring(0, query.indexOf(":"))?.toLowerCase()
-            def value = query.substring(query.indexOf(":") + 1)?.toLowerCase()
-
-            value = value.replaceAll('[*]', '%')
-
-            def paramMap = [key: key, value: value]
-
-            if (query) {
-                results.list = Image.executeQuery("""
-            SELECT DISTINCT img FROM Image img LEFT JOIN img.metadata md
-            WHERE lower(md.name) like :key and lower(md.value) like :value
-            ORDER BY img.dateTaken""", paramMap, [max: params.max, offset: params.offset])
-
-                results.totalCount = Image.executeQuery("""
-            SELECT count(DISTINCT img) FROM Image img LEFT JOIN img.metadata md
-            WHERE lower(md.name) like :key and lower(md.value) like :value
-            """, paramMap)[0]
-            }
-        }
-
-        return results
-    }
+    public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
 
     QueryResults<Image> simpleSearch(String query, GrailsParameterMap params) {
-
         return elasticSearchService.simpleImageSearch(query, params)
-
-        if (query.contains(":")) {
-            // metadata search
-            return searchByMetadataQuery(query, params)
-        }
-
-        if (query.contains("=")) {
-            // property value search
-            return searchByImageProperty(query, params)
-        }
-
-        query = query.toLowerCase()
-
-        def results = new QueryResults<Image>()
-
-        if (query) {
-            results.list = Image.executeQuery("""
-            SELECT DISTINCT img FROM Image img LEFT JOIN img.keywords kw
-            WHERE (lower(img.originalFilename) like :filenameQuery)
-            OR kw.keyword like :keywordQuery
-            OR img.imageIdentifier = :query
-            ORDER BY img.dateTaken""",
-                    [query: query, filenameQuery: '%' + query + '%', keywordQuery: query + '%'], [max: params.max, offset: params.offset])
-
-            results.totalCount = Image.executeQuery("""
-            SELECT COUNT(DISTINCT img) FROM Image img LEFT JOIN img.keywords kw
-            WHERE (lower(img.originalFilename) like :filenameQuery)
-            OR kw.keyword like :keywordQuery
-            OR img.imageIdentifier = :query
-            """,
-                    [query: query, filenameQuery: '%' + query + '%', keywordQuery: query + '%'])[0]
-        }
-
-        return results
-    }
-
-    def findImagesByOriginalFilename(String filename, GrailsParameterMap params) {
-        filename = URLDecoder.decode(filename, "utf-8")
-        filename.replaceAll("\\*", "%")
-        def c = Image.createCriteria()
-        def results = []
-        if (filename.contains("%")) {
-            results = c.list(params) {
-                ilike("originalFilename", filename)
-            }
-        } else {
-            results = c.list(params) {
-                eq("originalFilename", filename)
-            }
-        }
-        return results
     }
 
     def findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
-
-        CodeTimer t = new CodeTimer("Find by metadata key '${metaDataKey}' with ${values?.size()} values")
-
-        if (!metaDataKey || !values) {
-            return null
-        }
-
-        values = values.collect {
-            if (it.contains("*")) {
-                return it.replaceAll("\\*", "%").toLowerCase()
-            }
-            return it
-        }
-
-        def c = Image.createCriteria()
-        def results = c.list(params) {
-            metadata {
-                and {
-                    ilike("name", metaDataKey)
-                    inList('value', values)
-                }
-            }
-        }
-
-        t.stop(true)
-
-        return results
+        return elasticSearchService.searchByMetadata(metaDataKey, values, params)
     }
 
     public void saveSearchCriteria(String id, GrailsParameterMap params) {
@@ -198,7 +32,7 @@ class SearchService {
         }
     }
 
-    private String extractValueForCriteria(SearchCriteriaDefinition criteriaDefinition, GrailsParameterMap params) {
+    private static String extractValueForCriteria(SearchCriteriaDefinition criteriaDefinition, GrailsParameterMap params) {
         String value = null
         switch (criteriaDefinition.type) {
             case CriteriaType.ImageProperty:
@@ -432,8 +266,8 @@ class SearchService {
         return elasticSearchService.searchUsingCriteria(searchCriteriaList, params)
     }
 
-
-    private HttpSession getSession() {
+    private static HttpSession getSession() {
         return RequestContextHolder.currentRequestAttributes().getSession()
     }
+
 }

@@ -6,6 +6,7 @@ import groovy.json.JsonSlurper
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.elasticsearch.action.delete.DeleteResponse
 import org.elasticsearch.action.index.IndexResponse
+import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.Client
@@ -13,6 +14,7 @@ import org.elasticsearch.cluster.ClusterState
 import org.elasticsearch.cluster.metadata.IndexMetaData
 import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.index.query.FilterBuilder
 import org.elasticsearch.index.query.FilterBuilders
 import org.elasticsearch.index.query.QueryBuilders
 
@@ -30,7 +32,6 @@ class ElasticSearchService {
 
     private Node node
     private Client client
-
 
     @NotTransactional
     @PostConstruct
@@ -78,7 +79,8 @@ class ElasticSearchService {
         def md = ImageMetaDataItem.findAllByImage(image)
         data.metadata = [:]
         md.each {
-            data.metadata[it.name] = it.value
+            // Keys get lowercased here and when being searched for to make the case insensitive
+            data.metadata[it.name.toLowerCase()] = it.value
         }
 
         def json = (data as JSON).toString()
@@ -211,47 +213,31 @@ class ElasticSearchService {
             }
         }
 
-        def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
-        searchRequestBuilder.setPostFilter(filter)
-
-        if (params.offset) {
-            searchRequestBuilder.setFrom(params.int("offset"))
-        }
-
-        if (params.max) {
-            searchRequestBuilder.setSize(params.int("max"))
-        }
-
-        def ct = new CodeTimer("Index search")
-        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
-        ct.stop(true)
-
-        ct = new CodeTimer("Object retrieval")
-        def imageList = []
-        if (searchResponse.hits) {
-            searchResponse.hits.each { hit ->
-                imageList << Image.get(hit.id.toLong())
-            }
-        }
-        ct.stop(true)
-
-        return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
+        return executeSearch(filter, params)
     }
 
     public QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
 
-        // egregious hack until I can work out case insensitive *terms*
-        if (key.equalsIgnoreCase("occurrenceid")) {
-            key = "occurrenceId"
-        }
-
         def filter = FilterBuilders.orFilter()
         values.each { value ->
-            filter.add(FilterBuilders.termFilter(key, value))
+            // Metadata keys are lowercased when indexed
+            filter.add(FilterBuilders.termFilter(key.toLowerCase(), value))
         }
 
+        return executeSearch(filter, params)
+    }
+
+    private QueryResults<Image> executeSearch(FilterBuilder filterBuilder, GrailsParameterMap params) {
         def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
-        searchRequestBuilder.setPostFilter(filter)
+        searchRequestBuilder.setPostFilter(filterBuilder)
+
+        if (params?.offset) {
+            searchRequestBuilder.setFrom(params.int("offset"))
+        }
+
+        if (params?.max) {
+            searchRequestBuilder.setSize(params.int("max"))
+        }
 
         def ct = new CodeTimer("Index search")
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();

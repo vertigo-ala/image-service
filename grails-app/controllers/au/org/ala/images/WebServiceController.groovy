@@ -412,6 +412,7 @@ class WebServiceController {
         def userId = getUserIdForRequest(request)
 
         def success = imageService.setMetaDataItem(image, MetaDataSourceType.UserDefined, key, value, userId)
+        imageService.scheduleImageIndex(image.id)
 
         renderResults([success:success])
     }
@@ -442,6 +443,7 @@ class WebServiceController {
 
         def metadata = request.getJSON() as Map<String, String>
         def results = imageService.setMetadataItems(image, metadata, MetaDataSourceType.UserDefined, userId)
+        imageService.scheduleImageIndex(image.id)
 
         renderResults([success:results != null])
     }
@@ -719,6 +721,7 @@ class WebServiceController {
             }
 
             imageService.scheduleArtifactGeneration(image.id, userId)
+            imageService.scheduleImageIndex(image.id)
             renderResults([success: true, imageId: image?.imageIdentifier])
         } else {
             renderResults([success: false, message: "Failed to store image!"])
@@ -747,6 +750,7 @@ class WebServiceController {
                 if (newImage && newImage.success) {
                     imageService.setMetadataItems(newImage.image, srcImage, MetaDataSourceType.SystemDefined, userId)
                     imageService.scheduleArtifactGeneration(newImage.image.id, userId)
+                    imageService.scheduleImageIndex(newImage.image.id)
                     newImage.image = null
                 }
             }
