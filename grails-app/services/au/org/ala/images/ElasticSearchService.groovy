@@ -96,7 +96,7 @@ class ElasticSearchService {
     }
 
     public QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
-        def qmap = [query: [filtered: [query:[query_string: [query: query]]]]]
+        def qmap = [query: [filtered: [query:[query_string: [query: query?.toLowerCase()]]]]]
         return search(qmap, params)
     }
 
