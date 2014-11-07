@@ -134,13 +134,13 @@ class ElasticSearchService {
                     "dynamic_templates": [
                     {
                         "ids" : {
-                            "path_match": "metadata.*Id",
+                            "path_match": "metadata.*id",
                             "mapping": { "type": "string", "index" : "not_analyzed" }
                         }
                     },
                     {
                         "uids" : {
-                            "path_match": "metadata.*Uid",
+                            "path_match": "metadata.*uid",
                             "mapping": { "type": "string", "index" : "not_analyzed" }
                         }
                     }
