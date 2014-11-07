@@ -209,7 +209,7 @@ class ImagesTagLib {
                 mb.strong(criteria.criteriaDefinition.name)
             }
             mb.mkp.yieldUnescaped("&nbsp;")
-            mb.mkp.yieldUnescaped(SearchCriteriaUtils.format(criteria, { str -> "<strong>${str}</strong>" as String} ))
+            mb.mkp.yieldUnescaped(ESSearchCriteriaUtils.format(criteria, { str -> "<strong>${str}</strong>" as String} ))
         }
     }
 

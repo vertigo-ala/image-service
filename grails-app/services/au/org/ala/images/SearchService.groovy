@@ -33,7 +33,7 @@ class SearchService {
         filename = URLDecoder.decode(filename, "utf-8")
         filename.replaceAll("\\*", "%")
         def c = Image.createCriteria()
-        def results = []
+        def results
         if (filename.contains("%")) {
             results = c.list(params) {
                     ilike("originalFilename", filename)
