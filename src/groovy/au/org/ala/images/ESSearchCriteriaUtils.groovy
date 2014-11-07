@@ -66,7 +66,7 @@ public class ESSearchCriteriaUtils {
         String[] values
 
         public MultiStringPatternTranslator(String value) {
-            this.values = value?.split("\\|")
+            this.values = value?.split("~")
         }
 
         String displayString(Closure<String> formatValue) {
@@ -90,9 +90,10 @@ public class ESSearchCriteriaUtils {
         public FilterBuilder createQueryBuilder(SearchCriteria criteria) {
 
             def escape = { String term ->
-                return term.replaceAll("/", "\\\\/")
+                return term.replaceAll("/", "\\\\/").replaceAll(":", "\\\\:")
             }
             def field = criteria.criteriaDefinition.fieldName
+
             if (values.size() == 1) {
                 return FilterBuilders.queryFilter(QueryBuilders.queryString("${field}:${escape(values[0])}"))
             } else {

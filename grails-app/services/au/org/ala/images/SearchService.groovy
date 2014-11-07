@@ -29,6 +29,23 @@ class SearchService {
         return elasticSearchService.simpleImageSearch("*", params)
     }
 
+    def findImagesByOriginalFilename(String filename, GrailsParameterMap params) {
+        filename = URLDecoder.decode(filename, "utf-8")
+        filename.replaceAll("\\*", "%")
+        def c = Image.createCriteria()
+        def results = []
+        if (filename.contains("%")) {
+            results = c.list(params) {
+                    ilike("originalFilename", filename)
+                }
+        } else {
+            results = c.list(params) {
+                    eq("originalFilename", filename)
+                }
+        }
+        return results
+    }
+
     public void saveSearchCriteria(String id, GrailsParameterMap params) {
         def list = getSearchCriteriaList()
         def existing = list.find { it.id == id }

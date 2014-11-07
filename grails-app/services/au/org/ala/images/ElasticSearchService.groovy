@@ -187,7 +187,10 @@ class ElasticSearchService {
                 // need to split the metadata name out of the value...
                 def matcher = metaDataPattern.matcher(criteria.value)
                 if (matcher.matches()) {
-                    filter.must(FilterBuilders.queryFilter(QueryBuilders.queryString("${matcher.group(1)}:${matcher.group(2)?.replaceAll('\\*', '%')}")))
+                    def term = matcher.group(2)?.replaceAll('\\*', '%')
+                    term = term.replaceAll(":", "\\:")
+
+                    filter.must(FilterBuilders.queryFilter(QueryBuilders.queryString("${matcher.group(1)}:${term}")))
                 }
             }
         }
