@@ -228,7 +228,7 @@ class ImagesTagLib {
     /**
      * @attr markdown defaults to true, will invoke the markdown service
      * @attr tooltipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
-     * @atrr tipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
+     * @attr tipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
      * @attr targetPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
      */
     def helpText = { attrs, body ->
@@ -258,6 +258,16 @@ class ImagesTagLib {
             }
         } else {
             mb.mkp.yieldUnescaped("&nbsp;")
+        }
+    }
+
+    /**
+     * @attr metaDataItem The metadata item whose value is to be rendered
+     */
+    def renderMetaDataValue = { attrs, body ->
+        ImageMetaDataItem md = attrs.metaDataItem as ImageMetaDataItem
+        if (md) {
+            out << MetaDataValueFormatRules.formatValue(md)
         }
     }
 

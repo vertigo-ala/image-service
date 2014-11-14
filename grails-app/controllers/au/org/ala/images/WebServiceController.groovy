@@ -520,6 +520,42 @@ class WebServiceController {
         renderResults(results)
     }
 
+    def getImageInfoForIdList() {
+        def query = request.JSON
+
+        if (query) {
+
+            List<String> imageIds = (query.imageIds as List)?.collect { it as String }
+
+            if (!imageIds) {
+                renderResults([success:false, message:'You must supply a list of image IDs (imageIds) to search for!'])
+                return
+            }
+
+            def results =  [:]
+            def errors = []
+
+            imageIds.each { imageId ->
+
+                def image = Image.findByImageIdentifier(imageId)
+
+                if (image) {
+                    def map = imageService.getImageInfoMap(image)
+                    results[imageId] = map
+                } else {
+                    errors << imageId
+                }
+
+            }
+
+            renderResults([success: true, results: results, invalidImageIds: errors])
+            return
+        }
+
+        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
+
+    }
+
     def findImagesByOriginalFilename() {
         def query = request.JSON
 
@@ -775,6 +811,18 @@ class WebServiceController {
             return
         }
         renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
+    }
+
+    def resetImageCalibration() {
+        def userId = getUserIdForRequest(request)
+        def image = Image.findByImageIdentifier(params.imageId)
+        if (image ) {
+            imageService.resetImageLinearScale(image)
+            renderResults([success: true, message:"Image linear scale has been reset"])
+            return
+        }
+        renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
+
     }
 
     def setHarvestable() {

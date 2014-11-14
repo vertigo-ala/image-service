@@ -672,6 +672,12 @@ class ImageService {
         }
     }
 
+    def resetImageLinearScale(Image image) {
+        image.mmPerPixel = null;
+        image.save()
+        scheduleImageIndex(image.id)
+    }
+
     def calibrateImageScale(Image image, double pixelLength, double actualLength, String units, String userId) {
 
         double scale = 1.0

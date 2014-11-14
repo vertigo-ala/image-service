@@ -23,7 +23,7 @@
         <r:require module="bootstrap-switch" />
     </head>
     <body class="content">
-        <img:headerContent title="${mediaTitle} details ${imageInstance?.originalFilename ?: imageInstance?.id}">
+        <img:headerContent title="${mediaTitle} details ${imageInstance?.id}">
             <%
                 pageScope.crumbs = [
                 ]
@@ -91,6 +91,10 @@
                             <div class="tab-pane active" id="tabProperties">
                                 <table class="table table-bordered table-condensed table-striped">
                                     <tr>
+                                        <td class="property-name">Image Identifier</td>
+                                        <td class="property-value">${imageInstance.imageIdentifier}</td>
+                                    </tr>
+                                    <tr>
                                         <td class="property-name">Filename</td>
                                         <td class="property-value">${imageInstance.originalFilename}</td>
                                     </tr>
@@ -131,10 +135,6 @@
                                         <td class="property-name">Mime type</td>
                                         <td class="property-value">${imageInstance.mimeType}</td>
                                     </tr>
-                                    <tr>
-                                        <td class="property-name">Image Identifier</td>
-                                        <td class="property-value">${imageInstance.imageIdentifier}</td>
-                                    </tr>
                                     <g:if test="${isImage}">
                                     <tr>
                                         <td class="property-name">Zoom levels</td>
@@ -145,6 +145,7 @@
                                         <td class="property-value">
                                             <g:if test="${imageInstance.mmPerPixel}">
                                             ${imageInstance.mmPerPixel} mm per pixel
+                                            <button id="btnResetLinearScale" type="button" class="btn btn-small pull-right" title="Reset calibation"><i class="icon-remove"></i></button>
                                             </g:if>
                                             <g:else>
                                                 &lt;not calibrated&gt;
@@ -284,6 +285,21 @@
                     if (result.success) {
                     }
                 });
+            });
+
+        });
+
+        $("#btnResetLinearScale").click(function(e) {
+            e.preventDefault();
+            imglib.areYouSure({
+                title:"Reset calibration for this image?",
+                message:"Are you sure you wish to reset the linear scale for this image?",
+                affirmativeAction: function() {
+                    var url = "${createLink(controller:'webService', action:'resetImageCalibration')}?imageId=${imageInstance.imageIdentifier}";
+                    $.ajax(url).done(function(result) {
+                        window.location.reload(true);
+                    });
+                }
             });
 
         });

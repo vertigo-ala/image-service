@@ -10,7 +10,7 @@
         <g:each in="${metaData}" var="md">
             <tr metaDataKey="${md.name}">
                 <td class="property-name">${md.name}</td>
-                <td class="property-value">${md.value}
+                <td class="property-value"><img:renderMetaDataValue metaDataItem="${md}" />
                     <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                         <g:if test="${source == MetaDataSourceType.UserDefined}">
                             <button class="btn btn-small btn-danger btnDeleteMetadataItem pull-right"><i class="icon-remove icon-white"></i></button>
