@@ -223,6 +223,8 @@ class ElasticSearchService {
 
         if (params?.max) {
             searchRequestBuilder.setSize(params.int("max"))
+        } else {
+            searchRequestBuilder.setSize(Integer.MAX_VALUE) // probably way too many!
         }
 
         if (params?.sort) {
