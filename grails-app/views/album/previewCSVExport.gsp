@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="main"/>
+        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
         <title>ALA Image Service - Album export csv</title>
         <style>
         </style>

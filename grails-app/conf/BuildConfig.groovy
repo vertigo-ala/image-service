@@ -34,6 +34,18 @@ grails.project.dependency.resolution = {
         }
     }
 
+    dependencies {
+        runtime 'org.postgresql:postgresql:9.4-1201-jdbc41'
+        compile 'org.imgscalr:imgscalr-lib:4.2'
+        runtime 'org.apache.commons:commons-imaging:1.0-SNAPSHOT'
+        runtime 'org.apache.tika:tika-core:1.4'
+        runtime 'javax.media:jai_imageio:1.1'
+        runtime 'au.org.ala:image-utils:1.8.2'
+        compile 'org.apache.ant:ant:1.7.1'
+        compile 'org.apache.ant:ant-launcher:1.7.1'
+        compile 'org.elasticsearch:elasticsearch:1.4.4'
+    }
+
     plugins {
         build ":release:3.0.1"
         // plugins for the build system only
@@ -49,26 +61,11 @@ grails.project.dependency.resolution = {
         runtime ":database-migration:1.4.0"
         runtime ":jquery:1.8.3"
         runtime ":resources:1.2.8"
-        runtime ":ala-web-theme:0.8.1"
         compile ":csv:0.3.1"
         runtime ":images-client-plugin:0.2.2"
         compile ":jquery-ui:1.8.24"
-        // Uncomment these (or add new ones) to enable additional resources capabilities
-        //runtime ":zipped-resources:1.0.1"
-        //runtime ":cached-resources:1.1"
-        //runtime ":yui-minify-resources:0.1.5"
-    }
-
-    dependencies {
-        runtime 'org.postgresql:postgresql:9.3-1100-jdbc41'
-        compile 'org.imgscalr:imgscalr-lib:4.2'
-        runtime 'org.apache.commons:commons-imaging:1.0-SNAPSHOT'
-        runtime 'org.apache.tika:tika-core:1.4'
-        runtime 'javax.media:jai_imageio:1.1'
-        runtime 'au.org.ala:image-utils:1.8.2'
-        compile 'org.apache.ant:ant:1.7.1'
-        compile 'org.apache.ant:ant-launcher:1.7.1'
-        compile 'org.elasticsearch:elasticsearch:1.3.2'
+        runtime ":ala-bootstrap2:2.1-SNAPSHOT"
+        runtime ":ala-auth:1.3-SNAPSHOT"
     }
 
 }

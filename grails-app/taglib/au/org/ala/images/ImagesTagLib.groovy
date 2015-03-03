@@ -47,6 +47,7 @@ class ImagesTagLib {
                             a(href:createLink(uri:'/')) {
                                 mkp.yield("Home")
                             }
+                            span(class:"icon icon-arrow-right")
                         }
                         if (crumbList) {
                             for (int i = 0; i < crumbList?.size(); i++) {
@@ -55,6 +56,7 @@ class ImagesTagLib {
                                     a(href: item.link) {
                                         mkp.yield(item.label)
                                     }
+                                    span(class:"icon icon-arrow-right")
                                 }
                             }
                         }

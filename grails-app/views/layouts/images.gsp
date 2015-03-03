@@ -1,6 +1,5 @@
-<%@ page import="au.org.ala.web.CASRoles; org.codehaus.groovy.grails.commons.ConfigurationHolder" %>
-<!DOCTYPE html>
-<html lang="en">
+<%@ page import="au.org.ala.web.CASRoles" %>
+<g:applyLayout name="main">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="app.version" content="${g.meta(name: 'app.version')}"/>
@@ -13,41 +12,12 @@
         <link rel="shortcut icon" href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico">
         <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-        <title><g:layoutTitle/></title>
+        %{--<title><g:layoutTitle/></title>--}%
 
     <%-- Do not include JS & CSS files here - add them to your app's "application" module (in "Configuration/ApplicationResources.groovy") --%>
-        <r:require modules="bootstrap, application"/>
-        <r:require module="qtip" />
+        <r:require modules="bootstrap, application, qtip"/>
 
         <style>
-            /*nav#breadcrumb {*/
-                /*margin-top: 10px;*/
-            /*}*/
-
-            nav#breadcrumb ul, nav#breadcrumb ol {
-                margin: 0;
-            }
-
-
-            nav#breadcrumb li {
-                display:inline;
-            }
-            nav#breadcrumb li:after {
-                content:" \BB ";
-            }
-            nav#breadcrumb li.last:after {
-                content:"";
-            }
-
-            #page-header #breadcrumb a:link, #page-header #breadcrumb a:visited {
-                color:#3a5c83;
-                text-decoration: underline;
-                outline:none;
-            }
-
-            hgroup h2 {
-                margin: 0;
-            }
 
             .pagination a {
                 text-decoration: none;
@@ -153,14 +123,14 @@
 
         </r:script>
 
-        <r:layoutResources/>
-        <g:layoutHead/>
+        %{--<r:layoutResources/>--}%
+        %{--<g:layoutHead/>--}%
     </head>
 
     <body class="${pageProperty(name: 'body.class')}" id="${pageProperty(name: 'body.id')}" onload="${pageProperty(name: 'body.onload')}">
 
-        <hf:banner logoutUrl="${grailsApplication.config.grails.serverURL}/logout/logout"/>
-        <hf:menu/>
+        %{--<hf:banner logoutUrl="${grailsApplication.config.grails.serverURL}/logout/logout"/>--}%
+        %{--<hf:menu/>--}%
 
         <g:set var="containerClass" value="container"/>
         <g:if test="${pageProperty(name:'page.useFluidLayout')}">
@@ -182,7 +152,7 @@
                                         <span id="selectionContext" style="display: inline-block"></span>
                                         <a href="${createLink(controller:'image', action:'stagedImages')}" class="btn btn-small btn-success"><i class="icon-plus icon-white"></i>Upload</a>
                                     </auth:ifLoggedIn>
-                                    <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                                    <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_ADMIN}">
                                         <a href="${createLink(controller:'admin', action:'index')}" class="btn btn-warning btn-small"><i class="icon-cog icon-white"></i>Admin</a>
                                     </auth:ifAnyGranted>
                                 </div>
@@ -211,26 +181,26 @@
             %{--<a class="btn btn-small toggleResponsive"><i class="icon-resize-full"></i> Desktop version</a>--}%
         </div>
 
-        <hf:footer/>
+        %{--<hf:footer/>--}%
 
-        <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-        </script>
-        <r:script>
-            var pageTracker = _gat._getTracker("UA-4355440-1");
-            pageTracker._initData();
-            pageTracker._trackPageview();
+        %{--<script type="text/javascript">--}%
+            %{--var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");--}%
+            %{--document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));--}%
+        %{--</script>--}%
+        %{--<r:script>--}%
+            %{--var pageTracker = _gat._getTracker("UA-4355440-1");--}%
+            %{--pageTracker._initData();--}%
+            %{--pageTracker._trackPageview();--}%
 
-            // show warning if using IE6
-            if ($.browser.msie && $.browser.version.slice(0, 1) == '6') {
-                $('#header').prepend($('<div style="text-align:center;color:red;">WARNING: This page is not compatible with IE6.' +
-                    ' Many functions will still work but layout and image transparency will be disrupted.</div>'));
-            }
-        </r:script>
+            %{--// show warning if using IE6--}%
+            %{--if ($.browser.msie && $.browser.version.slice(0, 1) == '6') {--}%
+                %{--$('#header').prepend($('<div style="text-align:center;color:red;">WARNING: This page is not compatible with IE6.' +--}%
+                    %{--' Many functions will still work but layout and image transparency will be disrupted.</div>'));--}%
+            %{--}--}%
+        %{--</r:script>--}%
 
-    <!-- JS resources-->
-        <r:layoutResources/>
+    %{--<!-- JS resources-->--}%
+        %{--<r:layoutResources/>--}%
 
     </body>
-</html>
+</g:applyLayout>

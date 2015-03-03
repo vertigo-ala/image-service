@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="main"/>
+    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <title>ALA Image Service - My Albums</title>
     <style>
         #buttonsDiv {

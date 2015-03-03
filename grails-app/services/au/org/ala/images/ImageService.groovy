@@ -7,7 +7,7 @@ import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
-import org.apache.commons.imaging.common.IImageMetadata
+import org.apache.commons.imaging.common.ImageMetadata
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata
 import org.apache.commons.imaging.formats.tiff.TiffField
 import org.apache.commons.imaging.formats.tiff.constants.TiffConstants
@@ -206,7 +206,7 @@ class ImageService {
 
     private static Date getImageTakenDate(byte[] bytes) {
         try {
-            IImageMetadata metadata = Imaging.getMetadata(bytes)
+            ImageMetadata metadata = Imaging.getMetadata(bytes)
             if (metadata && metadata instanceof JpegImageMetadata) {
                 JpegImageMetadata jpegMetadata = metadata
 

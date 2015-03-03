@@ -22,7 +22,8 @@ if(System.getenv(ENV_NAME) && new File(System.getenv(ENV_NAME)).exists()) {
 
 println "[${appName}] (*) grails.config.locations = ${grails.config.locations}"
 
-headerAndFooter.baseURL = 'http://www2.ala.org.au/commonui'
+skin.layout = "images"
+//headerAndFooter.baseURL = 'http://www2.ala.org.au/commonui'
 ala.baseURL = "http://www.ala.org.au"
 bie.baseURL = "http://bie.ala.org.au"
 bie.searchPath = "/search"

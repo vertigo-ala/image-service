@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta name="layout" content="main"/>
+        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
         <meta name="section" content="home"/>
         <title>ALA Image Service - View Image</title>
 

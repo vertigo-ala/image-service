@@ -26,7 +26,7 @@
 
         </style>
 
-        <r:require module="bootstrap" />
+        <r:require modules="bootstrap, application" />
 
     </head>
 
