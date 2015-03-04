@@ -28,7 +28,7 @@
             }
 
             .spinner {
-                background: url(../images/spinner.gif) 50% 50% no-repeat transparent;
+                background: url("${g.resource(dir:'images', file:'spinner.gif')}") 50% 50% no-repeat transparent;
                 height: 16px;
                 width: 16px;
                 padding: 0.5em;
@@ -113,7 +113,7 @@
 
 
             function loadingSpinner() {
-                return '<img src="../images/spinner.gif"/>&nbsp;Loading...';
+                return '<img src="${g.resource(dir:'images', file:'spinner.gif')}"/>&nbsp;Loading...';
             }
 
             $(document).ready(function() {
@@ -124,7 +124,7 @@
         </r:script>
 
         %{--<r:layoutResources/>--}%
-        %{--<g:layoutHead/>--}%
+        <g:layoutHead/>
     </head>
 
     <body class="${pageProperty(name: 'body.class')}" id="${pageProperty(name: 'body.id')}" onload="${pageProperty(name: 'body.onload')}">
