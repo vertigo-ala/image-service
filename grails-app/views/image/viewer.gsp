@@ -42,7 +42,7 @@
         </r:script>
 
     </head>
-    <body class="content">
+    <body class="content" style="padding-top:0px;">
         <div id="imageViewerContainer" class="container-fluid">
             <div id="imageViewer">
             </div>
