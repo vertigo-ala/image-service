@@ -32,7 +32,6 @@
         <label class="control-label" for="fieldName">Field name</label>
         <div class="controls">
             <g:textField name="fieldName" value="${fieldDefinition?.fieldName}" />
-            %{--<g:select name="fieldName" from="${DarwinCoreField.values().sort({ it.name() })}" value="${fieldDefinition?.fieldName}"/>--}%
         </div>
     </div>
 
@@ -46,7 +45,7 @@
 
     <script>
 
-        jQuery("#fieldName").autocomplete("${createLink(controller:'webService', action:'darwinCoreTerms')}", {
+        jQuery("#fieldName").autocomplete("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'darwinCoreTerms')}", {
             dataType: 'jsonp',
             parse: function (data) {
                 var rows = new Array();
@@ -63,16 +62,14 @@
             formatItem: function (row, i, n) {
                 return row.name;
             },
-//            cacheLength: 10,
             minChars: 2,
             scroll: false,
-//            max: 10,
             selectFirst: false
         });
 
         $("#btnCancelEditFieldDefinition").click(function(e) {
             e.preventDefault();
-            imglib.hideModal();
+            imgvwr.hideModal();
         });
 
         $("#btnSaveFieldDefinition").click(function(e) {

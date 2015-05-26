@@ -110,8 +110,8 @@ imageservice.imagestore.inbox = "/data/images/incoming"
 imageservice.thumbnail.size = 300
 imageservice.pathToImgCnv = "/data/images/bin/imgcnv"
 
-imageservice.apache.root = "http://devt.ala.org.au/data/images/store/"
-grails.serverURL = "http://devt.ala.org.au:8080/ala-images"
+imageservice.apache.root = "http://dev.ala.org.au/data/images/store/"
+grails.serverURL = "http://dev.ala.org.au:8080/ala-images"
 
 environments {
     development {

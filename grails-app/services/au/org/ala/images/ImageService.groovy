@@ -3,6 +3,7 @@ package au.org.ala.images
 import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
+import com.sun.imageio.plugins.common.SubImageInputStream
 import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import org.apache.commons.codec.binary.Base64
@@ -113,7 +114,8 @@ class ImageService {
     }
 
     @NotTransactional
-    Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType, String uploaderId) {
+    Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
+                          String uploaderId, description = "") {
 
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
 
@@ -124,7 +126,12 @@ class ImageService {
         def imgDesc = imageStoreService.storeImage(bytes)
 
         // Create the image record, and set the various attributes
-        Image image = new Image(imageIdentifier: imgDesc.imageIdentifier, contentMD5Hash: md5Hash, contentSHA1Hash: sha1Hash, uploader: uploaderId)
+        Image image = new Image(
+                imageIdentifier: imgDesc.imageIdentifier,
+                contentMD5Hash: md5Hash,
+                contentSHA1Hash: sha1Hash,
+                uploader: uploaderId)
+        image.description = description
         image.fileSize = filesize
         image.mimeType = contentType
         image.dateUploaded = new Date()
@@ -143,15 +150,6 @@ class ImageService {
 
         ct.stop(true)
         return image
-    }
-
-    public String getMetadataItemValue(Image image, String key, MetaDataSourceType source = MetaDataSourceType.SystemDefined) {
-        def results = ImageMetaDataItem.executeQuery("select value from ImageMetaDataItem where image = :image and lower(name) = :key and source=:source", [image: image, key: key, source: source])
-        if (results) {
-            return results[0]
-        }
-
-        return null
     }
 
     public Map getMetadataItemValuesForImages(List<Image> images, String key, MetaDataSourceType source = MetaDataSourceType.SystemDefined) {
@@ -353,12 +351,10 @@ class ImageService {
                 keyword.delete()
             }
 
-            // if this image is a subimage, also need to delete any subimage rectangle records
-            if (image.parent) {
-                def subimages = Subimage.findAllBySubimage(image)
-                subimages.each { subimage ->
-                    subimage.delete()
-                }
+            // If this image is a subimage, also need to delete any subimage rectangle records
+            def subimagesRef = Subimage.findAllBySubimage(image)
+            subimagesRef.each { subimage ->
+                subimage.delete()
             }
 
             // This image may also be a parent image
@@ -377,7 +373,6 @@ class ImageService {
             }
 
             // thumbnail records...
-
             def thumbs = ImageThumbnail.findAllByImage(image)
             thumbs.each { thumb ->
                 thumb.delete()
@@ -389,10 +384,8 @@ class ImageService {
             // and delete domain object
             image.delete(flush: true, failonerror: true)
 
-
-
-
-            // Finally need to delete images on disk. This might fail (if the file is held open somewhere), but that's ok, we can clean up later.
+            // Finally need to delete images on disk.
+            // This might fail (if the file is held open somewhere), but that's ok, we can clean up later.
             imageStoreService.deleteImage(image?.imageIdentifier)
 
             auditService.log(image?.imageIdentifier, "Image deleted", userId)
@@ -577,7 +570,7 @@ class ImageService {
         return new MetadataExtractor().detectContentType(bytes, filename);
     }
 
-    public Image createSubimage(Image parentImage, int x, int y, int width, int height, String userId) {
+    public Image createSubimage(Image parentImage, int x, int y, int width, int height, String userId, description = "") {
 
         if (x < 0) {
             x = 0;
@@ -590,7 +583,7 @@ class ImageService {
         if (results.bytes) {
             int subimageIndex = Subimage.countByParentImage(parentImage) + 1
             def filename = "${parentImage.originalFilename}_subimage_${subimageIndex}"
-            def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId)
+            def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId, description)
 
             def subimageRect = new Subimage(parentImage: parentImage, subimage: subimage, x: x, y: y, height: height, width: width)
             subimageRect.save()
@@ -772,4 +765,21 @@ class ImageService {
         elasticSearchService.reinitialiseIndex()
     }
 
+    /**
+     * Retrieve image via numeric ID or guid.
+     * @param params
+     * @return
+     */
+    def getImageFromParams(params) {
+        def image = Image.findById(params.int("id"))
+        if (!image) {
+            String guid = params.id // maybe the id is a guid?
+            if (!guid) {
+                guid = params.imageId
+            }
+
+            image = Image.findByImageIdentifier(guid)
+        }
+        return image
+    }
 }

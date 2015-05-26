@@ -31,7 +31,7 @@
 
         $("#btnCancelUploadImages").click(function(e) {
             e.preventDefault();
-            imglib.hideModal();
+            imgvwr.hideModal();
         });
 
         $("#btnUploadImages").click(function(e) {

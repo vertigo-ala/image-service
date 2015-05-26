@@ -55,7 +55,7 @@
                     }
                 };
 
-                imglib.showModal(options);
+                imgvwr.showModal(options);
             });
 
             renderFieldDefinitions();
@@ -91,7 +91,7 @@
                             }
                         };
 
-                        imglib.showModal(options);
+                        imgvwr.showModal(options);
                     }
                 });
 

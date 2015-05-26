@@ -25,7 +25,7 @@
 
     $("#btnCancelAddTag").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnAddTag").click(function(e) {
@@ -33,10 +33,10 @@
         var tagPath = $("#tag").val();
         if (tagPath) {
             $.ajax("${createLink(controller:'webService', action:'createTagByPath')}?tagPath=" + tagPath + "&parentTagId=${parentTag?.id}").done(function(results) {
-                if (imglib.onTagCreated && results.tagId) {
-                    imglib.onTagCreated(results.tagId);
+                if (imgvwr.onTagCreated && results.tagId) {
+                    imgvwr.onTagCreated(results.tagId);
                 } else {
-                    imglib.hideModal();
+                    imgvwr.hideModal();
                 }
             });
         }

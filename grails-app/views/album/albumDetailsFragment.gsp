@@ -74,25 +74,25 @@
                 window.location = "${createLink(controller:'album', action:'deleteAllImages', id: album.id)}";
             }
         };
-        imglib.areYouSure(options);
+        imgvwr.areYouSure(options);
     });
 
     $("#btnAddTag").click(function(e) {
         e.preventDefault();
-        imglib.selectTag(function(tagId) {
+        imgvwr.selectTag(function(tagId) {
             var url = "${createLink(controller:'album', action:"ajaxTagImages", id: album.id)}?tagId=" + tagId;
-            imglib.pleaseWait("Adding tags to images...", url);
+            imgvwr.pleaseWait("Adding tags to images...", url);
         });
     });
 
     $("#btnAddMetaData").click(function(e) {
         e.preventDefault();
-        imglib.promptForMetadata(function(key, value) {
+        imgvwr.promptForMetadata(function(key, value) {
             var url = "${createLink(controller:'album', action:'ajaxAddMetaData', id: album.id)}?key=" + key + "&value=" + value;
-            imglib.pleaseWait("Applying metadata to images...", url);
+            imgvwr.pleaseWait("Applying metadata to images...", url);
         });
     });
 
-    imglib.bindImageTagTooltips();
+    imgvwr.bindImageTagTooltips();
 
 </script>

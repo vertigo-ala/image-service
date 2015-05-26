@@ -27,7 +27,7 @@
 
     $("#btnCancelAddUserMetaData").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnAddNewUserMetadata").click(function(e) {
@@ -37,8 +37,8 @@
         if (key && value) {
             key = encodeURIComponent(key);
             value = encodeURIComponent(value);
-            if (imglib.onAddMetadata) {
-                imglib.onAddMetadata(key, value);
+            if (imgvwr.onAddMetadata) {
+                imgvwr.onAddMetadata(key, value);
             }
         }
     });

@@ -362,15 +362,20 @@ class WebServiceController {
         def y = params.int('y')
         def height = params.int('height')
         def width = params.int('width')
+        def description = params.description
 
         if (height == 0 || width == 0) {
-            renderResults([success:false, message:"Rectange not correctly specified. Height and width cannot be zero"])
+            renderResults([success:false, message:"Rectangle not correctly specified. Height and width cannot be zero"])
             return
         }
 
         def userId = getUserIdForRequest(request)
+        if(!userId){
+            renderResults([success:false, message:"User needs to be logged in to create subimage"])
+            return
+        }
 
-        def subimage = imageService.createSubimage(image, x, y, width, height, userId)
+        def subimage = imageService.createSubimage(image, x, y, width, height, userId, description)
         renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
     }
 

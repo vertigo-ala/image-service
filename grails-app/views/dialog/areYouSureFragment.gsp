@@ -13,18 +13,18 @@
 
     $("#btnYes").click(function(e) {
         e.preventDefault();
-        if (imglib.areYouSureOptions && imglib.areYouSureOptions.affirmativeAction) {
-            imglib.areYouSureOptions.affirmativeAction();
+        if (imgvwr.areYouSureOptions && imgvwr.areYouSureOptions.affirmativeAction) {
+            imgvwr.areYouSureOptions.affirmativeAction();
         }
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnNo").click(function(e) {
         e.preventDefault();
-        if (imglib.areYouSureOptions && imglib.areYouSureOptions.negativeAction) {
-            imglib.areYouSureOptions.negativeAction();
+        if (imgvwr.areYouSureOptions && imgvwr.areYouSureOptions.negativeAction) {
+            imgvwr.areYouSureOptions.negativeAction();
         }
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
 </script>

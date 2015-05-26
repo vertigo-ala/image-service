@@ -44,23 +44,23 @@
     $("#btnAddAndSelectTag").click(function(e) {
         e.preventDefault();
         var parentTagId = getSelectedTagId();
-        imglib.hideModal();
-        imglib.createNewTag(parentTagId, function(tagId) {
-            if (tagId && imglib.onTagSelected) {
-                imglib.onTagSelected(tagId);
+        imgvwr.hideModal();
+        imgvwr.createNewTag(parentTagId, function(tagId) {
+            if (tagId && imgvwr.onTagSelected) {
+                imgvwr.onTagSelected(tagId);
             }
         });
     });
 
     $("#btnCancelAttachTag").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     function selectCurrentTag() {
         var tagId = getSelectedTagId();
-        if (tagId && imglib.onTagSelected) {
-            imglib.onTagSelected(tagId);
+        if (tagId && imgvwr.onTagSelected) {
+            imgvwr.onTagSelected(tagId);
         }
     }
 

@@ -20,7 +20,7 @@
 
     $("#btnCancelCalibrateImageScale").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnCalibrateImageScale").click(function(e) {
@@ -28,10 +28,13 @@
         var units = $("#units").val();
         var pixelLength = $("#pixelLength").val();
         var actualLength = $("#mmLength").val();
-        $.ajax("${createLink(controller:'webService', action:'calibrateImageScale', params:[imageId: imageInstance.imageIdentifier])}&units=" + units + "&pixelLength=" + pixelLength + "&actualLength=" + actualLength).done(function() {
-            imglib.hideModal();
+        $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'calibrateImageScale', params:[imageId: imageInstance.imageIdentifier])}&units=" + units + "&pixelLength=" + pixelLength + "&actualLength=" + actualLength).done(function() {
+            imgvwr.hideModal();
         });
-    });
 
+        <g:if test="${params.callback}">
+        ${params.callback}(pixelLength);
+        </g:if>
+    });
 
 </script>

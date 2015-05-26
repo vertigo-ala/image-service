@@ -16,13 +16,13 @@
 
     $("#btnCancelDeleteTag").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnDeleteTag").click(function(e) {
         e.preventDefault();
         $.ajax("${createLink(controller:'webService', action:'deleteTag')}?tagId=${tagInstance.id}").done(function() {
-            imglib.hideModal();
+            imgvwr.hideModal();
         });
     });
 

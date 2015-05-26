@@ -41,7 +41,7 @@
                         title:"Upload images from CSV"
                     };
 
-                    imglib.showModal(opts);
+                    imgvwr.showModal(opts);
                 });
             });
 

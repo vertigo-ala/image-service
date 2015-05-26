@@ -88,7 +88,7 @@ class ImageController {
     }
 
     def proxyImage() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
             def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
             boolean contentDisposition = params.boolean("contentDisposition")
@@ -97,7 +97,7 @@ class ImageController {
     }
 
     def proxyImageThumbnail() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
             def imageUrl = imageService.getImageThumbUrl(imageInstance.imageIdentifier)
             proxyImageRequest(response, imageInstance, imageUrl, 0)
@@ -105,7 +105,7 @@ class ImageController {
     }
 
     def proxyImageThumbnailLarge() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
             def imageUrl = imageService.getImageThumbLargeUrl(imageInstance.imageIdentifier)
             proxyImageRequest(response, imageInstance, imageUrl, 0)
@@ -154,7 +154,7 @@ class ImageController {
 
     def scheduleArtifactGeneration() {
 
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         def userId = AuthenticationUtils.getUserId(request)
 
         if (imageInstance) {
@@ -174,7 +174,7 @@ class ImageController {
     }
 
     def details() {
-        def image = getImageFromParams(params)
+        def image = imageService.getImageFromParams(params)
         if (!image) {
             flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
             redirect(action:'list')
@@ -196,16 +196,16 @@ class ImageController {
     }
 
     def view() {
-        def image = getImageFromParams(params)
+        def image = imageService.getImageFromParams(params)
         if (!image) {
             flash.errorMessage = "Could not find image with id ${params.int("id")}!"
         }
         def subimages = Subimage.findAllByParentImage(image)*.subimage
-        [imageInstance: image, subimages: subimages]
+        render (view: 'viewer', model: [imageInstance: image, subimages: subimages])
     }
 
     def tagsFragment() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         def imageTags = ImageTag.findAllByImage(imageInstance)
         def tags = imageTags?.collect { it.tag }
         def leafTags = TagUtils.getLeafTags(tags)
@@ -225,7 +225,7 @@ class ImageController {
 
     def imageMetadataTableFragment() {
 
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         def metaData = []
         def source = params.source as MetaDataSourceType
         if (imageInstance) {
@@ -240,26 +240,13 @@ class ImageController {
         [imageInstance: imageInstance, metaData: metaData?.sort { it.name }, source: source]
     }
 
-    private Image getImageFromParams(GrailsParameterMap params) {
-        def image = Image.get(params.int("id"))
-        if (!image) {
-            String guid = params.id // maybe the id is a guid?
-            if (!guid) {
-                guid = params.imageId
-            }
-
-            image = Image.findByImageIdentifier(guid)
-        }
-        return image
-    }
-
     def imageTooltipFragment() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         [imageInstance: imageInstance]
     }
 
     def imageTagsTooltipFragment() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
 
         def imageTags = ImageTag.findAllByImage(imageInstance)
         def tags = imageTags?.collect { it.tag }
@@ -269,14 +256,14 @@ class ImageController {
     }
 
     def createSubimageFragment() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         def metadata = ImageMetaDataItem.findAllByImage(imageInstance)
 
         [imageInstance: imageInstance, x: params.x, y: params.y, width: params.width, height: params.height, metadata: metadata]
     }
 
     def viewer() {
-        def imageInstance = getImageFromParams(params)
+        def imageInstance = imageService.getImageFromParams(params)
         [imageInstance: imageInstance, auxDataUrl: params.infoUrl]
     }
 
