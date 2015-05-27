@@ -224,7 +224,13 @@ class ImagesTagLib {
         if (userId) {
             displayName = authService.getUserForUserId(userId)?.displayName
         }
+
+        def currentUserId = authService.getUserId()
         out << (displayName ?: userId ?: '&lt;Unknown&gt;')
+
+        if(currentUserId && currentUserId == userId){
+            out << " (thats you!)"
+        }
     }
 
     /**

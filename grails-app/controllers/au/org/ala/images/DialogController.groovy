@@ -1,6 +1,10 @@
 package au.org.ala.images
 
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+
 class DialogController {
+
+    def imageService
 
     def areYouSureFragment() {
         def message = params.message
@@ -18,7 +22,7 @@ class DialogController {
     }
 
     def calibrateImageFragment() {
-        def image = Image.get(params.int('id'))
+        def image = imageService.getImageFromParams(params)
         def pixelLength = params.pixelLength
         [imageInstance: image, pixelLength: pixelLength]
     }

@@ -30,7 +30,7 @@
 
     $("#btnCancelRenameTag").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnRenameTag").click(function(e) {
@@ -38,7 +38,7 @@
         var newSuffix = $("#tag").val();
         if (newSuffix) {
             $.ajax("${createLink(controller:'webService', action:'renameTag')}?tagId=${tagInstance.id}&name=" + newSuffix).done(function() {
-                imglib.hideModal();
+                imgvwr.hideModal();
             });
         }
     });

@@ -128,10 +128,10 @@
 
         $("#btnClearSelection").click(function(e) {
             e.preventDefault();
-            imglib.showSpinner("Clearing selection...");
+            imgvwr.showSpinner("Clearing selection...");
             $.ajax("${createLink(controller: 'selection', action: 'clearSelection')}").done(function() {
                 location.reload(true);
-                imglib.hideSpinner();
+                imgvwr.hideSpinner();
             });
         });
 
@@ -183,7 +183,7 @@
 
     function selectAllOnPage() {
 
-        imglib.showSpinner("Selecting images on page...");
+        imgvwr.showSpinner("Selecting images on page...");
         var imageList = $(".thumbnail[imageId]").map(function() {
             return $(this).attr("imageId");
         }).get();
@@ -193,13 +193,13 @@
             $(".thumbnail[imageId]").each(function(e) {
                 $(this).find(".chkSelectImage").prop('checked', true);
             });
-            imglib.hideSpinner();
+            imgvwr.hideSpinner();
         });
     }
 
     function deselectAllOnPage() {
 
-        imglib.showSpinner("Deselecting images...");
+        imgvwr.showSpinner("Deselecting images...");
 
         var imageList = $(".thumbnail[imageId]").map(function() {
             return $(this).attr("imageId");
@@ -210,7 +210,7 @@
             $(".thumbnail[imageId]").each(function(e) {
                 $(this).find(".chkSelectImage").prop('checked', false);
             });
-            imglib.hideSpinner();
+            imgvwr.hideSpinner();
         });
 
     }

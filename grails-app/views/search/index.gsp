@@ -48,7 +48,7 @@
     $(document).ready(function() {
         $("#btnAddCriteria").click(function (e) {
             e.preventDefault();
-            imglib.showModal({
+            imgvwr.showModal({
                 url: "${createLink(action:'addSearchCriteriaFragment')}",
                 title: "Add Search Criteria",
                 height: 520,

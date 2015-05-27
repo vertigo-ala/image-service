@@ -64,7 +64,7 @@
                 url: "${createLink(action:'editAlbumFragment')}",
                 title: "Create a new album"
             }
-            imglib.showModal(options);
+            imgvwr.showModal(options);
         });
 
         $(".btnEditAlbum").click(function(e) {
@@ -75,7 +75,7 @@
                     url: "${createLink(action: 'editAlbumFragment')}/" + albumId,
                     title: "Edit album details"
                 };
-                imglib.showModal(options);
+                imgvwr.showModal(options);
             };
         });
 
@@ -91,7 +91,7 @@
             e.preventDefault();
             var albumId = $(this).closest("[albumId]").attr("albumId");
             if (albumId) {
-                imglib.areYouSure({
+                imgvwr.areYouSure({
                     title:'Delete album?',
                     message: 'Are you sure you wish to delete this album',
                     affirmativeAction: function() {

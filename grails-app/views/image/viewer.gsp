@@ -2,12 +2,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Image ${imageInstance.originalFilename}</title>
-
+        <title>Image ${imageInstance.originalFilename} | Image Service | Atlas of Living Australia </title>
         <style>
         html, body {
             height:100%;
             padding: 0;
+            margin:0;
         }
 
         #imageViewerContainer {
@@ -22,30 +22,22 @@
         }
 
         </style>
-
-        <r:require module="bootstrap" />
-        <r:require module="leaflet" />
-        <r:require module="leaflet_draw" />
-
-        <r:require module="viewer" />
+        <r:require module="image_viewer" />
         <r:layoutResources/>
         <r:script>
-
         $(document).ready(function() {
             var options = {
                 imageServiceBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}",
-                auxDataUrl : "${auxDataUrl}"
+                auxDataUrl : "${auxDataUrl ? auxDataUrl : ''}"
             };
 
             imgvwr.viewImage($("#imageViewer"), "${imageInstance.imageIdentifier}", options);
         });
         </r:script>
-
     </head>
-    <body class="content" style="padding-top:0px;">
+    <body style="padding:0;">
         <div id="imageViewerContainer" class="container-fluid">
-            <div id="imageViewer">
-            </div>
+            <div id="imageViewer"> </div>
         </div>
         <r:layoutResources/>
     </body>

@@ -34,7 +34,7 @@
         $("#btnAttachTag").click(function(e) {
             e.preventDefault();
 
-            imglib.selectTag(function(tagId) {
+            imgvwr.selectTag(function(tagId) {
                 if (tagId) {
                     $.ajax("${createLink(controller:'webService', action:'attachTagToImage', id: imageInstance.imageIdentifier)}?tagId=" + tagId).done(function() {
                         if (loadTags) {

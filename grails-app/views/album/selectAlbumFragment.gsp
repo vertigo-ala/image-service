@@ -31,15 +31,15 @@
 
     $("#btnCancelSelectAlbum").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnSelectAlbum").click(function(e) {
         e.preventDefault();
         selectAlbumClearError();
         var albumId = $("#album").val();
-        if (albumId && imglib.onAlbumSelected) {
-            imglib.onAlbumSelected(albumId);
+        if (albumId && imgvwr.onAlbumSelected) {
+            imgvwr.onAlbumSelected(albumId);
         }
     });
 
@@ -57,8 +57,8 @@
                 selectAlbumError(results.message);
             } else {
                 var albumId = results.albumId
-                if (albumId && imglib.onAlbumSelected) {
-                    imglib.onAlbumSelected(albumId);
+                if (albumId && imgvwr.onAlbumSelected) {
+                    imgvwr.onAlbumSelected(albumId);
                 }
             }
         });

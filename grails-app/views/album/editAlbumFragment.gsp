@@ -31,7 +31,7 @@
 
     $("#btnCancelCreateAlbum").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#saveAlbumForm").submit(function(e) {

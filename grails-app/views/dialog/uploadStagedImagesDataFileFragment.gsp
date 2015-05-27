@@ -33,7 +33,7 @@
 
     $("#btnCancelDataFileUpload").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
 </script>

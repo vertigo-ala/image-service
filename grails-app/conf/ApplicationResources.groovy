@@ -1,12 +1,7 @@
 modules = {
 
-    imglib {
-        dependsOn "jquery"
-        resource url: 'js/images.js'
-    }
-
     application {
-        dependsOn 'jquery','imglib'
+        dependsOn 'jquery', 'jquery-migration', 'image_viewer'
         resource url:'js/application.js'
         resource url:'css/img-bootstrap.css'
     }
@@ -44,5 +39,4 @@ modules = {
         resource "js/qtip/jquery.qtip.min.js"
         resource "js/qtip/jquery.qtip.min.css"
     }
-
 }

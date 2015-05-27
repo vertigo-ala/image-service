@@ -112,7 +112,7 @@
 
             $("#btnAddToAlbum").click(function(e) {
                 e.preventDefault();
-                imglib.selectAlbum(function(albumId) {
+                imgvwr.selectAlbum(function(albumId) {
                     window.location = "${createLink(controller:'selection', action:'addSelectionToAlbum')}?albumId=" + albumId;
                 });
             });
@@ -142,7 +142,7 @@
                         window.location = "${createLink(controller: 'selection', action: 'deleteSelected')}";
                     }
                 }
-                imglib.areYouSure(options);
+                imgvwr.areYouSure(options);
             });
 
         });

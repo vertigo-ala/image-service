@@ -66,7 +66,7 @@
                 title: "Select column"
             };
 
-            imglib.showModal(options);
+            imgvwr.showModal(options);
         });
 
         $(".btnRemoveColumn").click(function(e) {

@@ -137,7 +137,7 @@
 
             $(document).ready(function () {
 
-                imglib.bindTooltips("a.fieldHelp", 650);
+                imgvwr.bindTooltips("a.fieldHelp", 650);
 
                 $(".btnDeleteStagedFile").click(function (e) {
                     e.preventDefault();
@@ -154,7 +154,7 @@
                         url: "${createLink(controller: 'dialog', action:"selectImagesForStagingFragment", params:[userId: userId])}"
                     };
 
-                    imglib.showModal(opts);
+                    imgvwr.showModal(opts);
                 });
 
                 $("#btnUploadDataFile").click(function(e) {
@@ -163,7 +163,7 @@
                         title: "Upload a data file",
                         url: "${createLink(controller:'dialog', action:'uploadStagedImagesDataFileFragment', params:[userId: userId])}"
                     };
-                    imglib.showModal(options);
+                    imgvwr.showModal(options);
                 });
 
                 $("#btnClearDataFile").click(function(e) {
@@ -177,7 +177,7 @@
                         title: "Add column definition",
                         url:"${createLink(controller: 'image', action:'editStagingColumnFragment')}"
                     };
-                    imglib.showModal(options);
+                    imgvwr.showModal(options);
                 });
 
                 $(".btnDeleteField").click(function(e) {
@@ -196,7 +196,7 @@
                             title: "Edit field definition",
                             url:"${createLink(action: 'editStagingColumnFragment')}?columnDefinitionId=" + fieldId
                         };
-                        imglib.showModal(options);
+                        imgvwr.showModal(options);
                     }
                 });
 

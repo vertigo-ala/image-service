@@ -7,6 +7,8 @@ class UrlMappings {
             }
         }
 
+        "/ws/image/$id?(.$format)?"(controller: "webService", action: "getImageInfo")
+
         "/ws/$action?/$id?(.$format)?" {
             controller = "webService"
         }

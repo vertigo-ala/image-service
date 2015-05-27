@@ -33,7 +33,7 @@
 
         $("#btnCancel").click(function(e) {
             e.preventDefault();
-            imglib.hideModal();
+            imgvwr.hideModal();
         });
 
         $("#btnCreateNewField").click(function(e) {
@@ -46,7 +46,7 @@
                     if (!results.success) {
                         alert(results.message);
                     } else {
-                        imglib.hideModal();
+                        imgvwr.hideModal();
                     }
                 });
             }

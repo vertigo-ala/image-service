@@ -7,7 +7,7 @@ grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 grails.project.war.file = "target/${appName}.war"
 
-// grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
+//grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
 
 grails.project.fork = [
     test: false,
@@ -64,8 +64,9 @@ grails.project.dependency.resolution = {
         compile ":csv:0.3.1"
         runtime ":images-client-plugin:0.2.2"
         compile ":jquery-ui:1.8.24"
-        runtime ":ala-bootstrap2:2.1-SNAPSHOT"
-        runtime ":ala-auth:1.3-SNAPSHOT"
+        runtime ":ala-bootstrap2:2.2"
+        runtime ":ala-auth:1.3"
+        runtime ":cors:1.1.8"
+        build: ":images-client-plugin:0.6-SNAPSHOT"
     }
-
 }

@@ -42,7 +42,7 @@
 
     $("#btnCancelEdit").click(function(e) {
         e.preventDefault();
-        imglib.hideModal();
+        imgvwr.hideModal();
     });
 
     $("#btnSaveCriteria").click(function(e) {
@@ -54,7 +54,7 @@
                 errorDiv.html(data.errorMessage);
                 errorDiv.css("display",'block');
             } else {
-                imglib.hideModal();
+                imgvwr.hideModal();
             }
 
         });

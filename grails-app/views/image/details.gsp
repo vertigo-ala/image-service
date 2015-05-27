@@ -36,12 +36,11 @@
                         <li class="span12">
                             <div class="thumbnail" style="text-align: center">
                                 <g:if test="${isImage}">
-                                <a href="${createLink(action:'view', id:imageInstance.id)}">
+                                <a href="${grailsApplication.config.serverName}${createLink(action:'view', id:imageInstance.id)}">
                                     <img src="<img:imageThumbUrl imageId="${imageInstance?.imageIdentifier}"/>" />
                                 </a>
                                 </g:if>
                                 <g:if test="${imageInstance.mimeType?.toLowerCase()?.startsWith("audio/")}">
-                                    %{--// <img src="<img:imageThumbUrl imageId="${imageInstance?.imageIdentifier}"/>" />--}%
                                     <audio src="<img:imageUrl imageId="${imageInstance.imageIdentifier}" />"></audio>
                                 </g:if>
                             </div>
@@ -93,6 +92,10 @@
                                     <tr>
                                         <td class="property-name">Image Identifier</td>
                                         <td class="property-value">${imageInstance.imageIdentifier}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="property-name">Description</td>
+                                        <td class="property-value">${imageInstance.description}</td>
                                     </tr>
                                     <tr>
                                         <td class="property-name">Filename</td>
@@ -204,7 +207,7 @@
                                             <g:if test="${isImage}">
                                                 <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
                                             </g:if>
-                                            <a class="btn btn-small" href="${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
+                                            <a class="btn btn-small" href="${grailsApplication.config.serverName}${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="icon-download-alt"></i></a>
 
                                             <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
                                                 <g:if test="${albums}">
@@ -214,8 +217,11 @@
 
                                             <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                                                 <button class="btn btn-small" id="btnRegen" title="Regenerate artifacts"><i class="icon-refresh"></i></button>
-                                                <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
                                             </auth:ifAnyGranted>
+
+                                            <auth:ifAnyGrantedOrUserIsCreator roles="${CASRoles.ROLE_ADMIN}" creatorUserId="${imageInstance.uploader}">
+                                                <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
+                                            </auth:ifAnyGrantedOrUserIsCreator>
                                         </td>
                                     </tr>
 
@@ -245,7 +251,7 @@
         var dest = $(tabDiv);
         dest.html("Loading...");
         var source = dest.attr("metadataSource");
-        $.ajax("${createLink(controller:'image', action:'imageMetadataTableFragment', id: imageInstance.id)}?source=" + source).done(function(content) {
+        $.ajax("${grailsApplication.config.serverName}${createLink(controller:'image', action:'imageMetadataTableFragment', id: imageInstance.id)}?source=" + source).done(function(content) {
             dest.html(content);
         });
     }
@@ -253,7 +259,7 @@
     <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
 
         function refreshAuditTrail() {
-            $.ajax("${createLink(controller: 'image', action:'imageAuditTrailFragment', id: imageInstance.id)}").done(function(content) {
+            $.ajax("${grailsApplication.config.serverName}${createLink(controller: 'image', action:'imageAuditTrailFragment', id: imageInstance.id)}").done(function(content) {
                 $("#tabAuditMessages").html(content);
             });
         }
@@ -268,7 +274,7 @@
             var name = $(this).attr("name");
             if (name) {
                 if (name == 'chkIsHarvestable') {
-                    $.ajax("${createLink(controller:'webService', action:'setHarvestable', params: [imageId: imageInstance.imageIdentifier])}").done(function(data) {
+                    $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'setHarvestable', params: [imageId: imageInstance.imageIdentifier])}").done(function(data) {
                         console.log(data);
                     });
                 }
@@ -280,8 +286,8 @@
         $("#btnAddToAlbum").click(function(e) {
 
             e.preventDefault();
-            imglib.selectAlbum(function(albumId) {
-                $.ajax("${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
+            imgvwr.selectAlbum(function(albumId) {
+                $.ajax("${grailsApplication.config.serverName}${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
                     if (result.success) {
                     }
                 });
@@ -291,11 +297,11 @@
 
         $("#btnResetLinearScale").click(function(e) {
             e.preventDefault();
-            imglib.areYouSure({
+            imgvwr.areYouSure({
                 title:"Reset calibration for this image?",
                 message:"Are you sure you wish to reset the linear scale for this image?",
                 affirmativeAction: function() {
-                    var url = "${createLink(controller:'webService', action:'resetImageCalibration')}?imageId=${imageInstance.imageIdentifier}";
+                    var url = "${grailsApplication.config.serverName}${createLink(controller:'webService', action:'resetImageCalibration')}?imageId=${imageInstance.imageIdentifier}";
                     $.ajax(url).done(function(result) {
                         window.location.reload(true);
                     });
@@ -317,12 +323,12 @@
 
         $("#btnViewImage").click(function(e) {
             e.preventDefault();
-            window.location = "${createLink(controller:'image', action:'view', id: imageInstance.id)}";
+            window.location = "${grailsApplication.config.serverName}${createLink(controller:'image', action:'view', id: imageInstance.id)}";
         });
 
         $("#btnRegen").click(function(e) {
             e.preventDefault();
-            $.ajax("${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function() {
+            $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function() {
                 window.location = this.location.href; // reload
             });
         });
@@ -333,13 +339,13 @@
             var options = {
                 message: "Warning! This operation cannot be undone. Are you sure you wish to permanently delete this image?",
                 affirmativeAction: function() {
-                    $.ajax("${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
-                        window.location = "${createLink(controller:'image', action:'list')}";
+                    $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
+                        window.location = "${grailsApplication.config.serverName}${createLink(controller:'image', action:'list')}";
                     });
                 }
             };
 
-            imglib.areYouSure(options);
+            imgvwr.areYouSure(options);
         });
 
         $(".image-info-button").each(function() {
@@ -348,7 +354,7 @@
                 $(this).qtip({
                     content: {
                         text: function(event, api) {
-                            $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {
+                            $.ajax("${grailsApplication.config.serverName}${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {
                                 api.set("content.text", content);
                             },
                             function(xhr, status, error) {
@@ -361,15 +367,12 @@
         });
 
         loadTags();
-
     });
 
     function loadTags() {
-        $.ajax("${createLink(action:'tagsFragment',id:imageInstance.id)}").done(function(html) {
+        $.ajax("${grailsApplication.config.serverName}${createLink(action:'tagsFragment',id:imageInstance.id)}").done(function(html) {
             $("#tagsSection").html(html);
         });
     }
 
-
 </r:script>
-
