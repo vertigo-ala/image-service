@@ -1,7 +1,7 @@
 modules = {
 
     application {
-        dependsOn 'jquery', 'jquery-migration', 'image_viewer'
+        dependsOn 'jquery', 'jquery-migration', 'image-viewer'
         resource url:'js/application.js'
         resource url:'css/img-bootstrap.css'
     }
