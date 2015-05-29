@@ -66,6 +66,6 @@ grails.project.dependency.resolution = {
         runtime ":ala-bootstrap2:2.2"
         runtime ":ala-auth:1.3"
         runtime ":cors:1.1.8"
-        build: ":images-client-plugin:0.5"
+        runtime: ":images-client-plugin:0.5"
     }
 }
