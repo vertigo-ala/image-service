@@ -1,9 +1,9 @@
 ### image-service   [![Build Status](https://travis-ci.org/AtlasOfLivingAustralia/image-service.svg?branch=master)](https://travis-ci.org/AtlasOfLivingAustralia/image-service)
 
-This grails application provides the webservices and backend for the storage of all images in the Atlas.
+This Grails application provides the webservices and backend for the storage of all images in the Atlas.
 It includes:
 
-* Support for very large images
+* Support for large images
 * Extensible key/value pair storage for image metadata
 * Support for subimaging and maintaining the relationships between parent and child images
 * Exif extraction
@@ -23,7 +23,7 @@ There are other related repositories to this one:
 
 * Grails web application ran in the tomcat 7 or above
 * Oracle Java 7
-* Postgres database
+* Postgres database (9.3 or above)
 
 ## Installation
 
