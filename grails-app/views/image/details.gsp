@@ -219,9 +219,15 @@
                                                 <button class="btn btn-small" id="btnRegen" title="Regenerate artifacts"><i class="icon-refresh"></i></button>
                                             </auth:ifAnyGranted>
 
-                                            <auth:ifAnyGrantedOrUserIsCreator roles="${CASRoles.ROLE_ADMIN}" creatorUserId="${imageInstance.uploader}">
+                                            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}" creatorUserId="${imageInstance.uploader}">
                                                 <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
-                                            </auth:ifAnyGrantedOrUserIsCreator>
+                                            </auth:ifAnyGranted>
+                                            <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">
+                                                <img:userIsUploader image="${imageInstance}">
+                                                    <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete image"><i class="icon-remove icon-white"></i></button>
+                                                </img:userIsUploader>
+                                            </auth:ifNotGranted>
+
                                         </td>
                                     </tr>
 

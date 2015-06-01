@@ -7,7 +7,7 @@
         <title>ALA Image Service - View Image</title>
 
         <r:require module="leaflet" />
-        <r:require module="leaflet_draw" />
+        <r:require module="leaflet-draw" />
 
         <style>
 
