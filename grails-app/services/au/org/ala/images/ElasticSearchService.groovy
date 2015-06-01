@@ -60,7 +60,7 @@ class ElasticSearchService {
             ct.stop(true)
 
         } catch (Exception ex) {
-            println ex
+            log.error(ex.getMessage(), e)
             // failed to delete index - maybe because it didn't exist?
         }
         addMappings()

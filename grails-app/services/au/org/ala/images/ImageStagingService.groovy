@@ -167,7 +167,7 @@ class ImageStagingService {
                     try {
                         pattern = Pattern.compile(field.format)
                     } catch (Exception ex) {
-                        println ex.message
+                        log.error(ex.message, ex)
                     }
                     break
             }

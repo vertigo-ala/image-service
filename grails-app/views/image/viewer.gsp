@@ -22,7 +22,7 @@
         }
 
         </style>
-        <r:require module="image_viewer" />
+        <r:require module="image-viewer" />
         <r:layoutResources/>
         <r:script>
         $(document).ready(function() {

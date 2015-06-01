@@ -43,7 +43,7 @@ grails.project.dependency.resolution = {
         runtime 'au.org.ala:image-utils:1.8.2'
         compile 'org.apache.ant:ant:1.7.1'
         compile 'org.apache.ant:ant-launcher:1.7.1'
-        compile 'org.elasticsearch:elasticsearch:1.4.4'
+        compile 'org.elasticsearch:elasticsearch:1.5.2'
     }
 
     plugins {
@@ -55,17 +55,19 @@ grails.project.dependency.resolution = {
         compile ":scaffolding:2.0.3"
         compile ':cache:1.1.1'
         compile ":quartz:1.0.1"
+        compile ":csv:0.3.1"        
+        compile ":jquery-ui:1.8.24"
 
         // plugins needed at runtime but not for compilation
         runtime ":hibernate:3.6.10.16"
         runtime ":database-migration:1.4.0"
         runtime ":jquery:1.8.3"
         runtime ":resources:1.2.8"
+        runtime ":images-client-plugin:0.5"
         compile ":csv:0.3.1"
         compile ":jquery-ui:1.8.24"
         runtime ":ala-bootstrap2:2.2"
-        runtime ":ala-auth:1.3"
+        runtime ":ala-auth:1.3.1"
         runtime ":cors:1.1.8"
-        runtime: ":images-client-plugin:0.5"
     }
 }

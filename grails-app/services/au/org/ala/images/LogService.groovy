@@ -8,7 +8,7 @@ class LogService {
 
     def log(String message) {
         def sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-        println "[${sdf.format(new Date())}] ${message}"
+        log.info "${message}"
     }
 
     def error(String message, Throwable error) {

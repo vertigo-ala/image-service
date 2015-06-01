@@ -11,10 +11,6 @@
         <link rel="icon" href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico">
         <link rel="shortcut icon" href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico">
         <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-
-        %{--<title><g:layoutTitle/></title>--}%
-
-    <%-- Do not include JS & CSS files here - add them to your app's "application" module (in "Configuration/ApplicationResources.groovy") --%>
         <r:require modules="bootstrap, application, qtip"/>
 
         <style>

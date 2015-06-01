@@ -233,6 +233,13 @@ class ImagesTagLib {
         }
     }
 
+    def userIsUploader = { attrs, body ->
+        def currentUserId = authService.getUserId()
+        if(attrs.image && attrs.image.uploader && attrs.image.uploader == currentUserId){
+            out << body()
+        }
+    }
+
     /**
      * @attr markdown defaults to true, will invoke the markdown service
      * @attr tooltipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')
