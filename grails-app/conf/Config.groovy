@@ -129,24 +129,52 @@ environments {
 }
 
 // log4j configuration
+def loggingDir = (System.getProperty('catalina.base') ? System.getProperty('catalina.base') + '/logs' : './logs')
+// work around for travis and local builds
+if(!(new File(loggingDir).exists())){
+    loggingDir = "/tmp/"
+}
+
+// log4j configuration
 log4j = {
     // Example of changing the log pattern for the default console appender:
-    //
-    //appenders {
-    //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
-    //}
+    appenders {
+        environments {
+            production {
+                rollingFile name: "tomcatLog", maxFileSize: 102400000, file: loggingDir + "/${appName}.log", threshold: org.apache.log4j.Level.INFO, layout: pattern(conversionPattern: "[%d] %m%n")
+                'null' name: "stacktrace"
+            }
+            development {
+                console name: "stdout", layout: pattern(conversionPattern: "[%d] %-5p [%c{1}]  %m%n"), threshold: org.apache.log4j.Level.DEBUG
+            }
+            test {
+                console name: "stdout", layout: pattern(conversionPattern: "[%d] %-5p [%c{1}]  %m%n"), threshold: org.apache.log4j.Level.INFO
+            }
+        }
+    }
+
+    root {
+        info 'stdout'
+    }
 
     error  'org.codehaus.groovy.grails.web.servlet',        // controllers
-           'org.codehaus.groovy.grails.web.pages',          // GSP
-           'org.codehaus.groovy.grails.web.sitemesh',       // layouts
-           'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
-           'org.codehaus.groovy.grails.web.mapping',        // URL mapping
-           'org.codehaus.groovy.grails.commons',            // core / classloading
-           'org.codehaus.groovy.grails.plugins',            // plugins
-           'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
-           'org.springframework',
-           'org.hibernate',
-           'net.sf.ehcache.hibernate'
-
-    warn   'au.org.ala.cas.client'
+            'org.codehaus.groovy.grails.web.pages',          // GSP
+            'org.codehaus.groovy.grails.web.sitemesh',       // layouts
+            'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
+            'org.codehaus.groovy.grails.web.mapping',        // URL mapping
+            'org.codehaus.groovy.grails.commons',            // core / classloading
+            'org.codehaus.groovy.grails.plugins',            // plugins
+            'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
+            'org.springframework',
+            'org.hibernate',
+            'net.sf.ehcache.hibernate'
+    info   'grails.app'
+    debug  'grails.app.controllers',
+            'grails.app.services',
+            //'grails.app.taglib',
+            'grails.web.pages',
+            //'grails.app',
+            'au.org.ala.cas',
+            'au.org.ala.biocache.hubs',
+            'au.org.ala.biocache.hubs.OccurrenceTagLib'
 }

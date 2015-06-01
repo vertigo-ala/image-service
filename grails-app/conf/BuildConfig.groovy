@@ -43,7 +43,7 @@ grails.project.dependency.resolution = {
         runtime 'au.org.ala:image-utils:1.8.2'
         compile 'org.apache.ant:ant:1.7.1'
         compile 'org.apache.ant:ant-launcher:1.7.1'
-        compile 'org.elasticsearch:elasticsearch:1.4.4'
+        compile 'org.elasticsearch:elasticsearch:1.5.2'
     }
 
     plugins {
@@ -65,7 +65,7 @@ grails.project.dependency.resolution = {
         runtime ":resources:1.2.8"
         runtime ":images-client-plugin:0.5"
         runtime ":ala-bootstrap2:2.2"
-        runtime ":ala-auth:1.3"
+        runtime ":ala-auth:1.3.1"
         runtime ":cors:1.1.8"
     }
 }
