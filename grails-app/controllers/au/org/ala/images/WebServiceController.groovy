@@ -354,7 +354,7 @@ class WebServiceController {
         }
 
         if (!params.x || !params.y || !params.height || !params.width) {
-            renderResults([success:false, message:"Rectange not correctly specified. Use x, y, height and width params"])
+            renderResults([success:false, message:"Rectangle not correctly specified. Use x, y, height and width params"])
             return
         }
 
@@ -427,6 +427,7 @@ class WebServiceController {
         def userId = AuthenticationUtils.getUserId(request)
         // If not found (i.e. urls not mapped), look for standard ALA auth header
         if (!userId) {
+            //TODO check the app is authorised
             userId = request.getHeader("X-ALA-userId")
         }
 
@@ -812,22 +813,20 @@ class WebServiceController {
         def actualLength = params.double("actualLength") ?: 0
         if (image && units && pixelLength && actualLength) {
             def pixelsPerMM = imageService.calibrateImageScale(image, pixelLength, actualLength, units, userId)
-            renderResults([success: true, message:"Image is scaled at ${pixelsPerMM} pixels per mm"])
+            renderResults([success: true, pixelsPerMM:pixelsPerMM, message:"Image is scaled at ${pixelsPerMM} pixels per mm"])
             return
         }
         renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
     }
 
     def resetImageCalibration() {
-        def userId = getUserIdForRequest(request)
         def image = Image.findByImageIdentifier(params.imageId)
-        if (image ) {
+        if (image) {
             imageService.resetImageLinearScale(image)
             renderResults([success: true, message:"Image linear scale has been reset"])
             return
         }
         renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
-
     }
 
     def setHarvestable() {
@@ -839,7 +838,6 @@ class WebServiceController {
         } else {
             renderResults([success:false, message:'Missing one or more required parameters: imageId, value'])
         }
-
     }
 
     def scheduleUploadFromUrls() {
@@ -923,5 +921,4 @@ class WebServiceController {
             renderResults([success:"false", message:'No harvestable images found'])
         }
     }
-
 }
