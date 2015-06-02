@@ -27,10 +27,10 @@
         <r:script>
         $(document).ready(function() {
             var options = {
+                auxDataUrl : "${auxDataUrl ? auxDataUrl : ''}",
                 imageServiceBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}",
-                auxDataUrl : "${auxDataUrl ? auxDataUrl : ''}"
+                imageClientBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}"
             };
-
             imgvwr.viewImage($("#imageViewer"), "${imageInstance.imageIdentifier}", options);
         });
         </r:script>

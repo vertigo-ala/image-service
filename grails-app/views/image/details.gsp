@@ -1,11 +1,10 @@
 <%@ page import="au.org.ala.web.CASRoles" %>
-
 <g:set var="mediaTitle" value="${isImage ? 'Image' : 'Media'}" />
 <!doctype html>
 <html>
     <head>
         <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
-        <title>ALA Image Service - ${mediaTitle} details</title>
+        <title>${mediaTitle} details | Atlas of Living Australia</title>
         <style>
 
             .property-value {
@@ -17,16 +16,12 @@
             }
 
         </style>
-        <r:require module="bootstrap" />
-        <r:require module="jstree" />
-        <r:require module="audiojs" />
-        <r:require module="bootstrap-switch" />
+        <r:require modules="bootstrap,jstree,audiojs,bootstrap-switch" />
     </head>
     <body class="content">
         <img:headerContent title="${mediaTitle} details ${imageInstance?.id}">
             <%
-                pageScope.crumbs = [
-                ]
+                pageScope.crumbs = []
             %>
         </img:headerContent>
         <div class="row-fluid">

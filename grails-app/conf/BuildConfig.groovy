@@ -63,7 +63,7 @@ grails.project.dependency.resolution = {
         runtime ":database-migration:1.4.0"
         runtime ":jquery:1.8.3"
         runtime ":resources:1.2.8"
-        runtime ":images-client-plugin:0.5"
+        runtime ":images-client-plugin:0.5.3"
         compile ":csv:0.3.1"
         compile ":jquery-ui:1.8.24"
         runtime ":ala-bootstrap2:2.2"
