@@ -16,6 +16,7 @@ class AdminController {
     def settingService
     def tagService
     def elasticSearchService
+    def collectoryService
 
     def index() {
         redirect(action:'dashboard')
@@ -223,4 +224,8 @@ class AdminController {
         [results: results, query: params.q]
     }
 
+    def clearCollectoryCache(){
+        collectoryService.clearCache()
+        redirect(action:'tools')
+    }
 }

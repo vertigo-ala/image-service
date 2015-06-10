@@ -240,6 +240,14 @@ class ImagesTagLib {
         }
     }
 
+    def imageMetadata = { attrs, body ->
+        if(attrs.image[attrs.field]){
+            out << attrs.image[attrs.field]
+        } else if(attrs.resource[attrs.field]){
+            out << attrs.resource[attrs.field] + "<small> (resource level metadata) </small>"
+        }
+    }
+
     /**
      * @attr markdown defaults to true, will invoke the markdown service
      * @attr tooltipPosition (one of 'topLeft, 'topMiddle', 'topRight', 'bottomLeft', 'bottomMiddle', 'bottomRight')

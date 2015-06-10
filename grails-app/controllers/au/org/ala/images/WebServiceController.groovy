@@ -21,6 +21,7 @@ class WebServiceController {
     def logService
     def batchService
     def elasticSearchService
+    def collectoryService
 
     def deleteImage() {
         def image = Image.findByImageIdentifier(params.id as String)
@@ -275,6 +276,8 @@ class WebServiceController {
         results.creator = image.creator ?: ''
         results.license = image.license ?: ''
         results.dataResourceUid = image.dataResourceUid ?: ''
+
+        collectoryService.addMetadataForResource(results)
 
         if (includeTags) {
             results.tags = []

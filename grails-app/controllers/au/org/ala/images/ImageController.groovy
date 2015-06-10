@@ -21,6 +21,7 @@ class ImageController {
     def logService
     def imageStagingService
     def batchService
+    def collectoryService
 
     def index() { }
 
@@ -188,7 +189,11 @@ class ImageController {
 
         boolean isImage = imageService.isImageType(image)
 
-        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs: thumbUrls, isImage: isImage]
+        //add additional metadata
+        def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+
+        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs:
+                thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
     }
 
     def view() {

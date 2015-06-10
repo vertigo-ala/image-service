@@ -93,6 +93,10 @@
                                         <td class="property-value">${imageInstance.title}</td>
                                     </tr>
                                     <tr>
+                                        <td class="property-name">Creator</td>
+                                        <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="creator"/></td>
+                                    </tr>
+                                    <tr>
                                         <td class="property-name">Description</td>
                                         <td class="property-value">${imageInstance.description}</td>
                                     </tr>
@@ -173,15 +177,15 @@
                                     </tr>
                                     <tr>
                                         <td class="property-name">Rights</td>
-                                        <td class="property-value">${imageInstance.rights}</td>
+                                        <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="rights"/></td>
                                     </tr>
                                     <tr>
                                         <td class="property-name">Rights holder</td>
-                                        <td class="property-value">${imageInstance.rightsHolder}</td>
+                                        <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="rightsHolder"/></td>
                                     </tr>
                                     <tr>
                                         <td class="property-name">Licence</td>
-                                        <td class="property-value">${imageInstance.license}</td>
+                                        <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="license"/></td>
                                     </tr>
                                     <g:if test="${subimages}">
                                         <tr>
