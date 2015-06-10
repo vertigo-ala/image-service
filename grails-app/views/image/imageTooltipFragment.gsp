@@ -13,12 +13,18 @@
         <g:if test="${imageInstance.dateTaken != imageInstance.dateUploaded}">
             <div>Taken on <img:formatDate date="${imageInstance.dateTaken}" /></div>
         </g:if>
-        <g:if test="${imageInstance.copyright}">
-            <div>${imageInstance.copyright}</div>
+        <g:if test="${imageInstance.creator}">
+            <div>${imageInstance.creator}</div>
         </g:if>
-        <g:if test="${imageInstance.attribution}">
+        <g:if test="${imageInstance.title}">
+            <div>${imageInstance.title}</div>
+        </g:if>
+        <g:if test="${imageInstance.rights}">
+            <div>${imageInstance.rights}</div>
+        </g:if>
+        <g:if test="${imageInstance.rightsHolder}">
             <div>
-                ${imageInstance.attribution}
+                ${imageInstance.rightsHolder}
             </div>
         </g:if>
         <g:if test="${imageInstance.parent}">

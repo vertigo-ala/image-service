@@ -17,6 +17,7 @@ class Image {
     String extension
     @SearchableProperty(valueType = CriteriaValueType.DateRange, description = "The date the image was uploaded")
     Date dateUploaded
+
     String uploader
     @SearchableProperty(valueType = CriteriaValueType.DateRange, description = "The date the image was captured or authored")
     Date dateTaken
@@ -28,12 +29,21 @@ class Image {
     Integer width
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "", description = "The number of zoom levels available in the TMS tiles")
     Integer zoomLevels = 0
-    @SearchableProperty(description="")
-    String attribution
-    @SearchableProperty(description="The copyright statment attach to the image")
-    String copyright
+
+    @SearchableProperty(description="The UID for the data resource associated with this image.")
+    String dataResourceUid
+    @SearchableProperty(description="An entity primarily responsible for making the resource.")
+    String creator
+    @SearchableProperty(description="A title for this image")
+    String title
     @SearchableProperty(description="A general description of the image")
     String description
+    @SearchableProperty(description="Rights information includes a statement about various property rights associated with the resource, including intellectual property rights")
+    String rights
+    @SearchableProperty(description="A person or organization owning or managing rights over the resource.")
+    String rightsHolder
+    @SearchableProperty(description="A legal document giving official permission to do something with the resource.")
+    String license
 
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The height of the thumbnail in pixels")
     Integer thumbHeight = 0
@@ -63,8 +73,14 @@ class Image {
         height nullable: true
         width nullable: true
         zoomLevels nullable: true
-        attribution nullable: true
-        copyright nullable: true
+
+        dataResourceUid nullable: true
+        creator nullable: true
+        title nullable: true
+        rightsHolder nullable: true  //formerly 'attribution'
+        rights nullable: true  //formerly 'copyright'
+        license nullable: true
+
         description nullable: true
         thumbHeight nullable: true
         thumbWidth nullable: true

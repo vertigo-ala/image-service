@@ -89,6 +89,10 @@
                                         <td class="property-value">${imageInstance.imageIdentifier}</td>
                                     </tr>
                                     <tr>
+                                        <td class="property-name">Title</td>
+                                        <td class="property-value">${imageInstance.title}</td>
+                                    </tr>
+                                    <tr>
                                         <td class="property-name">Description</td>
                                         <td class="property-value">${imageInstance.description}</td>
                                     </tr>
@@ -167,7 +171,18 @@
                                         <td class="property-name">Size on disk (including all artifacts)</td>
                                         <td class="property-value"><img:sizeInBytes size="${sizeOnDisk}" /></td>
                                     </tr>
-
+                                    <tr>
+                                        <td class="property-name">Rights</td>
+                                        <td class="property-value">${imageInstance.rights}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="property-name">Rights holder</td>
+                                        <td class="property-value">${imageInstance.rightsHolder}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="property-name">Licence</td>
+                                        <td class="property-value">${imageInstance.license}</td>
+                                    </tr>
                                     <g:if test="${subimages}">
                                         <tr>
                                             <td>Sub-images</td>
@@ -222,6 +237,10 @@
                                                     <button class="btn btn-small btn-danger" id="btnDeleteImage" title="Delete your image"><i class="icon-remove icon-white"></i></button>
                                                 </img:userIsUploader>
                                             </auth:ifNotGranted>
+
+                                            <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier]" title="View JSON metadata" class="btn btn-small">
+                                                <i class="icon-json icon-white"> </i>
+                                            </g:link>
                                         </td>
                                     </tr>
 

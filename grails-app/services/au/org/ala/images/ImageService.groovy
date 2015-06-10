@@ -41,30 +41,30 @@ class ImageService {
 
     private static int BACKGROUND_TASKS_BATCH_SIZE = 100
 
-    public Image storeImage(MultipartFile imageFile, String uploader) {
+    public Image storeImage(MultipartFile imageFile, String uploader, Map metadata = [:]) {
 
         if (imageFile) {
             // Store the image
             def originalFilename = imageFile.originalFilename
             def bytes = imageFile?.bytes
-            def image = storeImageBytes(bytes, originalFilename, imageFile.size, imageFile.contentType, uploader)
+            def image = storeImageBytes(bytes, originalFilename, imageFile.size, imageFile.contentType, uploader, metadata)
             auditService.log(image,"Image stored from multipart file ${originalFilename}", uploader ?: "<unknown>")
             return image
         }
         return null
     }
 
-    public Image storeImageFromUrl(String imageUrl, String uploader) {
+    public Image storeImageFromUrl(String imageUrl, String uploader, Map metadata = [:]) {
         if (imageUrl) {
             try {
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
                 def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
-                def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader)
+                def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader, metadata)
                 auditService.log(image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
                 return image
             } catch (Exception ex) {
-                ex.printStackTrace()
+                log.error(ex.getMessage(), e)
             }
         }
         return null
@@ -115,7 +115,7 @@ class ImageService {
 
     @NotTransactional
     Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
-                          String uploaderId, description = "") {
+                          String uploaderId, Map metadata) {
 
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
 
@@ -131,7 +131,14 @@ class ImageService {
                 contentMD5Hash: md5Hash,
                 contentSHA1Hash: sha1Hash,
                 uploader: uploaderId)
-        image.description = description
+
+        //add core metadata properties for this image
+        metadata.each { kvp ->
+            if(image.hasProperty(kvp.key) && kvp.value){
+                image[kvp.key] = kvp.value
+            }
+        }
+
         image.fileSize = filesize
         image.mimeType = contentType
         image.dateUploaded = new Date()
