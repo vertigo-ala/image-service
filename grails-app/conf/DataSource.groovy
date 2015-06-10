@@ -29,7 +29,7 @@ environments {
             username="postgres"
             password="password"
             url = "jdbc:postgresql://localhost/images-dev"
-            loggingSql = falseS
+            loggingSql = false
         }
     }
 

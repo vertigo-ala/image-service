@@ -96,7 +96,8 @@
             <div class="thumbnail" imageId="${image.id}" style="background: white">
                 <g:if test="${allowSelection == true}">
                     <div class="selection-header">
-                        <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}" checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
+                        <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
+                                    checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
                         <label for="chkSelectImage${image.id}"></label>
                     </div>
                 </g:if>

@@ -73,6 +73,14 @@
             </td>
         </tr>
 
+        <tr>
+            <td>
+                <button id="btnClearCollectoryCache" class="btn">Clear collectory cache</button>
+            </td>
+            <td>
+                Clear the cache of collectory metadata for data resources (rights, license etc)
+            </td>
+        </tr>
 
     </table>
 </body>
@@ -119,7 +127,10 @@
             window.location = "${createLink(action:'indexSearch')}";
         });
 
-
+        $("#btnClearCollectoryCache").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'clearCollectoryCache')}";
+        });
     });
 
 </r:script>

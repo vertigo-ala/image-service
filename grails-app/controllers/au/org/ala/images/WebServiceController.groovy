@@ -21,6 +21,7 @@ class WebServiceController {
     def logService
     def batchService
     def elasticSearchService
+    def collectoryService
 
     def deleteImage() {
         def image = Image.findByImageIdentifier(params.id as String)
@@ -263,15 +264,20 @@ class WebServiceController {
         results.mimeType = image.mimeType
         results.originalFileName = image.originalFilename
         results.sizeInBytes = image.fileSize
-        results.copyright = image.copyright ?: ''
-        results.attribution = image.attribution ?: ''
+        results.rights = image.rights ?: ''
+        results.rightsHolder = image.rightsHolder ?: ''
         results.dateUploaded = formatDate(date: image.dateUploaded, format:"yyyy-MM-dd HH:mm:ss")
         results.dateTaken = formatDate(date: image.dateTaken, format:"yyyy-MM-dd HH:mm:ss")
         results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
         results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
         results.mmPerPixel = image.mmPerPixel ?: ''
         results.description = image.description ?: ''
-        results.copyright = image.copyright ?: ''
+        results.title = image.title ?: ''
+        results.creator = image.creator ?: ''
+        results.license = image.license ?: ''
+        results.dataResourceUid = image.dataResourceUid ?: ''
+
+        collectoryService.addMetadataForResource(results)
 
         if (includeTags) {
             results.tags = []
@@ -706,6 +712,11 @@ class WebServiceController {
         renderResults([success: false, message:'Unhandled task type'])
     }
 
+    /**
+     * Main web service for image upload.
+     *
+     * @return
+     */
     def uploadImage() {
         // Expect a multipart file request
 
@@ -713,10 +724,18 @@ class WebServiceController {
 
         def userId = getUserIdForRequest(request)
         def url = params.imageUrl ?: params.url
+        def metadata = {
+            if(params.metadata){
+                JSON.parse(params.metadata as String) as Map
+            } else {
+                [:]
+            }
+        }.call()
+
 
         if (url) {
             // Image is located at an endpoint, and we need to download it first.
-            image = imageService.storeImageFromUrl(url, userId)
+            image = imageService.storeImageFromUrl(url, userId, metadata)
             if (!image) {
                 renderResults([success: false, message: "Unable to retrieve image from ${url}"])
             }
@@ -729,7 +748,7 @@ class WebServiceController {
                     renderResults([success: false, message: 'image parameter not found, or empty. Please supply an image file.'])
                     return
                 }
-                image = imageService.storeImage(file, userId)
+                image = imageService.storeImage(file, userId, metadata)
             } else {
                 renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])
             }
@@ -737,12 +756,10 @@ class WebServiceController {
 
         if (image) {
 
-            if (params.metadata) {
-                def metadata = JSON.parse(params.metadata as String) as Map
-                if (metadata) {
-                    metadata.each { kvp ->
-                        imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
-                    }
+            //store any other property
+            metadata.each { kvp ->
+                if(!image.hasProperty(kvp.key)){
+                    imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
                 }
             }
 
@@ -756,7 +773,8 @@ class WebServiceController {
                 }
             }
 
-            // Callers have the option to generate thumbs immediately (although it will block). And they will be regenerated later as part of general artifact generation
+            // Callers have the option to generate thumbs immediately (although it will block).
+            // And they will be regenerated later as part of general artifact generation
             // This is useful, though, if the uploader needs to link to the thumbnail straight away
             if (params.synchronousThumbnail) {
                 imageService.generateImageThumbnails(image)
@@ -780,7 +798,12 @@ class WebServiceController {
             List<Map<String, String>> imageList = body.images
 
             if (!imageList) {
-                renderResults([success:false, message:'You must supply a list of objects called "images", each of which must contain a "sourceUrl" key, along with optional meta data items!'], HttpStatus.SC_BAD_REQUEST)
+                renderResults(
+                        [success:false,
+                         message:'You must supply a list of objects called "images", each of which' +
+                                 ' must contain a "sourceUrl" key, along with optional meta data items!'],
+                        HttpStatus.SC_BAD_REQUEST
+                )
                 return
             }
 

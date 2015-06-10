@@ -21,6 +21,7 @@ class ImageController {
     def logService
     def imageStagingService
     def batchService
+    def collectoryService
 
     def index() { }
 
@@ -72,10 +73,6 @@ class ImageController {
             results = searchService.simpleSearch(query, params)
         } else {
             results = searchService.allImages(params)
-//            results = new QueryResults<Image>()
-//            def images = Image.list(params)
-//            results.list = images
-//            results.totalCount = images.totalCount
         }
 
         def userId = AuthenticationUtils.getUserId(request)
@@ -192,7 +189,11 @@ class ImageController {
 
         boolean isImage = imageService.isImageType(image)
 
-        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs: thumbUrls, isImage: isImage]
+        //add additional metadata
+        def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+
+        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs:
+                thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
     }
 
     def view() {
@@ -277,7 +278,8 @@ class ImageController {
         def stagedFiles = imageStagingService.buildStagedImageData(userId, params)
         def columns = StagingColumnDefinition.findAllByUserId(userId, [sort:'id', order:'asc'])
 
-        [stagedFiles: stagedFiles, userId: userId, hasDataFile: imageStagingService.hasDataFileUploaded(userId), dataFileUrl: imageStagingService.getDataFileUrl(userId), dataFileColumns: columns]
+        [stagedFiles: stagedFiles, userId: userId, hasDataFile: imageStagingService.hasDataFileUploaded(userId),
+         dataFileUrl: imageStagingService.getDataFileUrl(userId), dataFileColumns: columns]
     }
 
     @AlaSecured(value = [CASRoles.ROLE_USER, CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
@@ -380,7 +382,8 @@ class ImageController {
                 fieldDefinition.fieldDefinitionType = fieldType
                 fieldDefinition.format = format
             } else {
-                new StagingColumnDefinition(userId: userId, fieldDefinitionType: fieldType, format: format, fieldName: fieldName).save(failOnError: true)
+                new StagingColumnDefinition(userId: userId, fieldDefinitionType: fieldType, format: format,
+                        fieldName: fieldName).save(failOnError: true)
             }
 
         }
@@ -434,7 +437,8 @@ class ImageController {
         int imageCount = 0
         stagedFiles.each { stagedFileMap ->
             def stagedFile = StagedFile.get(stagedFileMap.id)
-            batchService.addTaskToBatch(batchId, new UploadFromStagedFileTask(stagedFile, stagedFileMap, imageStagingService, batchId, harvestable))
+            batchService.addTaskToBatch(batchId, new UploadFromStagedFileTask(stagedFile, stagedFileMap,
+                    imageStagingService, batchId, harvestable))
             imageCount++
         }
 
