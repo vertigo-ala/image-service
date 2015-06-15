@@ -1,8 +1,11 @@
 package au.org.ala.images
 
 import au.org.ala.cas.util.AuthenticationUtils
+import au.org.ala.web.AlaSecured
+import au.org.ala.web.CASRoles
 import grails.converters.JSON
 import grails.converters.XML
+import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
 import org.grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
@@ -22,15 +25,41 @@ class WebServiceController {
     def batchService
     def elasticSearchService
     def collectoryService
+    def authService
 
+    /**
+     * This service is used directly in front end in an AJAX fashion.
+     *
+     * TODO produce an analogue to this service that will use the APIKey
+     * method to authenticate client applications.
+     *
+     * @return
+     */
     def deleteImage() {
-        def image = Image.findByImageIdentifier(params.id as String)
+
         def success = false
         def message = ""
+
+        def image = Image.findByImageIdentifier(params.id as String)
+
         if (image) {
             def userId = getUserIdForRequest(request)
-            success = imageService.scheduleImageDeletion(image.id, userId)
-            message = "Image scheduled for deletion."
+
+            if(userId){
+                //is user in ROLE_ADMIN or the original owner of the image
+                def isAdmin = authService.userInRole(CASRoles.ROLE_ADMIN)
+                def isImageOwner = image.uploader == userId
+                if(isAdmin || isImageOwner){
+                    success = imageService.scheduleImageDeletion(image.id, userId)
+                    message = "Image scheduled for deletion."
+                } else {
+                    message = "Logged in user is not authorised."
+                }
+            } else {
+                message = "Unable to obtain user details."
+            }
+        } else {
+            message = "Invalid image identifier."
         }
         renderResults(["success": success, message: message])
     }

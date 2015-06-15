@@ -3,6 +3,9 @@ package au.org.ala.images
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
 
+/**
+ * Services to retrieve resource level metadata.
+ */
 @Transactional
 class CollectoryService {
 

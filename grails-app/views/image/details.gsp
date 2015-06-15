@@ -218,6 +218,10 @@
                                     <tr>
                                         <td colspan="2">
 
+                                            <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier]" title="View JSON metadata" class="btn btn-small">
+                                                <i class="icon-wrench"> </i>
+                                            </g:link>
+
                                             <g:if test="${isImage}">
                                                 <button class="btn btn-small" id="btnViewImage" title="View zoomable image"><i class="icon-eye-open"></i></button>
                                             </g:if>
@@ -242,9 +246,7 @@
                                                 </img:userIsUploader>
                                             </auth:ifNotGranted>
 
-                                            <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier]" title="View JSON metadata" class="btn btn-small">
-                                                <i class="icon-json icon-white"> </i>
-                                            </g:link>
+
                                         </td>
                                     </tr>
 
