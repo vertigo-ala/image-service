@@ -158,7 +158,7 @@ log4j = {
         info 'stdout'
     }
 
-    error  'org.codehaus.groovy.grails.web.servlet',        // controllers
+    error   'org.codehaus.groovy.grails.web.servlet',        // controllers
             'org.codehaus.groovy.grails.web.pages',          // GSP
             'org.codehaus.groovy.grails.web.sitemesh',       // layouts
             'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
@@ -169,13 +169,13 @@ log4j = {
             'org.springframework',
             'org.hibernate',
             'net.sf.ehcache.hibernate'
-    info   'grails.app'
-    debug  'grails.app.controllers',
+    info    'grails.app',
+            'au.org.ala.image'
+    debug   'grails.app.controllers',
             'grails.app.services',
             //'grails.app.taglib',
             'grails.web.pages',
             //'grails.app',
             'au.org.ala.cas',
-            'au.org.ala.biocache.hubs',
-            'au.org.ala.biocache.hubs.OccurrenceTagLib'
+            'au.org.ala.image'
 }

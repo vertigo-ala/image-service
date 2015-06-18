@@ -135,7 +135,11 @@ class ImageService {
         //add core metadata properties for this image
         metadata.each { kvp ->
             if(image.hasProperty(kvp.key) && kvp.value){
-                image[kvp.key] = kvp.value
+                if(kvp.key in ["dateTaken", "dateUploaded"]){
+                    //parse the date
+                } else {
+                    image[kvp.key] = kvp.value
+                }
             }
         }
 
@@ -615,7 +619,12 @@ class ImageService {
                 thumbHeight: image.thumbHeight,
                 thumbWidth: image.thumbWidth,
                 filesize: image.fileSize,
-                mimetype: image.mimeType
+                mimetype: image.mimeType,
+                title: image.title,
+                description: image.description,
+                rights: image.rights,
+                rightsHolder: image.rightsHolder,
+                license: image.license
         ]
         def urls = getAllUrls(image.imageIdentifier)
         urls.each { kvp ->
