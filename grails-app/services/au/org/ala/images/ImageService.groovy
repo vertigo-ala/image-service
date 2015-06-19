@@ -135,9 +135,7 @@ class ImageService {
         //add core metadata properties for this image
         metadata.each { kvp ->
             if(image.hasProperty(kvp.key) && kvp.value){
-                if(kvp.key in ["dateTaken", "dateUploaded"]){
-                    //parse the date
-                } else {
+                if(!(kvp.key in ["dateTaken", "dateUploaded"])){
                     image[kvp.key] = kvp.value
                 }
             }
@@ -148,9 +146,7 @@ class ImageService {
         image.dateUploaded = new Date()
         image.originalFilename = originalFilename
         image.extension = extension
-
         image.dateTaken = getImageTakenDate(bytes) ?: image.dateUploaded
-
         image.height = imgDesc.height
         image.width = imgDesc.width
 
@@ -581,7 +577,7 @@ class ImageService {
         return new MetadataExtractor().detectContentType(bytes, filename);
     }
 
-    public Image createSubimage(Image parentImage, int x, int y, int width, int height, String userId, description = "") {
+    public Image createSubimage(Image parentImage, int x, int y, int width, int height, String userId, Map metadata = [:]) {
 
         if (x < 0) {
             x = 0;
@@ -594,7 +590,7 @@ class ImageService {
         if (results.bytes) {
             int subimageIndex = Subimage.countByParentImage(parentImage) + 1
             def filename = "${parentImage.originalFilename}_subimage_${subimageIndex}"
-            def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId, description)
+            def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId, metadata)
 
             def subimageRect = new Subimage(parentImage: parentImage, subimage: subimage, x: x, y: y, height: height, width: width)
             subimageRect.save()

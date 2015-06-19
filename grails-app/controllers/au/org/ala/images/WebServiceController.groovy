@@ -397,6 +397,7 @@ class WebServiceController {
         def y = params.int('y')
         def height = params.int('height')
         def width = params.int('width')
+        def title = params.title
         def description = params.description
 
         if (height == 0 || width == 0) {
@@ -410,7 +411,7 @@ class WebServiceController {
             return
         }
 
-        def subimage = imageService.createSubimage(image, x, y, width, height, userId, description)
+        def subimage = imageService.createSubimage(image, x, y, width, height, userId, [title:title, description:description] )
         renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
     }
 
