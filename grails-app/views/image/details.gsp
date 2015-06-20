@@ -97,8 +97,8 @@
                                         <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="creator"/></td>
                                     </tr>
                                     <tr>
-                                        <td class="property-name">Description</td>
-                                        <td class="property-value">${imageInstance.description}</td>
+                                        <td class="property-name">Data resource UID</td>
+                                        <td class="property-value">${imageInstance.dataResourceUid}</td>
                                     </tr>
                                     <tr>
                                         <td class="property-name">Filename</td>

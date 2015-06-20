@@ -397,6 +397,7 @@ class WebServiceController {
         def y = params.int('y')
         def height = params.int('height')
         def width = params.int('width')
+        def title = params.title
         def description = params.description
 
         if (height == 0 || width == 0) {
@@ -410,7 +411,7 @@ class WebServiceController {
             return
         }
 
-        def subimage = imageService.createSubimage(image, x, y, width, height, userId, description)
+        def subimage = imageService.createSubimage(image, x, y, width, height, userId, [title:title, description:description] )
         renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
     }
 
@@ -653,6 +654,7 @@ class WebServiceController {
             def keyValues = imageService.getMetadataItemValuesForImages(images.list, key)
             images?.list?.each { image ->
                 def map = imageService.getImageInfoMap(image)
+                collectoryService.addMetadataForResource(image)
                 def keyValue = keyValues[image.id]
                 def list = results[keyValue]
                 if (!list) {
@@ -739,6 +741,60 @@ class WebServiceController {
             }
         }
         renderResults([success: false, message:'Unhandled task type'])
+    }
+
+    /**
+     * Update an image's metadata.
+     *
+     * @return
+     */
+    def updateMetadata(){
+
+        Image image = Image.findByImageIdentifier(params.imageIdentifier)
+        if(image){
+            def userId = getUserIdForRequest(request)
+            def metadata = {
+                if(params.metadata){
+                    JSON.parse(params.metadata as String) as Map
+                } else {
+                    [:]
+                }
+            }.call()
+
+            //TODO - push down to service
+            def imageUpdated = false
+            metadata.each { kvp ->
+                if(image.hasProperty(kvp.key) && kvp.value){
+                    image[kvp.key] = kvp.value
+                    imageUpdated = true
+                }
+            }
+            if(imageUpdated){
+                image.save()
+            }
+
+            //TODO - push down to service
+            //store any other property
+            metadata.each { kvp ->
+                if(!image.hasProperty(kvp.key)){
+                    imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
+                }
+            }
+
+            //TODO - push down to service
+            if (params.tags) {
+                def tags = JSON.parse(params.tags as String) as List
+                if (tags) {
+                    tags.each { String tagPath ->
+                        def tag = tagService.createTagByPath(tagPath)
+                        tagService.attachTagToImage(image, tag, userId)
+                    }
+                }
+            }
+        } else {
+            response.setStatus(404)
+            renderResults([success: false])
+        }
     }
 
     /**
