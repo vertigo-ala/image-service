@@ -616,7 +616,7 @@ class ImageService {
                 thumbWidth: image.thumbWidth,
                 filesize: image.fileSize,
                 mimetype: image.mimeType,
-                title: image.creator,
+                creator: image.creator,
                 title: image.title,
                 description: image.description,
                 rights: image.rights,
