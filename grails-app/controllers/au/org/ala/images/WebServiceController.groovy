@@ -791,6 +791,8 @@ class WebServiceController {
                     }
                 }
             }
+            response.setStatus(200)
+            renderResults([success: true])
         } else {
             response.setStatus(404)
             renderResults([success: false])
