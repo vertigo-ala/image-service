@@ -17,6 +17,7 @@ import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.index.query.FilterBuilder
 import org.elasticsearch.index.query.FilterBuilders
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.index.query.QueryStringQueryBuilder
 import org.elasticsearch.search.sort.SortOrder
 
 import javax.annotation.PreDestroy
@@ -200,13 +201,21 @@ class ElasticSearchService {
 
     public QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
 
-        def filter = FilterBuilders.orFilter()
-        values.each { value ->
-            // Metadata keys are lowercased when indexed
-            filter.add(FilterBuilders.termFilter(key.toLowerCase(), value))
-        }
+        def queryString = values.collect { key.toLowerCase() + ":\"" + it + "\""}.join(" OR ")
+        QueryStringQueryBuilder builder = QueryBuilders.queryStringQuery(queryString)
 
-        return executeFilterSearch(filter, params)
+        //DM - Im unclear as to why this stopped working !!!
+//        def filter = FilterBuilders.orFilter()
+//        values.each { value ->
+//            // Metadata keys are lowercased when indexed
+//            filter.add(FilterBuilders.termFilter(key.toLowerCase(), value))
+//        }
+
+//        return executeFilterSearch(filter, params)
+        builder.defaultField("content")
+        def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
+        searchRequestBuilder.setQuery(builder)
+        return executeSearch(searchRequestBuilder, params)
     }
 
     private QueryResults<Image> executeFilterSearch(FilterBuilder filterBuilder, GrailsParameterMap params) {
