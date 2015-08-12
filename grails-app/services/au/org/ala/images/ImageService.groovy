@@ -85,7 +85,7 @@ class ImageService {
                             def url = new URL(imageUrl)
                             def bytes = url.bytes
                             def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
-                            def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader)
+                            def image = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader, imageSource)
                             result.imageId = image.imageIdentifier
                             result.image = image
                             result.success = true
@@ -115,7 +115,7 @@ class ImageService {
 
     @NotTransactional
     Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
-                          String uploaderId, Map metadata) {
+                          String uploaderId, Map metadata = [:]) {
 
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
 
