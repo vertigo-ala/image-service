@@ -3,7 +3,7 @@
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+        <meta name="layout" content="images"/>
         <title>${mediaTitle} details | Atlas of Living Australia</title>
         <style>
 

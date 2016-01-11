@@ -8,6 +8,7 @@ grails.project.source.level = 1.6
 grails.project.war.file = "target/${appName}.war"
 
 //grails.plugin.location.'images-client-plugin' = "../images-client-plugin"
+grails.plugin.location.'ala-bootstrap2' = "../ala-bootstrap2"
 
 grails.project.fork = [
     test: false,
@@ -64,7 +65,7 @@ grails.project.dependency.resolution = {
         runtime ":jquery:1.8.3"
         runtime ":resources:1.2.8"
         runtime ":images-client-plugin:0.5.3"
-        runtime ":ala-bootstrap2:2.2"
+//        runtime ":ala-bootstrap2:2.3-SNAPSHOT"
         runtime ":ala-auth:1.3.1"
         runtime ":cors:1.1.8"
     }

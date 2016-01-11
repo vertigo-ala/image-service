@@ -20,7 +20,11 @@ class BootStrap {
             file.mkdirs()
         }
 
-        ImageIO.scanForPlugins()
+        try {
+            ImageIO.scanForPlugins()
+        } catch (Exception e){
+            log.error(e.getMessage(), e)
+        }
         IIORegistry.getDefaultInstance()
         ImageIO.setUseCache(false)
 

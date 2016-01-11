@@ -32,6 +32,9 @@ collections.baseUrl = "http://collections.ala.org.au"
 grails.project.groupId = "au.org.ala"
 grails.cache.enabled = true
 
+skin.layout = "main"
+skin.orgNameLong = "Atlas of Living Australia"
+
 //grails.project.groupId = appName // change this to alter the default package name and Maven publishing destination
 
 // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)

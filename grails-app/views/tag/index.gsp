@@ -1,9 +1,9 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="images"/>
     <meta name="section" content="home"/>
-    <title>ALA Image Service - Tags</title>
+    <title>Tags | ${grailsApplication.config.skin.orgNameLong}</title>
 
     <style>
     </style>

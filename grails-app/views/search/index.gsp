@@ -1,10 +1,9 @@
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+        <meta name="layout" content="images"/>
         <meta name="section" content="home"/>
-        <title>ALA Image Service - Find Images</title>
-
+        <title>Find Images | ${grailsApplication.config.skin.orgNameLong}</title>
         <style>
         </style>
         <r:require module="bootstrap" />
@@ -35,8 +34,6 @@
                 </div>
             </div>
         </div>
-        %{--<div class="row-fluid">--}%
-        %{--</div>--}%
         <div id="searchResults">
         </div>
 

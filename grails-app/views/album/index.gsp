@@ -2,8 +2,8 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
-    <title>ALA Image Service - My Albums</title>
+    <meta name="layout" content="images"/>
+    <title>My Albums | ${grailsApplication.config.skin.orgNameLong}</title>
     <style>
         #buttonsDiv {
             margin-bottom: 5px;

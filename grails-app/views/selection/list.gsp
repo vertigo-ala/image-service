@@ -3,7 +3,7 @@
 <head>
     <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <meta name="section" content="home"/>
-    <title>ALA Image Service - Selected Images</title>
+    <title>Selected Images | ${grailsApplication.config.skin.orgNameLong}</title>
 </head>
 
 <body class="content">

@@ -12,8 +12,7 @@
   - implied. See the License for the specific language governing
   - rights and limitations under the License.
   --}%
-
-<g:applyLayout name="main">
+<g:applyLayout name="${grailsApplication.config.skin.layout}">
     <head>
         <style type="text/css">
 

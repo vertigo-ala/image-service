@@ -122,9 +122,7 @@
     <g:paginate total="${totalImageCount}" prev="" next="" params="${[q:params.q]}" id="${paginateActionId}" />
 </div>
 
-
-<script>
-
+<r:script>
     $(document).ready(function() {
 
         $("#btnClearSelection").click(function(e) {
@@ -215,6 +213,4 @@
         });
 
     }
-
-
-</script>
+</r:script>

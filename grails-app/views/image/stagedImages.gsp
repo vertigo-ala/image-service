@@ -3,10 +3,8 @@
 <html>
     <head>
         <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
-        <meta name="section" content="home"/>
-        <title>ALA Image Service - Images</title>
+        <title>Image Service | ${grailsApplication.config.skin.orgNameLong}</title>
         <style>
-
         .numberCircle {
             border-radius: 50%;
             display: inline-block;
@@ -18,9 +16,8 @@
             color: #666;
             text-align: center;
         }
-
         </style>
-
+        <r:require modules="qtip,image-viewer"/>
     </head>
 
     <body class="content">

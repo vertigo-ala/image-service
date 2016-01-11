@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Image ${imageInstance.originalFilename} | Image Service | Atlas of Living Australia </title>
+        <title>Image ${imageInstance.originalFilename} | Image Service | ${grailsApplication.config.skin.orgNameLong}</title>
         <style>
         html, body {
             height:100%;

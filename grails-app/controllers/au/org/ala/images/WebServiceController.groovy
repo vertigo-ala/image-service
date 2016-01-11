@@ -831,10 +831,16 @@ class WebServiceController {
             MultipartRequest req = request as MultipartRequest
             if (req) {
                 MultipartFile file = req.getFile('image')
-                if (!file || file.size == 0) {
-                    renderResults([success: false, message: 'image parameter not found, or empty. Please supply an image file.'])
+                if (!file ) {
+                    renderResults([success: false, message: 'image parameter not found. Please supply an image file.'])
                     return
                 }
+
+                if (file.size == 0) {
+                    renderResults([success: false, message: 'the supplied image was empty. Please supply an image file.'])
+                    return
+                }
+
                 image = imageService.storeImage(file, userId, metadata)
             } else {
                 renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])

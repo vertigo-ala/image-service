@@ -12,13 +12,13 @@ import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.Client
 import org.elasticsearch.cluster.ClusterState
 import org.elasticsearch.cluster.metadata.IndexMetaData
-import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.index.query.FilterBuilder
 import org.elasticsearch.index.query.FilterBuilders
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
 import org.elasticsearch.search.sort.SortOrder
+import org.elasticsearch.indices.IndexMissingException
 
 import javax.annotation.PreDestroy
 import java.util.regex.Pattern
@@ -64,7 +64,7 @@ class ElasticSearchService {
             log.error(ex.getMessage(), e)
             // failed to delete index - maybe because it didn't exist?
         }
-        addMappings()
+        initialiseIndex()
     }
 
     def indexImage(Image image) {
@@ -127,7 +127,7 @@ class ElasticSearchService {
         return executeSearch(b, params)
     }
 
-    def addMappings() {
+    private def initialiseIndex() {
         def mappingJson = '''
         {
             "mappings": {
@@ -224,37 +224,43 @@ class ElasticSearchService {
         return executeSearch(searchRequestBuilder, params)
     }
 
-    private static QueryResults<Image> executeSearch(SearchRequestBuilder searchRequestBuilder, GrailsParameterMap params) {
+    private QueryResults<Image> executeSearch(SearchRequestBuilder searchRequestBuilder, GrailsParameterMap params) {
 
-        if (params?.offset) {
-            searchRequestBuilder.setFrom(params.int("offset"))
-        }
-
-        if (params?.max) {
-            searchRequestBuilder.setSize(params.int("max"))
-        } else {
-            searchRequestBuilder.setSize(Integer.MAX_VALUE) // probably way too many!
-        }
-
-        if (params?.sort) {
-            def order = params?.order == "asc" ? SortOrder.ASC : SortOrder.DESC
-            searchRequestBuilder.addSort(params.sort as String, order)
-        }
-
-        def ct = new CodeTimer("Index search")
-        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
-        ct.stop(true)
-
-        ct = new CodeTimer("Object retrieval (${searchResponse.hits.hits.length} of ${searchResponse.hits.totalHits} hits)")
-        def imageList = []
-        if (searchResponse.hits) {
-            searchResponse.hits.each { hit ->
-                imageList << Image.get(hit.id.toLong())
+        try {
+            if (params?.offset) {
+                searchRequestBuilder.setFrom(params.int("offset"))
             }
-        }
-        ct.stop(true)
 
-        return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
+            if (params?.max) {
+                searchRequestBuilder.setSize(params.int("max"))
+            } else {
+                searchRequestBuilder.setSize(Integer.MAX_VALUE) // probably way too many!
+            }
+
+            if (params?.sort) {
+                def order = params?.order == "asc" ? SortOrder.ASC : SortOrder.DESC
+                searchRequestBuilder.addSort(params.sort as String, order)
+            }
+
+            def ct = new CodeTimer("Index search")
+            SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+            ct.stop(true)
+
+            ct = new CodeTimer("Object retrieval (${searchResponse.hits.hits.length} of ${searchResponse.hits.totalHits} hits)")
+            def imageList = []
+            if (searchResponse.hits) {
+                searchResponse.hits.each { hit ->
+                    imageList << Image.get(hit.id.toLong())
+                }
+            }
+            ct.stop(true)
+
+            return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
+
+        } catch (IndexMissingException e) {
+            log.warn("IndexMissingException thrown - this is expected behaviour for a new empty system.")
+            return new QueryResults<Image>(list: [], totalCount: 0)
+        }
     }
 
     def getMetadataKeys() {
