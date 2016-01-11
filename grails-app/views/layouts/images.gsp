@@ -11,7 +11,7 @@
         <link rel="icon" href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico">
         <link rel="shortcut icon" href="http://www.ala.org.au/wp-content/themes/ala2011/images/favicon.ico">
         <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-        <r:require modules="bootstrap, application, qtip"/>
+        <r:require modules="bootstrap, application, qtip, image-viewer"/>
 
         <style>
 

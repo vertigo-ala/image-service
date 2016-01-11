@@ -61,7 +61,7 @@ class ElasticSearchService {
             ct.stop(true)
 
         } catch (Exception ex) {
-            log.error(ex.getMessage(), e)
+            log.error(ex.getMessage(), ex)
             // failed to delete index - maybe because it didn't exist?
         }
         initialiseIndex()

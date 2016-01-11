@@ -1,13 +1,10 @@
 package au.org.ala.images
 
-import java.text.SimpleDateFormat
-
 class LogService {
 
     static transactional =  false
 
     def log(String message) {
-        def sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
         log.info "${message}"
     }
 
