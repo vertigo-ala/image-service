@@ -63,7 +63,7 @@ grails.project.dependency.resolution = {
         runtime ":hibernate:3.6.10.16"
         runtime ":database-migration:1.4.0"
         runtime ":images-client-plugin:0.5.3"
-        runtime ":ala-bootstrap2:2.4.1"
+        runtime ":ala-bootstrap2:2.4.5"
         runtime ":ala-auth:1.3.1"
         runtime ":cors:1.1.8"
     }
