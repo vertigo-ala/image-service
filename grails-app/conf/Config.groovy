@@ -27,7 +27,9 @@ skin.layout = "images"
 ala.baseURL = "http://www.ala.org.au"
 bie.baseURL = "http://bie.ala.org.au"
 bie.searchPath = "/search"
-collections.baseUrl = "http://collections.ala.org.au"
+collectory.baseURL = "http://collections.ala.org.au"
+biocache.baseURL = "http://biocache.ala.org.au"
+bie.baseURL = "http://bie.ala.org.au"
 
 grails.project.groupId = "au.org.ala"
 grails.cache.enabled = true

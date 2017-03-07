@@ -30,7 +30,7 @@ class CollectoryService {
         }
 
         //if there no collectory configured, move on
-        if(!grailsApplication.config.collections.baseUrl){
+        if(!grailsApplication.config.collectory.baseURL){
             return
         }
 
@@ -59,7 +59,7 @@ class CollectoryService {
 
         //lookup the resource UID
         if(!_lookupCache.containsKey(dataResourceUid)){
-            def url = grailsApplication.config.collections.baseUrl + "/ws/dataResource/" + dataResourceUid
+            def url = grailsApplication.config.collectory.baseURL + "/ws/dataResource/" + dataResourceUid
             try {
                 def js = new JsonSlurper()
                 def json = js.parseText(new URL(url).text)

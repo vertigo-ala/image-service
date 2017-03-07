@@ -290,8 +290,7 @@ class ImagesTagLib {
     def renderMetaDataValue = { attrs, body ->
         ImageMetaDataItem md = attrs.metaDataItem as ImageMetaDataItem
         if (md) {
-            out << MetaDataValueFormatRules.formatValue(md)
+            out << new MetaDataValueFormatRules(grailsApplication).formatValue(md)
         }
     }
-
 }
