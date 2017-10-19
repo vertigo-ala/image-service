@@ -7,7 +7,7 @@
         <meta name="description" content="Atlas of Living Australia"/>
         <meta name="author" content="Atlas of Living Australia">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
         <r:require modules="bootstrap, application, qtip, image-viewer"/>
 
         <style>
