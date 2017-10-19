@@ -15,6 +15,7 @@ class MetaDataValueFormatRules  {
         MatchName("dataResourceUid") { "<a href=\"${grailsApplication.config.collectory.baseURL}/public/show/${it}\">${it}</a>" },
         MatchName("scientificName") { "<a href=\"${grailsApplication.config.bie.baseURL}/search?q=${it?.encodeAsURL()}\">${it}</a>"},
         MatchValueRegex("http://.*") { "<a href=\"${it}\">${it}</a>" }
+        MatchValueRegex("https://.*") { "<a href=\"${it}\">${it}</a>" }
     ]
 
     public String formatValue(ImageMetaDataItem md) {
