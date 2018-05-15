@@ -1,7 +1,7 @@
 language: groovy
 dist: trusty
 jdk:
-  - openjdk8
+  - oraclejdk8
 sudo: false
 branches:
   only:
