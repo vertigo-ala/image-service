@@ -45,6 +45,8 @@ grails.project.dependency.resolution = {
         compile 'org.apache.ant:ant:1.7.1'
         compile 'org.apache.ant:ant-launcher:1.7.1'
         compile 'org.elasticsearch:elasticsearch:1.5.2'
+        compile 'org.elasticsearch:elasticsearch:1.5.2'
+        compile 'com.opencsv:opencsv:4.2'
     }
 
     plugins {
