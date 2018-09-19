@@ -818,7 +818,7 @@ class ImageService {
 //        def base_image_url = grailsApplication.config.grails.serverURL  + '/image/proxyImageThumbnailLarge?imageId='
 //        def base_details_url = grailsApplication.config.grails.serverURL  + '/image/details/'
         def exportFile = "/data/images/exports/images.csv"
-        new Sql(dataSource).call("{ call export_images()l }")
+        new Sql(dataSource).call("{ call export_images() }")
         new File(exportFile).withInputStream { stream ->
             outputStream << stream
         }
