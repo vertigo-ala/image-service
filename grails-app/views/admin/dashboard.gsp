@@ -42,7 +42,7 @@
             </table>
         </div>
     </body>
-    <r:script>
+    <script>
 
     $(document).ready(function() {
 
@@ -66,5 +66,5 @@
         });
     }
 
-    </r:script>
+    </script>
 </html>

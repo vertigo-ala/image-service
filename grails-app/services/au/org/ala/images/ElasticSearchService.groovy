@@ -1,30 +1,36 @@
 package au.org.ala.images
 
 import grails.converters.JSON
-import grails.transaction.NotTransactional
-import groovy.json.JsonSlurper
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest
+import org.elasticsearch.common.xcontent.XContentType
+import groovy.json.JsonOutput
+import grails.web.servlet.mvc.GrailsParameterMap
+import org.apache.http.HttpHost
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.action.delete.DeleteResponse
+import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.search.SearchPhaseExecutionException
+import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchType
-import org.elasticsearch.client.Client
+import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.client.RestClient
+import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.cluster.ClusterState
 import org.elasticsearch.cluster.metadata.IndexMetaData
-import org.elasticsearch.common.settings.ImmutableSettings
-import org.elasticsearch.index.query.FilterBuilder
-import org.elasticsearch.index.query.FilterBuilders
+import org.elasticsearch.index.query.BoolQueryBuilder
+import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
 import org.elasticsearch.search.sort.SortOrder
-import org.elasticsearch.indices.IndexMissingException
 
 import javax.annotation.PreDestroy
 import java.util.regex.Pattern
-
-import static org.elasticsearch.node.NodeBuilder.nodeBuilder
 import javax.annotation.PostConstruct
 import org.elasticsearch.node.Node
 
@@ -33,32 +39,37 @@ class ElasticSearchService {
     def logService
     def grailsApplication
 
-    private Node node
-    private Client client
+    private RestHighLevelClient client
 
-    @NotTransactional
     @PostConstruct
     def initialize() {
-        logService.log("ElasticSearch service starting...")
-        ImmutableSettings.Builder settings = ImmutableSettings.settingsBuilder();
-        settings.put("path.home", grailsApplication.config.elasticsearch.location);
-        node = nodeBuilder().local(true).settings(settings).node();
-        client = node.client();
-        client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
-        logService.log("ElasticSearch service initialisation complete.")
+        client = new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9201, "http")));
+        initialiseIndex()
     }
 
     @PreDestroy
     def destroy() {
-        if (node) {
-            node.close();
+        if (client){
+            try {
+                client.close()
+            } catch (Exception e){
+                log.error("Error thrown trying to close down client", e)
+            }
         }
     }
 
-    public reinitialiseIndex() {
+    def reinitialiseIndex() {
         try {
             def ct = new CodeTimer("Index deletion")
-            node.client().admin().indices().prepareDelete("images").execute().get()
+            def response = client.indices().delete(new DeleteIndexRequest("images"), RequestOptions.DEFAULT)
+            if (response.isAcknowledged()) {
+                log.info "The index is removed"
+            } else {
+                log.error "The index could not be removed"
+            }
             ct.stop(true)
 
         } catch (Exception ex) {
@@ -88,7 +99,13 @@ class ElasticSearchService {
 
         def json = (data as JSON).toString()
 
-        IndexResponse response = client.prepareIndex("images", "image", image.id.toString()).setSource(json).execute().actionGet();
+
+        IndexRequest request = new IndexRequest("images")
+        request.id( image.id.toString())
+        request.source(json, XContentType.JSON)
+        IndexResponse indexResponse = client.index(request, RequestOptions.DEFAULT);
+
+//        IndexResponse response = client.prepareIndex("images", "image", image.id.toString()).setSource(json).execute().actionGet();
         ct.stop(true)
     }
 
@@ -98,74 +115,142 @@ class ElasticSearchService {
         }
     }
 
-    public QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
+    QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
         def qmap = [query: [filtered: [query:[query_string: [query: query?.toLowerCase()]]]]]
         return search(qmap, params)
     }
 
-    public QueryResults<Image> search(Map query, GrailsParameterMap params) {
-        Map qmap = null
-        Map fmap = null
-        if (query.query) {
-            qmap = query.query
-        } else {
-            if (query.filter) {
-                fmap = query.filter
-            } else {
-                qmap = query
+    QueryResults<Image> search(Map query, GrailsParameterMap params) {
+//        Map qmap = null
+//        Map fmap = null
+//        if (query.query) {
+//            qmap = query.query
+//        } else {
+//            if (query.filter) {
+//                fmap = query.filter
+//            } else {
+//                qmap = query
+//            }
+//        }
+
+        log.debug "search params: ${params}"
+
+        SearchRequest request = buildSearchRequest(JsonOutput.toJson(query), params, "images", [:])
+        SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
+        def imageList = []
+        if (searchResponse.hits) {
+            searchResponse.hits.each { hit ->
+                imageList << Image.get(hit.id.toLong())
             }
         }
+        QueryResults<Image> qr = new QueryResults<Image>()
+        qr.list = imageList
+        qr.totalCount = searchResponse.hits.totalHits.value
+        qr
+    }
 
-        def b = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
-        if (qmap) {
-            b.setQuery(qmap)
+    /**
+     * Build the search request object from query and params
+     *
+     * @param queryString
+     * @param params
+     * @param index index name
+     * @param geoSearchCriteria geo search criteria.
+     * @return SearchRequest
+     */
+    SearchRequest buildSearchRequest(String queryString, Map params, String index, Map geoSearchCriteria = [:]) {
+        SearchRequest request = new SearchRequest()
+        request.searchType SearchType.DFS_QUERY_THEN_FETCH
+
+        // set indices and types
+        request.indices(index)
+        def types = []
+        if (params.types && params.types instanceof Collection<String>) {
+            types = params.types
+        }
+        request.types(types as String[])
+
+        QueryBuilder query = buildQuery(queryString, params, geoSearchCriteria, index)
+
+        // set pagination stuff
+//        SearchSourceBuilder source = pagenateQuery(params).query(query)
+//
+//        // add facets
+//        addFacets(params.facets, params.fq, params.flimit, params.fsort).each {
+//            source.query(it)
+//        }
+//
+//        if(params.rangeFacets){
+//            addRangeFacets(params.rangeFacets as List).each {
+//                source.query(it)
+//            }
+//        }
+//
+//        if(params.histogramFacets){
+//            addHistogramFacets(params.histogramFacets).each {
+//                source.query(it)
+//            }
+//        }
+//
+//        if (params.highlight) {
+//            source.highlight(new HighlightBuilder().preTags("<b>").postTags("</b>").field("_all", 60, 2))
+//        }
+//
+//        if (params.omitSource) {
+//            source.noFields()
+//        }
+
+//        request.source(source)
+
+        return request
+    }
+
+    private QueryBuilder buildQuery(String query, Map params, Map geoSearchCriteria = null, String index) {
+        QueryBuilder queryBuilder
+        List filters = []
+
+        if (params.terms) {
+            filters << QueryBuilders.termQuery(params.terms.field, params.terms.values)
         }
 
-        if (fmap) {
-            b.setPostFilter(fmap)
+        QueryStringQueryBuilder qsQuery = QueryBuilders.queryStringQuery(query)
+
+        if (filters) {
+            BoolQueryBuilder builder = QueryBuilders.boolQuery()
+            builder.must(*filters)
+
+            queryBuilder = builder.must(qsQuery) //QueryBuilders.termQuery(qsQuery). builder)
+        }
+        else {
+            queryBuilder = qsQuery
         }
 
-        return executeSearch(b, params)
+        if (params.weightResultsByEntity) {
+            queryBuilder = applyWeightingToEntities(queryBuilder)
+        }
+
+        queryBuilder
     }
 
     private def initialiseIndex() {
-        def mappingJson = '''
-        {
-            "mappings": {
-                "image": {
-                    "dynamic_templates": [
-                    {
-                        "ids" : {
-                            "path_match": "metadata.*id",
-                            "mapping": { "type": "string", "index" : "not_analyzed" }
-                        }
-                    },
-                    {
-                        "uids" : {
-                            "path_match": "metadata.*uid",
-                            "mapping": { "type": "string", "index" : "not_analyzed" }
-                        }
-                    }
-                    ],
-                    "_all": {
-                        "enabled": true,
-                        "store": "yes"
-                    },
-                    "properties": {
-                        "imageIdentifier" : { "type" : "string", "index" : "not_analyzed" },
-                        "originalFilename" : { "type" : "string", "index" : "not_analyzed" },
-                        "mimeType" : { "type" : "string", "index" : "not_analyzed" },
-                    }
+        try {
+
+            boolean indexExists  = client.indices().exists(new org.elasticsearch.client.indices.GetIndexRequest("images"), RequestOptions.DEFAULT)
+            if (!indexExists){
+                CreateIndexRequest request = new CreateIndexRequest("images")
+                CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT)
+                if (createIndexResponse.isAcknowledged()) {
+                    log.info "Successfully created index and mappings for images"
+                } else {
+                    log.info "UN-Successfully created index and mappings for images"
                 }
+            } else {
+                log.info "Index already exists"
             }
+
+        } catch (Exception e) {
+            log.error ("Error creating index for images: ${e.message}", e)
         }
-        '''
-
-        def parsedJson = new JsonSlurper().parseText(mappingJson)
-        def mappingsDoc = (parsedJson as JSON).toString()
-        client.admin().indices().prepareCreate("images").setSource(mappingsDoc).execute().actionGet()
-
-        client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet()
     }
 
     def searchUsingCriteria(List<SearchCriteria> criteriaList, GrailsParameterMap params) {
@@ -192,7 +277,7 @@ class ElasticSearchService {
                     def term = matcher.group(2)?.replaceAll('\\*', '%')
                     term = term.replaceAll(":", "\\:")
 
-                    filter.must(FilterBuilders.queryFilter(QueryBuilders.queryString("${matcher.group(1)}:${term}")))
+                    filter.must(QueryBuilders.queryFilter(QueryBuilders.queryStringQuery("${matcher.group(1)}:${term}")))
                 }
             }
         }
@@ -200,7 +285,7 @@ class ElasticSearchService {
         return executeFilterSearch(filter, params)
     }
 
-    public QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
+    QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
 
         def queryString = values.collect { key.toLowerCase() + ":\"" + it + "\""}.join(" OR ")
         QueryStringQueryBuilder builder = QueryBuilders.queryStringQuery(queryString)
@@ -219,7 +304,7 @@ class ElasticSearchService {
         return executeSearch(searchRequestBuilder, params)
     }
 
-    private QueryResults<Image> executeFilterSearch(FilterBuilder filterBuilder, GrailsParameterMap params) {
+    private QueryResults<Image> executeFilterSearch(QueryBuilder filterBuilder, GrailsParameterMap params) {
         def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
         searchRequestBuilder.setPostFilter(filterBuilder)
         return executeSearch(searchRequestBuilder, params)
@@ -260,8 +345,8 @@ class ElasticSearchService {
         } catch (SearchPhaseExecutionException e) {
             log.warn(".SearchPhaseExecutionException thrown - this is expected behaviour for a new empty system.")
             return new QueryResults<Image>(list: [], totalCount: 0)
-        } catch (IndexMissingException e) {
-            log.warn("IndexMissingException thrown - this is expected behaviour for a new empty system.")
+        } catch (Exception e) {
+            log.warn("Exception thrown - this is expected behaviour for a new empty system.")
             return new QueryResults<Image>(list: [], totalCount: 0)
         }
     }

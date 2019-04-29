@@ -19,7 +19,7 @@
 
         <g:render template="imageThumbnails" model="${[images: images, totalImageCount: totalImageCount, allowSelection: isLoggedIn, selectedImageMap: selectedImageMap, thumbsTitle:"${totalImageCount} images"]}" />
 
-    <r:script>
+    <script>
             $(document).ready(function() {
 
                 $("#btnFindImagesByKeyword").click(function(e) {
@@ -45,7 +45,7 @@
                 }
             }
 
-        </r:script>
+        </script>
 
     </body>
 </html>

@@ -35,7 +35,7 @@
     </table>
 </div>
 </body>
-<r:script>
+<script>
 
     $(document).ready(function() {
         $('input:checkbox').bootstrapSwitch();
@@ -48,5 +48,5 @@
         });
     });
 
-</r:script>
+</script>
 </html>

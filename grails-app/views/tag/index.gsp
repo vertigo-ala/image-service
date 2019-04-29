@@ -48,7 +48,7 @@
 </body>
 </html>
 
-<r:script>
+<script>
 
     $(document).ready(function() {
 
@@ -174,5 +174,5 @@
 
     }
 
-</r:script>
+</script>
 

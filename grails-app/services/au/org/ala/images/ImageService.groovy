@@ -1,16 +1,14 @@
 package au.org.ala.images
 
-import au.com.bytecode.opencsv.CSVWriter
 import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
-import com.sun.javafx.iio.ImageMetadata
-import grails.converters.JSON
 import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import groovy.sql.Sql
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
+import org.apache.commons.imaging.common.ImageMetadata
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata
 import org.apache.commons.imaging.formats.tiff.TiffField
 import org.apache.commons.imaging.formats.tiff.constants.TiffConstants
@@ -18,16 +16,13 @@ import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang.StringUtils
-import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
-import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
+import org.grails.plugins.codecs.MD5CodecExtensionMethods
+import org.grails.plugins.codecs.SHA1CodecExtensionMethods
+import org.grails.plugins.codecs.SHA1CodecExtensionMethods
 import org.hibernate.FlushMode
 import org.springframework.web.multipart.MultipartFile
 import java.text.SimpleDateFormat
-import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadPoolExecutor
 
 @Transactional
 class ImageService {
@@ -76,7 +71,6 @@ class ImageService {
         return null
     }
 
-    @NotTransactional
     Map batchUploadFromUrl(List<Map<String, String>> imageSources, String uploader) {
         def results = [:]
         Image.withNewTransaction {
@@ -119,14 +113,13 @@ class ImageService {
         return _tilingQueue.size()
     }
 
-    @NotTransactional
     Image storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
                           String uploaderId, Map metadata = [:]) {
 
         CodeTimer ct = new CodeTimer("Store Image ${originalFilename}")
 
-        def md5Hash = MD5Codec.encode(bytes)
-        def sha1Hash = SHA1Codec.encode(bytes)
+        def md5Hash = MD5CodecExtensionMethods.encodeAsMD5(bytes)
+        def sha1Hash = SHA1CodecExtensionMethods.encodeAsSHA1(bytes)
 
         def extension = FilenameUtils.getExtension(originalFilename) ?: 'jpg'
         def imgDesc = imageStoreService.storeImage(bytes)
@@ -165,7 +158,7 @@ class ImageService {
         return image
     }
 
-    public Map getMetadataItemValuesForImages(List<Image> images, String key, MetaDataSourceType source = MetaDataSourceType.SystemDefined) {
+    Map getMetadataItemValuesForImages(List<Image> images, String key, MetaDataSourceType source = MetaDataSourceType.SystemDefined) {
         if (!images || !key) {
             return [:]
         }
@@ -177,27 +170,27 @@ class ImageService {
         return fr
     }
 
-    public Map getAllUrls(String imageIdentifier) {
+    Map getAllUrls(String imageIdentifier) {
         return imageStoreService.getAllUrls(imageIdentifier)
     }
 
-    public String getImageUrl(String imageIdentifier) {
+    String getImageUrl(String imageIdentifier) {
         return imageStoreService.getImageUrl(imageIdentifier)
     }
 
-    public String getImageThumbUrl(String imageIdentifier) {
+    String getImageThumbUrl(String imageIdentifier) {
         return imageStoreService.getImageThumbUrl(imageIdentifier)
     }
 
-    public String getImageThumbLargeUrl(String imageIdentifier) {
+    String getImageThumbLargeUrl(String imageIdentifier) {
         return imageStoreService.getImageThumbLargeUrl(imageIdentifier)
     }
 
-    public String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor = null) {
+    String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor = null) {
         return imageStoreService.getImageSquareThumbUrl(imageIdentifier, backgroundColor)
     }
 
-    public List<String> getAllThumbnailUrls(String imageIdentifier) {
+    List<String> getAllThumbnailUrls(String imageIdentifier) {
         def results = []
 
         def image = Image.findByImageIdentifier(imageIdentifier)
@@ -211,7 +204,7 @@ class ImageService {
         return results
     }
 
-    public String getImageTilesRootUrl(String imageIdentifier) {
+    String getImageTilesRootUrl(String imageIdentifier) {
         return imageStoreService.getImageTilesRootUrl(imageIdentifier)
     }
 
@@ -279,7 +272,7 @@ class ImageService {
         return task.batchId
     }
 
-    public void processBackgroundTasks() {
+    void processBackgroundTasks() {
         int taskCount = 0
         BackgroundTask task = null
 
@@ -291,7 +284,7 @@ class ImageService {
         }
     }
 
-    public void processTileBackgroundTasks() {
+    void processTileBackgroundTasks() {
         int taskCount = 0
         BackgroundTask task = null
         while (taskCount < BACKGROUND_TASKS_BATCH_SIZE && (task = _tilingQueue.poll()) != null) {
@@ -302,15 +295,15 @@ class ImageService {
         }
     }
 
-    public boolean isImageType(Image image) {
+    boolean isImageType(Image image) {
         return image.mimeType?.toLowerCase()?.startsWith("image/");
     }
 
-    public boolean isAudioType(Image image) {
+    boolean isAudioType(Image image) {
         return image.mimeType?.toLowerCase()?.startsWith("audio/");
     }
 
-    public List<ThumbnailingResult> generateImageThumbnails(Image image) {
+    List<ThumbnailingResult> generateImageThumbnails(Image image) {
         List<ThumbnailingResult> results
         if (isAudioType(image)) {
             results = imageStoreService.generateAudioThumbnails(image.imageIdentifier)

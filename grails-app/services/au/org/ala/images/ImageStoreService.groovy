@@ -17,7 +17,7 @@ import javax.imageio.ImageReadParam
 import java.awt.Color
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import grails.web.context.ServletContextHolder
 
 @Transactional
 class ImageStoreService {
@@ -43,7 +43,7 @@ class ImageStoreService {
         return imgDesc
     }
 
-    public File getImageDirectory(String uuid) {
+    File getImageDirectory(String uuid) {
         def l = [grailsApplication.config.imageservice.imagestore.root]
         computeAndAppendLocalDirectoryPath(uuid, l)
         return new File(l.join("/"))
@@ -272,7 +272,7 @@ class ImageStoreService {
         }
     }
 
-    public boolean deleteImage(String imageIdentifier) {
+    boolean deleteImage(String imageIdentifier) {
         if (imageIdentifier) {
             File f = getOriginalImageFile(imageIdentifier)
             if (f && f.exists()) {
@@ -284,7 +284,7 @@ class ImageStoreService {
         return false
     }
 
-    public boolean storeTilesArchiveForImage(String imageIdentifier, MultipartFile zipFile) {
+    boolean storeTilesArchiveForImage(String imageIdentifier, MultipartFile zipFile) {
 
         def original = getOriginalImageFile(imageIdentifier)
         if (original && original.exists()) {
@@ -298,7 +298,7 @@ class ImageStoreService {
             stagingFile.newOutputStream() << zipFile.inputStream
             def tilesRoot = createTilesPathFromUUID(imageIdentifier)
 
-            def ant = new AntBuilder()
+            def ant = new groovy.util.AntBuilder()
             ant.unzip(
                     src: stagingFile.absolutePath,
                     dest: tilesRoot,
@@ -314,7 +314,7 @@ class ImageStoreService {
         return false
     }
 
-    public long getConsumedSpaceOnDisk(String imageId) {
+    long getConsumedSpaceOnDisk(String imageId) {
         def original = getOriginalImageFile(imageId)
         if (original && original.exists()) {
             return FileUtils.sizeOfDirectory(original.parentFile)
@@ -322,7 +322,7 @@ class ImageStoreService {
         return 0
     }
 
-    public long getRepositorySizeOnDisk() {
+    long getRepositorySizeOnDisk() {
         def dir = new File(grailsApplication.config.imageservice.imagestore.root)
         if (dir && dir.exists()) {
             return FileUtils.sizeOfDirectory(dir)

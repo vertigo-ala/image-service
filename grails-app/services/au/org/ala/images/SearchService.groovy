@@ -1,6 +1,6 @@
 package au.org.ala.images
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.http.HttpSession
@@ -13,19 +13,19 @@ class SearchService {
 
     public static final String SEARCH_CRITERIA_SESSION_KEY = "session.key.searchCriteria"
 
-    public QueryResults<Image> simpleSearch(String query, GrailsParameterMap params) {
+    QueryResults<Image> simpleSearch(String query, GrailsParameterMap params) {
         return elasticSearchService.simpleImageSearch(query, params)
     }
 
-    public QueryResults<Image> findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
+    QueryResults<Image> findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
         return elasticSearchService.searchByMetadata(metaDataKey, values, params)
     }
 
-    def QueryResults<Image> searchUsingCriteria(GrailsParameterMap params) {
+    QueryResults<Image> searchUsingCriteria(GrailsParameterMap params) {
         return elasticSearchService.searchUsingCriteria(searchCriteriaList, params)
     }
 
-    public QueryResults<Image> allImages(GrailsParameterMap params) {
+    QueryResults<Image> allImages(GrailsParameterMap params) {
         return elasticSearchService.simpleImageSearch("*", params)
     }
 

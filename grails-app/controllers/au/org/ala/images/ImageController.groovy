@@ -5,7 +5,6 @@ import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
@@ -175,25 +174,26 @@ class ImageController {
         if (!image) {
             flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
             redirect(action:'list')
+        } else {
+            def subimages = Subimage.findAllByParentImage(image)*.subimage
+            def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
+
+            def userId = AuthenticationUtils.getUserId(request)
+            def albums = []
+            if (userId) {
+                albums = Album.findAllByUserId(userId, [sort:'name'])
+            }
+
+            def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
+
+            boolean isImage = imageService.isImageType(image)
+
+            //add additional metadata
+            def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+
+            [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs:
+                    thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
         }
-        def subimages = Subimage.findAllByParentImage(image)*.subimage
-        def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
-
-        def userId = AuthenticationUtils.getUserId(request)
-        def albums = []
-        if (userId) {
-            albums = Album.findAllByUserId(userId, [sort:'name'])
-        }
-
-        def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
-
-        boolean isImage = imageService.isImageType(image)
-
-        //add additional metadata
-        def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
-
-        [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs:
-                thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
     }
 
     def view() {

@@ -97,7 +97,7 @@
         <g:paginate total="${total}" prev="" next="" />
     </div>
 
-    <r:script>
+    <script>
         $(document).ready(function() {
 
             $(".btnRemoveFromSelection").click(function(e) {
@@ -147,7 +147,7 @@
 
         });
 
-    </r:script>
+    </script>
 
 </body>
 </html>

@@ -32,60 +32,13 @@
             }
 
     </style>
-        <r:script disposition='head'>
+        <script disposition='head'>
             var IMAGES_CONF = {
 
             }
-        </r:script>
+        </script>
 
-        <r:script disposition='head'>
-
-            // initialise plugins
-            jQuery(function () {
-                // autocomplete on navbar search input
-                jQuery("form#search-form-2011 input#search-2011, form#search-inpage input#search, input#search-2013").autocomplete('https://bie.ala.org.au/search/auto.jsonp', {
-                    extraParams: {limit: 100},
-                    dataType: 'jsonp',
-                    parse: function (data) {
-                        var rows = new Array();
-                        data = data.autoCompleteList;
-                        for (var i = 0; i < data.length; i++) {
-                            rows[i] = {
-                                data: data[i],
-                                value: data[i].matchedNames[0],
-                                result: data[i].matchedNames[0]
-                            };
-                        }
-                        return rows;
-                    },
-                    matchSubset: false,
-                    formatItem: function (row, i, n) {
-                        return row.matchedNames[0];
-                    },
-                    cacheLength: 10,
-                    minChars: 3,
-                    scroll: false,
-                    max: 10,
-                    selectFirst: false
-                });
-
-                // Mobile/desktop toggle
-                // TODO: set a cookie so user's choice is remembered across pages
-                var responsiveCssFile = $("#responsiveCss").attr("href"); // remember set href
-                $(".toggleResponsive").click(function (e) {
-                    e.preventDefault();
-                    $(this).find("i").toggleClass("icon-resize-small icon-resize-full");
-                    var currentHref = $("#responsiveCss").attr("href");
-                    if (currentHref) {
-                        $("#responsiveCss").attr("href", ""); // set to desktop (fixed)
-                        $(this).find("span").html("Mobile");
-                    } else {
-                        $("#responsiveCss").attr("href", responsiveCssFile); // set to mobile (responsive)
-                        $(this).find("span").html("Desktop");
-                    }
-                });
-
-            });
+        <script disposition='head'>
 
             function updateSelectionContext() {
                 $.ajax("${createLink(controller:'selection', action:'userContextFragment')}").done(function(content) {
@@ -99,7 +52,6 @@
                 });
             }
 
-
             function loadingSpinner() {
                 return '<img src="${g.resource(dir:'images', file:'spinner.gif')}"/>&nbsp;Loading...';
             }
@@ -109,12 +61,12 @@
                 updateAlbums();
             });
 
-        </r:script>
+        </script>
 
         <g:layoutHead/>
     </head>
 
-    <body class="${pageProperty(name: 'body.class')}" id="${pageProperty(name: 'body.id')}" onload="${pageProperty(name: 'body.onload')}">
+    <body class="fluid ${pageProperty(name: 'body.class')}" id="${pageProperty(name: 'body.id')}" onload="${pageProperty(name: 'body.onload')}">
 
         <g:set var="containerClass" value="container"/>
         <g:if test="${pageProperty(name:'page.useFluidLayout')}">
@@ -125,7 +77,7 @@
             <header id="page-header">
                 <div class="container">
                     <hgroup>
-                        <div class="row-fluid">
+                        <div class="row">
                             <div class="span8">
                                 <g:pageProperty name="page.page-header" />
                             </div>

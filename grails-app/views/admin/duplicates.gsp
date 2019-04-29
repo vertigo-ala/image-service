@@ -42,10 +42,7 @@
         </div>
     </div>
 </body>
-<r:script>
-
-        $(document).ready(function() {
-        });
-
-</r:script>
+<script>
+    $(document).ready(function() {});
+</script>
 </html>

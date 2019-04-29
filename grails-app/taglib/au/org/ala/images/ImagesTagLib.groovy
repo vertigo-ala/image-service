@@ -1,8 +1,6 @@
 package au.org.ala.images
 
-import au.org.ala.cas.util.AuthenticationUtils
 import groovy.xml.MarkupBuilder
-import org.apache.commons.lang.StringUtils
 
 class ImagesTagLib {
 

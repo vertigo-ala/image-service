@@ -29,5 +29,4 @@
         e.preventDefault();
         imgvwr.hideModal();
     });
-
 </script>

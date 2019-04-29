@@ -63,14 +63,11 @@ class AdminController {
         redirect(action:"searchCriteria")
     }
 
-    def dashboard() {
-    }
+    def dashboard() {}
 
-    def tools() {
-    }
+    def tools() {}
 
-    def localIngest() {
-    }
+    def localIngest() {}
 
     def reinitialiseImageIndex() {
         imageService.deleteIndex()
@@ -182,12 +179,9 @@ class AdminController {
         redirect(action:'settings')
     }
 
-    def tags() {
+    def tags() {}
 
-    }
-
-    def uploadTagsFragment() {
-    }
+    def uploadTagsFragment() {}
 
     def uploadTagsFile() {
         MultipartFile file = request.getFile('tagfile')

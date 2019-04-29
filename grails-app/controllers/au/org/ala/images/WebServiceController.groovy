@@ -5,7 +5,7 @@ import au.org.ala.web.CASRoles
 import grails.converters.JSON
 import grails.converters.XML
 import org.apache.http.HttpStatus
-import org.grails.plugins.csv.CSVWriter
+import grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartRequest
 
@@ -563,6 +563,7 @@ class WebServiceController {
     }
 
     def getImageInfoForIdList() {
+
         def query = request.JSON
 
         if (query) {
@@ -599,6 +600,7 @@ class WebServiceController {
     }
 
     def findImagesByOriginalFilename() {
+
         def query = request.JSON
 
         if (query) {
@@ -632,6 +634,7 @@ class WebServiceController {
     }
 
     def findImagesByMetadata() {
+
         def query = request.JSON
 
         if (query) {

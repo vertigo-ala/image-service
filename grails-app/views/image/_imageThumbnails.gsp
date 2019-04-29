@@ -92,7 +92,7 @@
 
 <ul class="thumbnails">
     <g:each in="${images}" var="image">
-        <li class="span2">
+        <li class="col-md-2">
             <div class="thumbnail" imageId="${image.id}" style="background: white">
                 <g:if test="${allowSelection == true}">
                     <div class="selection-header">
@@ -112,7 +112,6 @@
                 <g:if test="${footerTemplate}">
                     <g:render template="${footerTemplate}" model="${[image: image]}" />
                 </g:if>
-
             </div>
         </li>
     </g:each>
@@ -122,7 +121,7 @@
     <g:paginate total="${totalImageCount}" prev="" next="" params="${[q:params.q]}" id="${paginateActionId}" />
 </div>
 
-<r:script>
+<script>
     $(document).ready(function() {
 
         $("#btnClearSelection").click(function(e) {
@@ -213,4 +212,4 @@
         });
 
     }
-</r:script>
+</script>

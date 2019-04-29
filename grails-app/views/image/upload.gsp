@@ -10,14 +10,12 @@
 
         <img:headerContent title="Upload an image">
             <%
-                pageScope.crumbs = [
-                ]
+                pageScope.crumbs = []
             %>
         </img:headerContent>
 
         <div class="row-fluid">
             <div class="span12 alert">
-
                 <button type="button" class="btn" id="btnUploadFromCSV">Upload from CSV</button>
             </div>
         </div>
@@ -32,7 +30,7 @@
                 </div>
             </div>
         </div>
-        <r:script>
+        <script>
 
             $(document).ready(function() {
                 $("#btnUploadFromCSV").click(function(e) {
@@ -45,7 +43,7 @@
                 });
             });
 
-        </r:script>
+        </script>
     </body>
 </html>
 

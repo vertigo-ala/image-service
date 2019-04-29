@@ -4,7 +4,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
-import org.grails.plugins.csv.CSVWriter
+import grails.plugins.csv.CSVWriter
 
 @AlaSecured(value = [CASRoles.ROLE_USER, CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
 class AlbumController {

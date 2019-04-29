@@ -1,12 +1,11 @@
 package au.org.ala.images
 
-import grails.plugin.cache.GrailsAnnotationCacheOperationSource
 import grails.transaction.Transactional
 import org.apache.commons.io.ByteOrderMark
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.input.BOMInputStream
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.grails.plugins.csv.CSVMapReader
+import grails.web.servlet.mvc.GrailsParameterMap
+import grails.plugins.csv.CSVMapReader
 import org.springframework.web.multipart.MultipartFile
 
 import java.util.regex.Pattern
