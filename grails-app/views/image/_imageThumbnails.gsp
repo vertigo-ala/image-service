@@ -89,24 +89,25 @@
     </tr>
 </table>
 
-
-<ul class="thumbnails">
+<!-- results list -->
+<div class="container-fluid" style="padding:0; margin:0;">
+<ul class="list-inline">
     <g:each in="${images}" var="image">
-        <li class="col-md-2">
-            <div class="thumbnail" imageId="${image.id}" style="background: white">
+        <li class="col-md-2" style="padding:0; margin:0;">
+            <div class="thumbnail" imageId="${image.imageIdentifier}" style="padding:0; margin:0;">
                 <g:if test="${allowSelection == true}">
                     <div class="selection-header">
                         <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
                                     checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
-                        <label for="chkSelectImage${image.id}"></label>
+                        <label for="chkSelectImage${image.imageIdentifier}"></label>
                     </div>
                 </g:if>
                 <g:if test="${headerTemplate}">
                     <g:render template="${headerTemplate}" model="${[image: image]}" />
                 </g:if>
                 <div class="image-thumbnail" >
-                    <a href="${createLink(controller:'image', action:'details', id: image.id)}">
-                        <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}' backgroundColor="white"/>"/>
+                    <a href="${createLink(controller:'image', action:'details', id: image.imageIdentifier)}">
+                        <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}'/>"/>
                     </a>
                 </div>
                 <g:if test="${footerTemplate}">
@@ -116,6 +117,7 @@
         </li>
     </g:each>
 </ul>
+</div>
 
 <div class="pagination">
     <g:paginate total="${totalImageCount}" prev="" next="" params="${[q:params.q]}" id="${paginateActionId}" />

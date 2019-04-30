@@ -37,8 +37,7 @@ dependencies {
     compile group: 'org.grails.plugins', name: 'ala-ws-plugin', version: '2.0', changing: true
     compile group: 'org.grails.plugins', name: 'ala-bootstrap3', version: '3.0.6', changing: true
     compile group: 'org.grails.plugins', name: 'ala-admin-plugin', version: '2.1', changing: true
-
-
+    compile "au.org.ala.plugins.grails:images-client-plugin:1.0"
 
     // Added dependencies
     compile 'org.grails.plugins:quartz:2.0.13'
@@ -97,7 +96,6 @@ bootRun {
     String springProfilesActive = 'spring.profiles.active'
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
-
 
 assets {
     minifyJs = true

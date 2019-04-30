@@ -27,6 +27,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
+import org.elasticsearch.search.builder.SearchSourceBuilder
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
 import org.elasticsearch.search.sort.SortOrder
 
 import javax.annotation.PreDestroy
@@ -116,7 +118,20 @@ class ElasticSearchService {
     }
 
     QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
-        def qmap = [query: [filtered: [query:[query_string: [query: query?.toLowerCase()]]]]]
+//        def qmap = [query:
+//                            [filtered:
+//                                 [query:
+//                                          [query_string:
+//                                                   [query: query?.toLowerCase()]
+//                                          ]
+//                                 ]
+//                            ]
+//                    ]
+        def qmap = [query:
+                          [simple_query_string:
+                                   [query: query?.toLowerCase()]
+                          ]
+                   ]
         return search(qmap, params)
     }
 
@@ -170,10 +185,10 @@ class ElasticSearchService {
         }
         request.types(types as String[])
 
-        QueryBuilder query = buildQuery(queryString, params, geoSearchCriteria, index)
+        QueryBuilder query = QueryBuilders.queryStringQuery("*")
 
         // set pagination stuff
-//        SearchSourceBuilder source = pagenateQuery(params).query(query)
+        SearchSourceBuilder source = pagenateQuery(params).query(query)
 //
 //        // add facets
 //        addFacets(params.facets, params.fq, params.flimit, params.fsort).each {
@@ -191,18 +206,29 @@ class ElasticSearchService {
 //                source.query(it)
 //            }
 //        }
-//
-//        if (params.highlight) {
-//            source.highlight(new HighlightBuilder().preTags("<b>").postTags("</b>").field("_all", 60, 2))
-//        }
-//
-//        if (params.omitSource) {
-//            source.noFields()
-//        }
 
-//        request.source(source)
+        if (params.highlight) {
+            source.highlight(new HighlightBuilder().preTags("<b>").postTags("</b>").field("_all", 60, 2))
+        }
+
+        if (params.omitSource) {
+            source.noFields()
+        }
+
+        request.source(source)
 
         return request
+    }
+
+    private SearchSourceBuilder pagenateQuery(Map params) {
+        SearchSourceBuilder source = new SearchSourceBuilder()
+        source.from(params.offset ? params.offset as int : 0)
+        source.size(params.max ? params.max as int : 10)
+//        source.explain(params.explain ?: false)
+//        if (params.sort) {
+//            source.sort(params.sort, SortOrder.valueOf(params.order?.toUpperCase() ?: "ASC"))
+//        }
+        source
     }
 
     private QueryBuilder buildQuery(String query, Map params, Map geoSearchCriteria = null, String index) {

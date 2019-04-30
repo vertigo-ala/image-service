@@ -1,25 +1,35 @@
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="images"/>
-        <meta name="section" content="home"/>
-        <title>Image Service | ${grailsApplication.config.skin.orgNameLong}</title>
+        <meta name="layout" content="main"/>
+        <title>Images</title>
+        <asset:stylesheet src="application.css" />
     </head>
+    <body class="fluid">
+        <h1>${totalImageCount} Images</h1>
 
-    <body class="content">
-
-        <img:headerContent title="Images" hideCrumbs="${true}">
-        </img:headerContent>
-
-        <div class="">
-            <input type="text" class="input-xlarge" id="keyword" style="margin-bottom: 0" value="${q}" />
-            <button class="btn" id="btnFindImagesByKeyword"><i class="icon-search"></i>&nbsp;Search</button>
-            <a class="btn btn-info" id="btnAdvancedSearch" href="${createLink(controller:'search', action:'index')}"><i class="icon-cog icon-white"></i>&nbsp;Advanced Search</a>
+        <!-- search box -->
+        <div class="search" style="margin-bottom:20px; ">
+            <div class="input-group">
+                <input type="text" class="input-large form-control" id="keyword" value="${q}" />
+                <div class="input-group-btn">
+                    <button class="btn btn-primary" type="submit">
+                        <span class="glyphicon glyphicon-search"></span>
+                        Search
+                    </button>
+                    <a class="btn btn-default" href="${createLink(controller:'search', action:'index')}">
+                        Advanced search
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <g:render template="imageThumbnails" model="${[images: images, totalImageCount: totalImageCount, allowSelection: isLoggedIn, selectedImageMap: selectedImageMap, thumbsTitle:"${totalImageCount} images"]}" />
+        <!-- results -->
+        <g:render template="imageThumbnails"
+                  model="${[images: images, totalImageCount: totalImageCount, allowSelection: isLoggedIn,
+                            selectedImageMap: selectedImageMap]}" />
 
-    <script>
+        <script>
             $(document).ready(function() {
 
                 $("#btnFindImagesByKeyword").click(function(e) {
@@ -44,8 +54,6 @@
                     window.location = "${createLink(action:'list')}";
                 }
             }
-
         </script>
-
     </body>
 </html>

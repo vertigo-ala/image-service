@@ -22,9 +22,12 @@
         }
 
         </style>
-        <r:require module="image-viewer" />
-        <r:layoutResources/>
-        <r:script>
+
+        <asset:javascript src="jquery-1.12.4.js"/>
+        <asset:javascript src="ala/images-client.js"/>
+        <asset:stylesheet src="ala/images-client.css" />
+
+        <script>
         $(document).ready(function() {
             var options = {
                 auxDataUrl : "${auxDataUrl ? auxDataUrl : ''}",
@@ -33,12 +36,11 @@
             };
             imgvwr.viewImage($("#imageViewer"), "${imageInstance.imageIdentifier}", "", "", options);
         });
-        </r:script>
+        </script>
     </head>
     <body style="padding:0;">
         <div id="imageViewerContainer" class="container-fluid">
             <div id="imageViewer"> </div>
         </div>
-        <r:layoutResources/>
     </body>
 </html>

@@ -8,16 +8,15 @@
         <meta name="author" content="Atlas of Living Australia">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-        <r:require modules="bootstrap, application, qtip, image-viewer"/>
+%{--        <r:require modules="application, qtip, image-viewer"/>--}%
 
+        <asset:stylesheet src="application.css" />
+        <asset:javascript src="ala/images-client.js"/>
+        <asset:stylesheet src="ala/images-client.css" />
         <style>
 
             .pagination a {
                 text-decoration: none;
-            }
-
-            .icon-grey {
-                opacity: 0.5;
             }
 
             .spinner {
@@ -31,14 +30,9 @@
                 text-indent: -9999px;
             }
 
-    </style>
+        </style>
         <script disposition='head'>
-            var IMAGES_CONF = {
-
-            }
-        </script>
-
-        <script disposition='head'>
+            var IMAGES_CONF = {}
 
             function updateSelectionContext() {
                 $.ajax("${createLink(controller:'selection', action:'userContextFragment')}").done(function(content) {
@@ -105,9 +99,8 @@
                 </div>
             </header>
         </div>
-        <div class="${containerClass}" id="main-content">
-            <g:layoutBody/>
-        </div><!--/.container-->
+
+        <g:layoutBody/>
 
         <div class="spinner well well-small" style="display: none"></div>
 

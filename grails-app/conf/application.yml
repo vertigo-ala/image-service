@@ -18,12 +18,15 @@ grails:
             maxFileSize: 200000000
             maxRequestSize: 200000000
 
+serverName: 'http://localhost:8080'
+
 elasticsearch:
     location: '/data/images/elastic'
 
 
 skin:
     layout: 'main'
+    fluidLayout: true
 
 
 quartz:

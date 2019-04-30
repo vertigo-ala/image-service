@@ -78,9 +78,7 @@ class ImagesTagLib {
                     mb.mkp.yieldUnescaped(bodyContent)
                 }
             }
-
         }
-
     }
 
     def spinner = { attrs, body ->
