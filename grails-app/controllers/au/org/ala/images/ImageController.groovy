@@ -191,8 +191,8 @@ class ImageController {
             //add additional metadata
             def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
 
-            [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums, squareThumbs:
-                    thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
+            [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
+             squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
         }
     }
 
@@ -230,7 +230,6 @@ class ImageController {
         def metaData = []
         def source = params.source as MetaDataSourceType
         if (imageInstance) {
-
             if (source) {
                 metaData = imageInstance.metadata?.findAll { it.source == source }
             } else {

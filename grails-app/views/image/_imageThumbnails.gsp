@@ -36,6 +36,40 @@
     } /* checked icon */
     input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
 
+    .image-search-results {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0 4px;
+    }
+
+    /* Create four equal columns that sits next to each other */
+    .column {
+        flex: 16.6%;
+        max-width: 16.6%;
+        padding: 0 4px;
+    }
+
+    .column img {
+        margin-top: 8px;
+        vertical-align: middle;
+    }
+
+    /* Responsive layout - makes a two column-layout instead of four columns */
+    @media screen and (max-width: 800px) {
+        .column {
+            flex: 50%;
+            max-width: 50%;
+        }
+    }
+
+    /* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
+    @media screen and (max-width: 600px) {
+        .column {
+            flex: 100%;
+            max-width: 100%;
+        }
+    }
+
 </style>
 
 <table style="width: 100%;">
@@ -90,10 +124,20 @@
 </table>
 
 <!-- results list -->
-<div class="container-fluid" style="padding:0; margin:0;">
-<ul class="list-inline">
-    <g:each in="${images}" var="image">
-        <li class="col-md-2" style="padding:0; margin:0;">
+<div class="image-search-results">
+
+    <g:set var="imagesPerCol" value="${images.size() > 0 ? Math.round(images.size() / 6).toInteger() : 0}"/>
+
+    <g:each in="${images}" var="image" status="imageIdx">
+
+            <g:if test="${imageIdx > 0 && imageIdx % imagesPerCol == 0}">
+                </div>
+            </g:if>
+
+            <g:if test="${imageIdx == 0 || imageIdx % imagesPerCol == 0}">
+                <div class="column">
+            </g:if>
+
             <div class="thumbnail" imageId="${image.imageIdentifier}" style="padding:0; margin:0;">
                 <g:if test="${allowSelection == true}">
                     <div class="selection-header">
@@ -105,22 +149,25 @@
                 <g:if test="${headerTemplate}">
                     <g:render template="${headerTemplate}" model="${[image: image]}" />
                 </g:if>
-                <div class="image-thumbnail" >
+                <div class="image-thumbnail">
                     <a href="${createLink(controller:'image', action:'details', id: image.imageIdentifier)}">
-                        <img src="<img:imageSquareThumbUrl imageId='${image.imageIdentifier}'/>"/>
+                        <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>"/>
                     </a>
                 </div>
                 <g:if test="${footerTemplate}">
                     <g:render template="${footerTemplate}" model="${[image: image]}" />
                 </g:if>
             </div>
-        </li>
     </g:each>
-</ul>
+    </div>
 </div>
 
-<div class="pagination">
-    <g:paginate total="${totalImageCount}" prev="" next="" params="${[q:params.q]}" id="${paginateActionId}" />
+<div>
+    <tb:paginate total="${totalImageCount}" max="100"
+                 action="list"
+                 controller="image"
+                 params="${[q:params.q]}"
+    />
 </div>
 
 <script>

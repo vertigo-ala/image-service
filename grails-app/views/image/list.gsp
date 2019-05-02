@@ -7,11 +7,11 @@
     </head>
     <body class="fluid">
         <h1>${totalImageCount} Images</h1>
-
         <!-- search box -->
-        <div class="search" style="margin-bottom:20px; ">
+        <div class="search" style="margin-bottom:20px;">
+            <g:form action="list" controller="image" method="get">
             <div class="input-group">
-                <input type="text" class="input-large form-control" id="keyword" value="${q}" />
+                <input type="text" class="input-large form-control" id="keyword" name="q" value="${params.q}" />
                 <div class="input-group-btn">
                     <button class="btn btn-primary" type="submit">
                         <span class="glyphicon glyphicon-search"></span>
@@ -22,38 +22,11 @@
                     </a>
                 </div>
             </div>
+            </g:form>
         </div>
-
         <!-- results -->
         <g:render template="imageThumbnails"
                   model="${[images: images, totalImageCount: totalImageCount, allowSelection: isLoggedIn,
                             selectedImageMap: selectedImageMap]}" />
-
-        <script>
-            $(document).ready(function() {
-
-                $("#btnFindImagesByKeyword").click(function(e) {
-                    e.preventDefault();
-                    doSearch();
-                });
-
-                $("#keyword").keydown(function(e) {
-                    if (e.which == 13) {
-                        e.preventDefault();
-                        doSearch();
-                    }
-                }).focus();
-
-            });
-
-            function doSearch() {
-                var q = $("#keyword").val();
-                if (q) {
-                    window.location = "${createLink(action:'list')}?q=" + q
-                } else {
-                    window.location = "${createLink(action:'list')}";
-                }
-            }
-        </script>
     </body>
 </html>

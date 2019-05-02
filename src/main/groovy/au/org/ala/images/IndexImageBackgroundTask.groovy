@@ -13,9 +13,10 @@ class IndexImageBackgroundTask extends BackgroundTask {
     @Override
     void execute() {
         def imageInstance = Image.get(_imageId)
-        _elasticSearchService.indexImage(imageInstance)
+        if (imageInstance) {
+            _elasticSearchService.indexImage(imageInstance)
+        }
     }
-
 }
 
 class ScheduleReindexAllImagesTask extends BackgroundTask {

@@ -83,7 +83,6 @@
         </tr>
 
     </table>
-</body>
 <script>
 
     $(document).ready(function() {
@@ -134,4 +133,6 @@
     });
 
 </script>
+</body>
+
 </html>

@@ -1,8 +1,7 @@
 package au.org.ala.images
 
 import grails.converters.JSON
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest
+import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.common.xcontent.XContentType
 import groovy.json.JsonOutput
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -34,7 +33,6 @@ import org.elasticsearch.search.sort.SortOrder
 import javax.annotation.PreDestroy
 import java.util.regex.Pattern
 import javax.annotation.PostConstruct
-import org.elasticsearch.node.Node
 
 class ElasticSearchService {
 
@@ -82,6 +80,9 @@ class ElasticSearchService {
     }
 
     def indexImage(Image image) {
+        if (!image){
+            log.error("Supplied image was null")
+        }
         def ct = new CodeTimer("Index Image ${image.id}")
         // only add the fields that are searchable. They are marked with an annotation
         def fields = Image.class.declaredFields
@@ -107,49 +108,34 @@ class ElasticSearchService {
         request.source(json, XContentType.JSON)
         IndexResponse indexResponse = client.index(request, RequestOptions.DEFAULT);
 
-//        IndexResponse response = client.prepareIndex("images", "image", image.id.toString()).setSource(json).execute().actionGet();
         ct.stop(true)
     }
 
     def deleteImage(Image image) {
         if (image) {
-            DeleteResponse response = client.prepareDelete("images", "image", image.id.toString()).execute().actionGet();
+            DeleteResponse response = client.delete(new DeleteRequest("images", image.id.toString()), RequestOptions.DEFAULT)
+            log.info(response.status())
         }
     }
 
     QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
-//        def qmap = [query:
-//                            [filtered:
-//                                 [query:
-//                                          [query_string:
-//                                                   [query: query?.toLowerCase()]
-//                                          ]
-//                                 ]
-//                            ]
-//                    ]
-        def qmap = [query:
-                          [simple_query_string:
-                                   [query: query?.toLowerCase()]
-                          ]
-                   ]
-        return search(qmap, params)
+        log.debug "search params: ${params}"
+        SearchRequest request = buildSearchRequest(query, params, "images", [:])
+        SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
+        def imageList = []
+        if (searchResponse.hits) {
+            searchResponse.hits.each { hit ->
+                imageList << Image.get(hit.id.toLong())
+            }
+        }
+        QueryResults<Image> qr = new QueryResults<Image>()
+        qr.list = imageList
+        qr.totalCount = searchResponse.hits.totalHits.value
+        qr
     }
 
     QueryResults<Image> search(Map query, GrailsParameterMap params) {
-//        Map qmap = null
-//        Map fmap = null
-//        if (query.query) {
-//            qmap = query.query
-//        } else {
-//            if (query.filter) {
-//                fmap = query.filter
-//            } else {
-//                qmap = query
-//            }
-//        }
-
         log.debug "search params: ${params}"
-
         SearchRequest request = buildSearchRequest(JsonOutput.toJson(query), params, "images", [:])
         SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
         def imageList = []
@@ -185,27 +171,10 @@ class ElasticSearchService {
         }
         request.types(types as String[])
 
-        QueryBuilder query = QueryBuilders.queryStringQuery("*")
+        QueryBuilder query = QueryBuilders.queryStringQuery(queryString)
 
         // set pagination stuff
         SearchSourceBuilder source = pagenateQuery(params).query(query)
-//
-//        // add facets
-//        addFacets(params.facets, params.fq, params.flimit, params.fsort).each {
-//            source.query(it)
-//        }
-//
-//        if(params.rangeFacets){
-//            addRangeFacets(params.rangeFacets as List).each {
-//                source.query(it)
-//            }
-//        }
-//
-//        if(params.histogramFacets){
-//            addHistogramFacets(params.histogramFacets).each {
-//                source.query(it)
-//            }
-//        }
 
         if (params.highlight) {
             source.highlight(new HighlightBuilder().preTags("<b>").postTags("</b>").field("_all", 60, 2))
@@ -224,10 +193,7 @@ class ElasticSearchService {
         SearchSourceBuilder source = new SearchSourceBuilder()
         source.from(params.offset ? params.offset as int : 0)
         source.size(params.max ? params.max as int : 10)
-//        source.explain(params.explain ?: false)
-//        if (params.sort) {
-//            source.sort(params.sort, SortOrder.valueOf(params.order?.toUpperCase() ?: "ASC"))
-//        }
+        source.sort('dateUploaded', SortOrder.DESC)
         source
     }
 

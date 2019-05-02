@@ -38,11 +38,13 @@
         </table>
 
         <div class="pagination">
-            <g:paginate total="${totalCount}" prev="" next="" />
+            <tb:paginate total="${totalCount}" prev="" next="" />
+%{--            <tb:paginate total="${totalCount}" max="100"--}%
+%{--                         action="ad"--}%
+%{--                         controller="image"--}%
+%{--                         params="${[q:params.q]}"--}%
+%{--            />            --}%
         </div>
     </div>
 </body>
-<script>
-    $(document).ready(function() {});
-</script>
 </html>

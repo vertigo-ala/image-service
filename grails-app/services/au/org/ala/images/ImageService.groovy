@@ -65,7 +65,7 @@ class ImageService {
                 auditService.log(image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
                 return image
             } catch (Exception ex) {
-                log.error(ex.getMessage(), e)
+                log.error(ex.getMessage(), ex)
             }
         }
         return null
@@ -133,6 +133,8 @@ class ImageService {
 
         //add core metadata properties for this image
         metadata.each { kvp ->
+
+            println("${image}  = ${kvp}")
             if(image.hasProperty(kvp.key) && kvp.value){
                 if(!(kvp.key in ["dateTaken", "dateUploaded"])){
                     image[kvp.key] = kvp.value
@@ -151,8 +153,12 @@ class ImageService {
 
         image.save(failOnError: true)
 
-        def md = getImageMetadataFromBytes(bytes, originalFilename)
-        setMetadataItems(image, md, MetaDataSourceType.Embedded, uploaderId)
+        try {
+            def md = getImageMetadataFromBytes(bytes, originalFilename)
+            setMetadataItems(image, md, MetaDataSourceType.Embedded, uploaderId)
+        } catch(Exception e){
+            log.error("Unable to extract image metadata: " + e.getMessage())
+        }
 
         ct.stop(true)
         return image

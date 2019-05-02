@@ -34,38 +34,35 @@
             </div>
         </g:each>
     </g:if>
+    <script type="text/javascript">
+        $(".btnDeleteCriteria").click(function(e) {
+            e.preventDefault();
+            var criteriaId = $(this).parents("tr[searchCriteriaId]").attr("searchCriteriaId");
+            if (criteriaId) {
+                $.ajax("${createLink(controller: 'search', action:'ajaxRemoveSearchCriteria')}?searchCriteriaId=" + criteriaId).done(function(results) {
+                    renderCriteria();
+                    if (doSearch) {
+                        doSearch();
+                    }
+                });
+            }
+        });
+
+        $(".btnEditCriteria").click(function(e) {
+            e.preventDefault();
+            var criteriaId = $(this).parents("tr[searchCriteriaId]").attr("searchCriteriaId");
+            if (criteriaId) {
+                imgvwr.showModal({
+                    url: "${createLink(action:'editSearchCriteriaFragment')}?criteriaId=" + criteriaId,
+                    title: "Edit search criteria",
+                    height: 520,
+                    width: 700,
+                    onClose: function () {
+                        renderCriteria();
+                    }
+                });
+            }
+        });
+    </script>
 </div>
 
-<script type="text/javascript">
-
-    $(".btnDeleteCriteria").click(function(e) {
-        e.preventDefault();
-        var criteriaId = $(this).parents("tr[searchCriteriaId]").attr("searchCriteriaId");
-        if (criteriaId) {
-            $.ajax("${createLink(controller: 'search', action:'ajaxRemoveSearchCriteria')}?searchCriteriaId=" + criteriaId).done(function(results) {
-                renderCriteria();
-                if (doSearch) {
-                    doSearch();
-                }
-            });
-        }
-    });
-
-    $(".btnEditCriteria").click(function(e) {
-        e.preventDefault();
-        var criteriaId = $(this).parents("tr[searchCriteriaId]").attr("searchCriteriaId");
-        if (criteriaId) {
-            imgvwr.showModal({
-                url: "${createLink(action:'editSearchCriteriaFragment')}?criteriaId=" + criteriaId,
-                title: "Edit search criteria",
-                height: 520,
-                width: 700,
-                onClose: function () {
-                    renderCriteria();
-                }
-            });
-        }
-    });
-
-
-</script>

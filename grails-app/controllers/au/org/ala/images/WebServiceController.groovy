@@ -407,7 +407,7 @@ class WebServiceController {
 
         def userId = getUserIdForRequest(request)
         if(!userId){
-            renderResults([success:false, message:"User needs to be logged in to create subimage"])
+            renderResults([success:false, message:"User needs to be logged in to create sub image"])
             return
         }
 
@@ -459,6 +459,11 @@ class WebServiceController {
     }
 
     private getUserIdForRequest(HttpServletRequest request) {
+
+        if(grailsApplication.config.security.cas.disableCAS.toBoolean()){
+            return "-1"
+        }
+
         // First check the CAS filter cookie thing
         def userId = AuthenticationUtils.getUserId(request)
         // If not found (i.e. urls not mapped), look for standard ALA auth header
@@ -471,7 +476,6 @@ class WebServiceController {
         if (!userId) {
             userId = params.userId
         }
-
         return userId
     }
 
@@ -808,10 +812,7 @@ class WebServiceController {
      */
     def uploadImage() {
         // Expect a multipart file request
-
         try {
-
-
             Image image = null
 
             def userId = getUserIdForRequest(request)
@@ -823,7 +824,6 @@ class WebServiceController {
                     [:]
                 }
             }.call()
-
 
             if (url) {
                 // Image is located at an endpoint, and we need to download it first.

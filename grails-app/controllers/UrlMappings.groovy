@@ -14,8 +14,10 @@ class UrlMappings {
             controller = "webService"
         }
 
-        "/$imageId"(controller: "image", action: "details")
-        "/image/$imageId"(controller: "image", action: "details")
+//        "/$imageId"(controller: "image", action: "details")
+
+//        "/image/$action?imageId=$imageId"(controller: "image")
+//        "/image/$imageId"(controller: "image", action: "details")
 
         "/"(controller:'image', action:'list')
         "500"(view:'/error')

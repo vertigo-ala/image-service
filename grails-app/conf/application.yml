@@ -17,6 +17,8 @@ grails:
         upload:
             maxFileSize: 200000000
             maxRequestSize: 200000000
+    assets:
+        bundle: false
 
 serverName: 'http://localhost:8080'
 
