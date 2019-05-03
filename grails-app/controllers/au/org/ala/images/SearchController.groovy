@@ -16,7 +16,9 @@ class SearchController {
 
     def index() {
         boolean hasCriteria = searchService.getSearchCriteriaList()?.size() > 0
-        [hasCriteria: hasCriteria]
+        def criteriaDefinitions = searchCriteriaService.getCriteriaDefinitionList()
+        [criteriaDefinitions: criteriaDefinitions]
+        render(view: 'advancedSearch', model:[hasCriteria: hasCriteria, criteriaDefinitions: criteriaDefinitions])
     }
 
     def addSearchCriteriaFragment() {
@@ -49,7 +51,7 @@ class SearchController {
     def imageFieldCriteriaFragment() {
         def criteriaDefinition = SearchCriteriaDefinition.get(params.int("searchCriteriaDefinitionId"))
         def criteria = searchService.getSearchCriteria(params.criteriaId)
-        return [criteriaDefinition: criteriaDefinition, criteria: criteria]
+        [criteriaDefinition: criteriaDefinition, criteria: criteria]
     }
 
     def imageMetadataCriteriaFragment() {
@@ -68,7 +70,7 @@ class SearchController {
             }
         }
 
-        return [criteriaDefinition: criteriaDefinition, criteria: criteria, metadataNames: metadataNames, metadataItemName: metadataItemName, metadataItemValue: metadataItemValue]
+        [criteriaDefinition: criteriaDefinition, criteria: criteria, metadataNames: metadataNames, metadataItemName: metadataItemName, metadataItemValue: metadataItemValue]
     }
 
 
@@ -143,18 +145,13 @@ class SearchController {
         def results = [success: true]
         def userId = AuthenticationUtils.getUserId(request)
         if (userId) {
-
             searchService.withCriteriaImageIds(null, { idList ->
                 selectionService.selectImages(userId, idList)
             })
-
         } else {
             results.success = false
             results.message = "Could not identify user!"
         }
-
-
         render(results as JSON)
     }
-
 }

@@ -133,8 +133,6 @@ class ImageService {
 
         //add core metadata properties for this image
         metadata.each { kvp ->
-
-            println("${image}  = ${kvp}")
             if(image.hasProperty(kvp.key) && kvp.value){
                 if(!(kvp.key in ["dateTaken", "dateUploaded"])){
                     image[kvp.key] = kvp.value

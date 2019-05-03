@@ -61,10 +61,10 @@ class ESSearchCriteriaUtils {
         }
     }
 
-    public static class MultiStringPatternTranslator implements ESCriteriaTranslator {
+    static class MultiStringPatternTranslator implements ESCriteriaTranslator {
         String[] values
 
-        public MultiStringPatternTranslator(String value) {
+        MultiStringPatternTranslator(String value) {
             this.values = value?.split("~")
         }
 
@@ -94,11 +94,11 @@ class ESSearchCriteriaUtils {
             def field = criteria.criteriaDefinition.fieldName
 
             if (values.size() == 1) {
-                return FilterBuilders.queryFilter(QueryBuilders.queryString("${field}:${escape(values[0])}"))
+                return QueryBuilders.queryStringQuery("${field}:${escape(values[0])}")
             } else {
-                def fb = FilterBuilders.orFilter();
+                def fb = QueryBuilders.boolQuery()
                 values.each {
-                    fb.add(FilterBuilders.queryFilter(QueryBuilders.queryString("${field}:${escape(it)}")))
+                    fb.filter(QueryBuilders.queryStringQuery("${field}:${escape(it)}"))
                 }
                 fb
             }
@@ -250,13 +250,13 @@ class ESSearchCriteriaUtils {
             def field = criteria.criteriaDefinition.fieldName
             switch (operator) {
                 case "eq":
-                    return FilterBuilders.queryFilter(QueryBuilders.queryString("${field}:${value1}"))
+                    return QueryBuilders.queryStringQuery("${field}:${value1}")
                 case "lt":
-                    return FilterBuilders.rangeFilter(field).lte(value1)
+                    return QueryBuilders.rangeQuery(field).lte(value1)
                 case "gt":
-                    return FilterBuilders.rangeFilter(field).gte(value1)
+                    return QueryBuilders.rangeQuery(field).gte(value1)
                 case "bt":
-                    return FilterBuilders.rangeFilter(field).gte(value1).lte(value2)
+                    return QueryBuilders.rangeQuery(field).gte(value1).lte(value2)
             }
         }
     }

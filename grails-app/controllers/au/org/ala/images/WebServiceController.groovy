@@ -757,7 +757,7 @@ class WebServiceController {
     def updateMetadata(){
 
         Image image = Image.findByImageIdentifier(params.imageIdentifier)
-        if(image){
+        if (image){
             def userId = getUserIdForRequest(request)
             def metadata = {
                 if(params.metadata){
@@ -771,11 +771,13 @@ class WebServiceController {
             def imageUpdated = false
             metadata.each { kvp ->
                 if(image.hasProperty(kvp.key) && kvp.value){
-                    image[kvp.key] = kvp.value
-                    imageUpdated = true
+                    if (image[kvp.key] != kvp.value) {
+                        image[kvp.key] = kvp.value
+                        imageUpdated = true
+                    }
                 }
             }
-            if(imageUpdated){
+            if (imageUpdated){
                 image.save()
             }
 

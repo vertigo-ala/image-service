@@ -138,7 +138,7 @@
                 <div class="column">
             </g:if>
 
-            <div class="thumbnail" imageId="${image.imageIdentifier}" style="padding:0; margin:0;">
+            <div class="thumbnail" imageId="${image.imageIdentifier}" style="padding:0; margin:0;" >
                 <g:if test="${allowSelection == true}">
                     <div class="selection-header">
                         <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
@@ -151,7 +151,7 @@
                 </g:if>
                 <div class="image-thumbnail">
                     <a href="${createLink(controller:'image', action:'details', id: image.imageIdentifier)}">
-                        <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>"/>
+                        <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
                     </a>
                 </div>
                 <g:if test="${footerTemplate}">
@@ -209,22 +209,60 @@
 
 
         $(".image-thumbnail").each(function() {
-            var imageId = $(this).closest("[imageId]").attr("imageId");
-            if (imageId) {
-                $(this).qtip({
-                    content: {
-                        text: function(event, api) {
-                            $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {
-                                api.set("content.text", content);
-                            },
-                            function(xhr, status, error) {
-                                api.set("content.text", status + ": " + error);
-                            });
-                        }
-                    }
-                });
-            }
+            // var imageId = $(this).closest("[imageId]").attr("imageId");
+            // var title = $(this).closest("[imageId]").attr("title");
+            // if (imageId) {
+            //
+            //     $(this).attr('data-original-title', title);
+            //     $(this).tooltip({html:true});
+                %{--$(this).tooltip({--}%
+                %{--    html:true--}%
+                %{--    --}%%{--"title": function() {--}%
+                %{--    --}%%{--    console.log('loading tool tip content');--}%
+                %{--    --}%%{--    var contentTT= '';--}%
+                %{--    --}%%{--    $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {--}%
+                %{--    --}%%{--            contentTT = content;--}%
+                %{--    --}%%{--        },--}%
+                %{--    --}%%{--        function(xhr, status, error) {--}%
+                %{--    --}%%{--            contentTT =  status + ": " + error;--}%
+                %{--    --}%%{--        });--}%
+                %{--    --}%%{--    return contentTT;--}%
+                %{--    --}%%{--}--}%
+                %{--});--}%
+
+                %{--$(this).on('show.bs.tooltip', function () {--}%
+                %{--    // do something…--}%
+                %{--    $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {--}%
+                %{--        console.log('loading tool tip content');--}%
+                %{--        console.log($(this).id);--}%
+                %{--        $(this).attr('data-original-title', content);--}%
+                %{--    },--}%
+                %{--    function(xhr, status, error) {--}%
+                %{--        $(this).attr('data-original-title', status + ": " + error);--}%
+                %{--        console.log('ERROR loading tool tip content');--}%
+                %{--    });--}%
+                %{--});--}%
+
+                %{--$(this).qtip({--}%
+                %{--    content: {--}%
+                %{--        text: function(event, api) {--}%
+                %{--            $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {--}%
+                %{--                api.set("content.text", content);--}%
+                %{--            },--}%
+                %{--            function(xhr, status, error) {--}%
+                %{--                api.set("content.text", status + ": " + error);--}%
+                %{--            });--}%
+                %{--        }--}%
+                %{--    }--}%
+                %{--});--}%
+            // }
         });
+
+        // $(window).scroll(function() {
+        //     if($(window).scrollTop() + $(window).height() == $(document).height()) {
+        //         alert("bottom!");
+        //     }
+        // });
 
     });
 

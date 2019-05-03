@@ -2,6 +2,7 @@ package au.org.ala.images
 
 import grails.converters.JSON
 import org.elasticsearch.action.delete.DeleteRequest
+import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.common.xcontent.XContentType
 import groovy.json.JsonOutput
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -180,10 +181,6 @@ class ElasticSearchService {
             source.highlight(new HighlightBuilder().preTags("<b>").postTags("</b>").field("_all", 60, 2))
         }
 
-        if (params.omitSource) {
-            source.noFields()
-        }
-
         request.source(source)
 
         return request
@@ -196,33 +193,33 @@ class ElasticSearchService {
         source.sort('dateUploaded', SortOrder.DESC)
         source
     }
-
-    private QueryBuilder buildQuery(String query, Map params, Map geoSearchCriteria = null, String index) {
-        QueryBuilder queryBuilder
-        List filters = []
-
-        if (params.terms) {
-            filters << QueryBuilders.termQuery(params.terms.field, params.terms.values)
-        }
-
-        QueryStringQueryBuilder qsQuery = QueryBuilders.queryStringQuery(query)
-
-        if (filters) {
-            BoolQueryBuilder builder = QueryBuilders.boolQuery()
-            builder.must(*filters)
-
-            queryBuilder = builder.must(qsQuery) //QueryBuilders.termQuery(qsQuery). builder)
-        }
-        else {
-            queryBuilder = qsQuery
-        }
-
-        if (params.weightResultsByEntity) {
-            queryBuilder = applyWeightingToEntities(queryBuilder)
-        }
-
-        queryBuilder
-    }
+//
+//    private QueryBuilder buildQuery(String query, Map params, Map geoSearchCriteria = null, String index) {
+//        QueryBuilder queryBuilder
+//        List filters = []
+//
+//        if (params.terms) {
+//            filters << QueryBuilders.termQuery(params.terms.field, params.terms.values)
+//        }
+//
+//        QueryStringQueryBuilder qsQuery = QueryBuilders.queryStringQuery(query)
+//
+//        if (filters) {
+//            BoolQueryBuilder builder = QueryBuilders.boolQuery()
+//            builder.must(*filters)
+//
+//            queryBuilder = builder.must(qsQuery) //QueryBuilders.termQuery(qsQuery). builder)
+//        }
+//        else {
+//            queryBuilder = qsQuery
+//        }
+//
+//        if (params.weightResultsByEntity) {
+//            queryBuilder = applyWeightingToEntities(queryBuilder)
+//        }
+//
+//        queryBuilder
+//    }
 
     private def initialiseIndex() {
         try {
@@ -248,11 +245,12 @@ class ElasticSearchService {
     def searchUsingCriteria(List<SearchCriteria> criteriaList, GrailsParameterMap params) {
 
         def metaDataPattern = Pattern.compile("^(.*)[:](.*)\$")
+
         // split out by criteria type
         def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
 
 
-        def filter  = criteriaList ? FilterBuilders.boolFilter() : FilterBuilders.matchAllFilter()
+        def filter  = QueryBuilders.boolQuery()
 
         def list = criteriaMap[CriteriaType.ImageProperty]
         if (list) {
@@ -281,47 +279,42 @@ class ElasticSearchService {
 
         def queryString = values.collect { key.toLowerCase() + ":\"" + it + "\""}.join(" OR ")
         QueryStringQueryBuilder builder = QueryBuilders.queryStringQuery(queryString)
-
-        //DM - Im unclear as to why this stopped working !!!
-//        def filter = FilterBuilders.orFilter()
-//        values.each { value ->
-//            // Metadata keys are lowercased when indexed
-//            filter.add(FilterBuilders.termFilter(key.toLowerCase(), value))
-//        }
-
-//        return executeFilterSearch(filter, params)
         builder.defaultField("content")
-        def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
-        searchRequestBuilder.setQuery(builder)
-        return executeSearch(searchRequestBuilder, params)
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+        searchSourceBuilder.query(builder)
+        return executeSearch(searchSourceBuilder, params)
     }
 
     private QueryResults<Image> executeFilterSearch(QueryBuilder filterBuilder, GrailsParameterMap params) {
-        def searchRequestBuilder = client.prepareSearch("images").setSearchType(SearchType.QUERY_THEN_FETCH)
-        searchRequestBuilder.setPostFilter(filterBuilder)
-        return executeSearch(searchRequestBuilder, params)
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+        searchSourceBuilder.query(filterBuilder)
+        executeSearch(searchSourceBuilder, params)
     }
 
-    private QueryResults<Image> executeSearch(SearchRequestBuilder searchRequestBuilder, GrailsParameterMap params) {
+    private QueryResults<Image> executeSearch(SearchSourceBuilder searchSourceBuilder, GrailsParameterMap params) {
 
         try {
             if (params?.offset) {
-                searchRequestBuilder.setFrom(params.int("offset"))
+                searchSourceBuilder.from(params.int("offset"))
             }
 
             if (params?.max) {
-                searchRequestBuilder.setSize(params.int("max"))
+                searchSourceBuilder.size(params.int("max"))
             } else {
-                searchRequestBuilder.setSize(Integer.MAX_VALUE) // probably way too many!
+                searchSourceBuilder.size(Integer.MAX_VALUE) // probably way too many!
             }
 
             if (params?.sort) {
                 def order = params?.order == "asc" ? SortOrder.ASC : SortOrder.DESC
-                searchRequestBuilder.addSort(params.sort as String, order)
+                searchSourceBuilder.sort(params.sort as String, order)
             }
 
             def ct = new CodeTimer("Index search")
-            SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+            SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices("images");
+            searchRequest.source(searchSourceBuilder);
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
+
             ct.stop(true)
 
             ct = new CodeTimer("Object retrieval (${searchResponse.hits.hits.length} of ${searchResponse.hits.totalHits} hits)")
@@ -333,11 +326,12 @@ class ElasticSearchService {
             }
             ct.stop(true)
 
-            return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits ?: 0)
+            return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits.value ?: 0)
         } catch (SearchPhaseExecutionException e) {
             log.warn(".SearchPhaseExecutionException thrown - this is expected behaviour for a new empty system.")
             return new QueryResults<Image>(list: [], totalCount: 0)
         } catch (Exception e) {
+            e.printStackTrace()
             log.warn("Exception thrown - this is expected behaviour for a new empty system.")
             return new QueryResults<Image>(list: [], totalCount: 0)
         }
