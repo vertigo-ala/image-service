@@ -7,7 +7,7 @@ class ImportFileBackgroundTask extends BackgroundTask {
     String batchId
     String userId
 
-    public ImportFileBackgroundTask(File imageFile, ImageService imageService, String batchId, String userId) {
+    ImportFileBackgroundTask(File imageFile, ImageService imageService, String batchId, String userId) {
         this.imageFile = imageFile
         this.imageService = imageService
         this.batchId = batchId

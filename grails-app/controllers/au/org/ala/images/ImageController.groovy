@@ -48,9 +48,9 @@ class ImageController {
         }
 
         def userId = AuthenticationUtils.getUserId(request) ?: "<anonymous>"
-        def image = imageService.storeImage(file, userId)
-        if (image) {
-            imageService.scheduleArtifactGeneration(image.id, userId)
+        ImageStoreResult storeResult = imageService.storeImage(file, userId)
+        if (storeResult.image) {
+            imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
         }
         flash.message = "Image uploaded with identifier: ${image?.imageIdentifier}"
         redirect(controller:'image', action:'upload')
@@ -62,7 +62,7 @@ class ImageController {
         QueryResults<Image> results
 
         params.offset = params.offset ?: 0
-        params.max = params.max ?: 100
+        params.max = params.max ?: 204
         params.sort = params.sort ?: 'dateUploaded'
         params.order = params.order ?: 'desc'
 

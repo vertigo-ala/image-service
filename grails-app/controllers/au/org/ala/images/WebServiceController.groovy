@@ -38,6 +38,7 @@ class WebServiceController {
     def deleteImage() {
 
         def success = false
+
         def message = ""
 
         def image = Image.findByImageIdentifier(params.id as String)
@@ -605,6 +606,8 @@ class WebServiceController {
 
     def findImagesByOriginalFilename() {
 
+        CodeTimer ct = new CodeTimer("Original file lookup")
+
         def query = request.JSON
 
         if (query) {
@@ -630,11 +633,12 @@ class WebServiceController {
             }
 
             renderResults([success: true, results: results])
-            return
+
+        } else {
+            renderResults([success:false, message:'POST with content type "application/JSON" required.'])
         }
 
-        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
-
+        ct.stop(true)
     }
 
     def findImagesByMetadata() {
@@ -756,6 +760,8 @@ class WebServiceController {
      */
     def updateMetadata(){
 
+        CodeTimer ct = new CodeTimer("Update Image metadata ${params.imageIdentifier}")
+
         Image image = Image.findByImageIdentifier(params.imageIdentifier)
         if (image){
             def userId = getUserIdForRequest(request)
@@ -767,44 +773,17 @@ class WebServiceController {
                 }
             }.call()
 
-            //TODO - push down to service
-            def imageUpdated = false
-            metadata.each { kvp ->
-                if(image.hasProperty(kvp.key) && kvp.value){
-                    if (image[kvp.key] != kvp.value) {
-                        image[kvp.key] = kvp.value
-                        imageUpdated = true
-                    }
-                }
-            }
-            if (imageUpdated){
-                image.save()
-            }
+            imageService.updateImageMetadata(image, metadata)
+            tagService.updateTags(image, params.tags, userId)
 
-            //TODO - push down to service
-            //store any other property
-            metadata.each { kvp ->
-                if(!image.hasProperty(kvp.key)){
-                    imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
-                }
-            }
-
-            //TODO - push down to service
-            if (params.tags) {
-                def tags = JSON.parse(params.tags as String) as List
-                if (tags) {
-                    tags.each { String tagPath ->
-                        def tag = tagService.createTagByPath(tagPath)
-                        tagService.attachTagToImage(image, tag, userId)
-                    }
-                }
-            }
             response.setStatus(200)
             renderResults([success: true])
         } else {
             response.setStatus(404)
             renderResults([success: false])
         }
+
+        ct.stop(true)
     }
 
     /**
@@ -815,7 +794,9 @@ class WebServiceController {
     def uploadImage() {
         // Expect a multipart file request
         try {
-            Image image = null
+            ImageStoreResult storeResult = null
+
+            CodeTimer storeTimer = new CodeTimer("Store image")
 
             def userId = getUserIdForRequest(request)
             def url = params.imageUrl ?: params.url
@@ -829,8 +810,8 @@ class WebServiceController {
 
             if (url) {
                 // Image is located at an endpoint, and we need to download it first.
-                image = imageService.storeImageFromUrl(url, userId, metadata)
-                if (!image) {
+                storeResult = imageService.storeImageFromUrl(url, userId, metadata)
+                if (!storeResult || !storeResult.image) {
                     renderResults([success: false, message: "Unable to retrieve image from ${url}"])
                 }
             } else {
@@ -848,41 +829,31 @@ class WebServiceController {
                         return
                     }
 
-                    image = imageService.storeImage(file, userId, metadata)
+                    storeResult = imageService.storeImage(file, userId, metadata)
                 } else {
                     renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])
                 }
             }
 
-            if (image) {
+            storeTimer.stop()
+
+            if (storeResult && storeResult.image) {
+
+                CodeTimer ct = new CodeTimer("Setting Image metadata ${params.imageIdentifier}")
 
                 //store any other property
                 metadata.each { kvp ->
-                    if (!image.hasProperty(kvp.key)) {
-                        imageService.setMetaDataItem(image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
+                    if (!storeResult.image.hasProperty(kvp.key)) {
+                        imageService.setMetaDataItem(storeResult.image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
                     }
                 }
 
-                if (params.tags) {
-                    def tags = JSON.parse(params.tags as String) as List
-                    if (tags) {
-                        tags.each { String tagPath ->
-                            def tag = tagService.createTagByPath(tagPath)
-                            tagService.attachTagToImage(image, tag, userId)
-                        }
-                    }
-                }
+                tagService.updateTags(storeResult.image, params.tags, userId)
+                imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
 
-                // Callers have the option to generate thumbs immediately (although it will block).
-                // And they will be regenerated later as part of general artifact generation
-                // This is useful, though, if the uploader needs to link to the thumbnail straight away
-                if (params.synchronousThumbnail) {
-                    imageService.generateImageThumbnails(image)
-                }
+                ct.stop(true)
 
-                imageService.scheduleArtifactGeneration(image.id, userId)
-                imageService.scheduleImageIndex(image.id)
-                renderResults([success: true, imageId: image?.imageIdentifier])
+                renderResults([success: true, imageId: storeResult.image?.imageIdentifier])
             } else {
                 renderResults([success: false, message: "Failed to store image!"])
             }

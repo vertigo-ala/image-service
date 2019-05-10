@@ -47,11 +47,13 @@
         flex: 16.6%;
         max-width: 16.6%;
         padding: 0 4px;
+        object-fit: cover;
     }
 
     .column img {
         margin-top: 8px;
         vertical-align: middle;
+
     }
 
     /* Responsive layout - makes a two column-layout instead of four columns */
@@ -69,6 +71,20 @@
             max-width: 100%;
         }
     }
+
+    /*.image-thumbnail img {*/
+    /*    position: relative;*/
+    /*    !*margin: -10% auto;!* virtualy height needed turn don to zero *!*!*/
+    /*    width: 100%;!* height will follow within image ratio *!*/
+    /*    height:auto;!* to overrride attribute height set in tag *!*/
+    /*    vertical-align:middle;!* finalise vertical centering on baseline*!*/
+    /*}*/
+    /*.image-thumbnail {*/
+    /*    display:block;*/
+    /*    height:100px;!*set an height *!*/
+    /*    line-height:100px;!* set the baseline at 100px from top*!*/
+    /*    overflow:hidden;!* crops/cut off *!*/
+    /*}*/
 
 </style>
 
@@ -126,7 +142,7 @@
 <!-- results list -->
 <div class="image-search-results">
 
-    <g:set var="imagesPerCol" value="${images.size() > 0 ? Math.round(images.size() / 6).toInteger() : 0}"/>
+    <g:set var="imagesPerCol" value="${images.size() > 6 ? Math.round(images.size() / 6).toInteger() : 1}"/>
 
     <g:each in="${images}" var="image" status="imageIdx">
 
@@ -161,8 +177,7 @@
     </g:each>
     </div>
 </div>
-
-<div>
+<div class="col-md-12">
     <tb:paginate total="${totalImageCount}" max="100"
                  action="list"
                  controller="image"

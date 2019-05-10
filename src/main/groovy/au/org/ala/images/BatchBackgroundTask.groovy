@@ -5,7 +5,7 @@ package au.org.ala.images
  *
  * A batch background task is a single task within the context of a batch. A batch is a series jobs with a common batch id. Jobs within batch are ordered by sequence number (insert order)
  */
-public class BatchBackgroundTask extends BackgroundTask implements BackgroundTaskObserver {
+class BatchBackgroundTask extends BackgroundTask implements BackgroundTaskObserver {
 
     String batchId
     int sequenceNumber
@@ -16,7 +16,7 @@ public class BatchBackgroundTask extends BackgroundTask implements BackgroundTas
     private String _errorMessage
     private Object _result
 
-    public BatchBackgroundTask(String batchId, int sequenceNumber, BackgroundTask task, BatchService batchService) {
+    BatchBackgroundTask(String batchId, int sequenceNumber, BackgroundTask task, BatchService batchService) {
         this.batchId = batchId
         this.sequenceNumber = sequenceNumber
         this.state = BatchBackgroundTaskState.Pending
@@ -47,6 +47,6 @@ public class BatchBackgroundTask extends BackgroundTask implements BackgroundTas
     }
 }
 
-public enum BatchBackgroundTaskState {
+enum BatchBackgroundTaskState {
     Pending, Running, Success, Error
 }

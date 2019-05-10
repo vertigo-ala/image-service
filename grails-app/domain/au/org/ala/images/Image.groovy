@@ -92,5 +92,6 @@ class Image {
     static mapping = {
         imageIdentifier index: 'ImageIdentifier_Idx'
         description length: 8096
+        metadata cascade: 'all'
     }
 }

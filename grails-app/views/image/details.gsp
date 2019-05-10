@@ -334,8 +334,12 @@
 
             $("#btnRegen").click(function(e) {
                 e.preventDefault();
-                $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function() {
-                    window.location = this.location.href; // reload
+
+                $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function(data) {
+                    console.log(data);
+                    alert('Regeneration scheduled - ' + data.message);
+                }).fail(function(){
+                    alert("Problem scheduling regeneration");
                 });
             });
 

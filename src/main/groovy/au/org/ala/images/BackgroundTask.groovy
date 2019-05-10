@@ -4,7 +4,7 @@ abstract class BackgroundTask {
 
     public List<BackgroundTaskObserver> _observers;
 
-    public abstract void execute();
+    abstract void execute();
 
     protected void yieldResult(Object result) {
         if (_observers != null) {
@@ -18,7 +18,7 @@ abstract class BackgroundTask {
         }
     }
 
-    public void addObserver(BackgroundTaskObserver observer) {
+    void addObserver(BackgroundTaskObserver observer) {
         if (_observers == null) {
             _observers = new ArrayList<BackgroundTaskObserver>()
         }
@@ -30,6 +30,6 @@ abstract class BackgroundTask {
 
 }
 
-public interface BackgroundTaskObserver {
+interface BackgroundTaskObserver {
     void onTaskResult(BackgroundTask task, Object result);
 }

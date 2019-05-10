@@ -286,7 +286,7 @@ class ImageStagingService {
             // Create the image domain object
             def bytes = file.getBytes()
             def mimeType = imageService.detectMimeTypeFromBytes(bytes, file.name)
-            image = imageService.storeImageBytes(bytes, file.name, file.length(),mimeType, stagedFile.userId)
+            image = imageService.storeImageBytes(bytes, file.name, file.length(),mimeType, stagedFile.userId).image
 
             auditService.log(image, "Imported from ${file.absolutePath}", stagedFile.userId)
 

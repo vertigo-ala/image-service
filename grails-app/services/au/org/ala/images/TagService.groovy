@@ -137,6 +137,15 @@ class TagService {
         }
     }
 
+    def updateTags(Image image, List tags, String userId){
+        if(tags) {
+            tags.each { String tagPath ->
+                def tag = createTagByPath(tagPath)
+                attachTagToImage(image, tag, userId)
+            }
+        }
+    }
+
     def attachTagToImage(Image image, Tag tag, String userId) {
 
         if (!image || !tag) {

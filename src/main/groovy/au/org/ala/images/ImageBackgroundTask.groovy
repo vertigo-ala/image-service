@@ -7,7 +7,7 @@ class ImageBackgroundTask extends BackgroundTask {
     ImageService imageService
     String userId
 
-    public ImageBackgroundTask(long imageId, ImageService imageService, ImageTaskType operation, String userId) {
+    ImageBackgroundTask(long imageId, ImageService imageService, ImageTaskType operation, String userId) {
         this.imageId = imageId
         this.imageService = imageService
         this.operation = operation
@@ -15,25 +15,25 @@ class ImageBackgroundTask extends BackgroundTask {
     }
 
     @Override
-    public void execute() {
+    void execute() {
         Image.withNewTransaction {
             Image.lock(imageId)
             def imageInstance = Image.get(imageId)
             switch (operation) {
                 case ImageTaskType.Thumbnail:
                     imageService.generateImageThumbnails(imageInstance)
-                    break;
+                    break
                 case ImageTaskType.TMSTile:
                     if (imageService.isImageType(imageInstance)) {
                         imageService.generateTMSTiles(imageInstance.imageIdentifier)
                     }
-                    break;
+                    break
                 case ImageTaskType.KeywordRebuild:
                     imageService.tagService.rebuildKeywords(imageInstance)
-                    break;
+                    break
                 case ImageTaskType.Delete:
                     imageService.deleteImage(imageInstance, userId)
-                    break;
+                    break
                 default:
                     throw new Exception("Unhandled image operation type: ${operation}")
             }
@@ -42,5 +42,4 @@ class ImageBackgroundTask extends BackgroundTask {
             }
         }
     }
-
 }

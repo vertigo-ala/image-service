@@ -1,8 +1,10 @@
 package au.org.ala.images
 
 import grails.converters.JSON
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest
 import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.index.IndexRequestBuilder
+import org.elasticsearch.client.core.AcknowledgedResponse
 import org.elasticsearch.common.xcontent.XContentType
 import groovy.json.JsonOutput
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -95,11 +97,11 @@ class ElasticSearchService {
         }
 
         def md = ImageMetaDataItem.findAllByImage(image)
-        data.metadata = [:]
-        md.each {
-            // Keys get lowercased here and when being searched for to make the case insensitive
-            data.metadata[it.name.toLowerCase()] = it.value
-        }
+//        data.metadata = [:]
+//        md.each {
+//            // Keys get lowercased here and when being searched for to make the case insensitive
+//            data.metadata[it.name.toLowerCase()] = it.value
+//        }
 
         def json = (data as JSON).toString()
 
@@ -233,6 +235,19 @@ class ElasticSearchService {
                 } else {
                     log.info "UN-Successfully created index and mappings for images"
                 }
+
+                PutMappingRequest putMappingRequest = new PutMappingRequest("images")
+                putMappingRequest.type("images")
+                putMappingRequest.source(
+                        """{
+                                  "properties": {
+                                    "dateUploaded": {
+                                      "type": "date"
+                                    }
+                                  }
+                                }""",
+                        XContentType.JSON);
+                def resp = client.indices().putMapping(putMappingRequest, RequestOptions.DEFAULT)
             } else {
                 log.info "Index already exists"
             }

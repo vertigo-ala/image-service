@@ -49,21 +49,21 @@ class ImageStoreService {
         return new File(l.join("/"))
     }
 
-    private String createOriginalPathFromUUID(String uuid) {
+    String createOriginalPathFromUUID(String uuid) {
         def l = [grailsApplication.config.imageservice.imagestore.root]
         computeAndAppendLocalDirectoryPath(uuid, l)
         l << "original"
         return l.join('/')
     }
 
-    private String createTilesPathFromUUID(String uuid) {
+    String createTilesPathFromUUID(String uuid) {
         def l = [grailsApplication.config.imageservice.imagestore.root]
         computeAndAppendLocalDirectoryPath(uuid, l)
         l << "tms"
         return l.join('/')
     }
 
-    private File getOriginalImageFile(String imageIdentifier) {
+    File getOriginalImageFile(String imageIdentifier) {
         def path = createOriginalPathFromUUID(imageIdentifier)
         return new File(path)
     }
@@ -75,19 +75,21 @@ class ImageStoreService {
         bits << uuid // each image gets it's own directory
     }
 
-    public byte[] retrieveImage(String imageIdentifier) {
+    byte[] retrieveImage(String imageIdentifier) {
         if (imageIdentifier) {
             def imageFile = getOriginalImageFile(imageIdentifier)
-            byte[] data = null
-            imageFile.withInputStream { is ->
-                data = IOUtils.toByteArray(is)
-            }
-            return data
+//            byte[] data = null
+//            imageFile.withInputStream { is ->
+//                data = IOUtils.toByteArray(is)
+//            }
+//
+
+            return imageFile.getBytes()
         }
         return null
     }
 
-    public Map retrieveImageRectangle(String imageIdentifier, int x, int y, int width, int height) {
+    Map retrieveImageRectangle(String imageIdentifier, int x, int y, int width, int height) {
 
         def results = [bytes: null, contentType: ""]
 
@@ -123,7 +125,7 @@ class ImageStoreService {
         return results
     }
 
-    public Map getAllUrls(String imageIdentifier) {
+    Map getAllUrls(String imageIdentifier) {
         def root = grailsApplication.config.imageservice.apache.root
         def results = [:]
         def path = []
@@ -225,7 +227,7 @@ class ImageStoreService {
         return results
     }
 
-    public void generateTMSTiles(String imageIdentifier) {
+    void generateTMSTiles(String imageIdentifier) {
         logService.log("Generating TMS compatible tiles for image ${imageIdentifier}")
         def ct = new CodeTimer("Tiling image ${imageIdentifier}")
         def imageFile = getOriginalImageFile(imageIdentifier)

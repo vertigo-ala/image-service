@@ -8,23 +8,24 @@
     </head>
 
     <body class="content">
-        <h1>Advanced search</h1>
-        <div class="row-fluid">
-            <div class="well well-small">
-                <button type="button" id="btnAddCriteria" class="btn btn-small btn-info"><i class="icon-plus icon-white"></i>&nbsp;Add Criteria</button>
-                <button type="button" id="btnSearch" class="btn btn-primary pull-right">
-                    <i class="icon-search icon-white"></i>&nbsp;Search
-                </button>
-                <button type="button" id="btnStartOver" class="btn btn-default pull-right" style="margin-right: 5px">
-                    <i class="icon-remove-circle"></i>&nbsp;Start over
-                </button>
-                <div class="row-fluid">
-                    <div id="searchCriteria">
+        <div class="container">
+            <h1>Advanced search</h1>
+            <div class="row-fluid">
+                <div class="well well-small">
+                    <button type="button" id="btnAddCriteria" class="btn btn-small btn-info"><i class="icon-plus icon-white"></i>&nbsp;Add Criteria</button>
+                    <button type="button" id="btnSearch" class="btn btn-primary pull-right">
+                        <i class="icon-search icon-white"></i>&nbsp;Search
+                    </button>
+                    <button type="button" id="btnStartOver" class="btn btn-default pull-right" style="margin-right: 5px">
+                        <i class="icon-remove-circle"></i>&nbsp;Start over
+                    </button>
+                    <div class="row-fluid">
+                        <div id="searchCriteria">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
         <div id="addCriteriaModal" class="modal fade" role="dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
