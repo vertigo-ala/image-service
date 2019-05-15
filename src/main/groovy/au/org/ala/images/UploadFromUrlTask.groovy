@@ -6,7 +6,7 @@ class UploadFromUrlTask extends BackgroundTask {
     private ImageService _imageService
     private String _userId
 
-    public UploadFromUrlTask(Map<String, String> imageSource, ImageService imageService, String userId) {
+    UploadFromUrlTask(Map<String, String> imageSource, ImageService imageService, String userId) {
         _imageSource = imageSource
         _imageService = imageService
         _userId = userId
@@ -21,8 +21,9 @@ class UploadFromUrlTask extends BackgroundTask {
                 _imageService.setMetadataItemsByImageId(newImage.image.id, _imageSource, MetaDataSourceType.SystemDefined, _userId)
             }
             _imageService.scheduleArtifactGeneration(newImage.image.id, _userId)
+            _imageService.scheduleImageIndex(newImage.image.id)
+            _imageService.scheduleImageMetadataPersist(newImage.image.id, newImage.image.imageIdentifier,  newImage.image.originalFileName, MetaDataSourceType.Embedded, _userId)
             this.yieldResult(newImage.image)
         }
     }
-
 }

@@ -146,7 +146,7 @@ class ImageService {
         //update metadata
         metadata.each { kvp ->
             if(image.hasProperty(kvp.key) && kvp.value){
-                if(!(kvp.key in ["dateTaken", "dateUploaded"])){
+                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
                     image[kvp.key] = kvp.value
                 }
             }
@@ -269,7 +269,7 @@ class ImageService {
     }
 
     def scheduleImageMetadataPersist(long imageId, String imageIdentifier, String fileName,  MetaDataSourceType metaDataSourceType, String uploaderId){
-        scheduleBackgroundTask(new ImageMetadataPersistBackgroundTask(imageId,imageIdentifier,  fileName,metaDataSourceType, uploaderId, imageService, imageStoreService))
+        scheduleBackgroundTask(new ImageMetadataPersistBackgroundTask(imageId, imageIdentifier, fileName, metaDataSourceType, uploaderId, imageService, imageStoreService))
     }
 
     def scheduleBackgroundTask(BackgroundTask task) {

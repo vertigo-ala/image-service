@@ -21,10 +21,10 @@
         <div class="container-fluid">
             <h1>Admin tools</h1>
             <div class="row-fluid">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <ul class="nav nav-pills nav-stacked">
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'dashboard')}" title="Dashboard" />
-                        <img:menuNavItem href="${createLink(controller: 'image', action: 'upload')}" title="Upload an image" />
+                        <img:menuNavItem href="${createLink(controller: 'image', action: 'upload')}" title="Upload images" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'tools')}" title="Tools" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'duplicates')}" title="Duplicates" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'searchCriteria')}" title="Search Criteria" />
@@ -32,7 +32,7 @@
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'settings')}" title="Settings" />
                     </ul>
                 </div>
-                <div class="col-md-9">
+                <div class="col-md-10">
                     <g:layoutBody/>
                 </div>
             </div>

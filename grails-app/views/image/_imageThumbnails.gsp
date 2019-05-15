@@ -36,18 +36,55 @@
     } /* checked icon */
     input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
 
-    .image-search-results {
-        display: flex;
-        flex-wrap: wrap;
-        padding: 0 4px;
+    #imagesList {
+        margin:0;
     }
 
-    /* Create four equal columns that sits next to each other */
-    .column {
-        flex: 16.6%;
-        max-width: 16.6%;
-        padding: 0 4px;
-        object-fit: cover;
+    .imgCon {
+        display: inline-block;
+        /*margin-right: 8px;*/
+        text-align: center;
+        line-height: 1.3em;
+        background-color: #DDD;
+        color: #DDD;
+        /*padding: 5px;*/
+        /*margin-bottom: 8px;*/
+        margin: 2px 0 2px 0;
+        position: relative;
+    }
+
+    .imgCon .meta {
+        opacity: 0.7;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: hidden;
+        text-align: left;
+        padding: 4px 6px 2px 8px;
+    }
+
+    .imgCon .full {
+        color: white;
+        background-color: black;
+        display: none;
+    }
+
+    .imgCon .brief {
+        color: black;
+        background-color: white;
+    }
+
+    .imgCon .hover-target {
+        display: none;
+    }
+
+    .imgCon:hover .full {
+        display: inline-block;
+    }
+
+    .imgCon:hover .brief {
+        display: none;
     }
 
     .column img {
@@ -140,43 +177,30 @@
 </table>
 
 <!-- results list -->
-<div class="image-search-results">
-
-    <g:set var="imagesPerCol" value="${images.size() > 6 ? Math.round(images.size() / 6).toInteger() : 1}"/>
-
+<div id="imagesList">
     <g:each in="${images}" var="image" status="imageIdx">
-
-            <g:if test="${imageIdx > 0 && imageIdx % imagesPerCol == 0}">
+        <div class="imgCon" imageId="${image.imageIdentifier}">
+            <g:if test="${allowSelection == true}">
+                <div class="selection-header">
+                    <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
+                                checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
+                    <label for="chkSelectImage${image.imageIdentifier}"></label>
                 </div>
             </g:if>
-
-            <g:if test="${imageIdx == 0 || imageIdx % imagesPerCol == 0}">
-                <div class="column">
+            <g:if test="${headerTemplate}">
+                <g:render template="${headerTemplate}" model="${[image: image]}" />
             </g:if>
-
-            <div class="thumbnail" imageId="${image.imageIdentifier}" style="padding:0; margin:0;" >
-                <g:if test="${allowSelection == true}">
-                    <div class="selection-header">
-                        <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
-                                    checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
-                        <label for="chkSelectImage${image.imageIdentifier}"></label>
-                    </div>
-                </g:if>
-                <g:if test="${headerTemplate}">
-                    <g:render template="${headerTemplate}" model="${[image: image]}" />
-                </g:if>
-                <div class="image-thumbnail">
-                    <a href="${createLink(controller:'image', action:'details', id: image.imageIdentifier)}">
-                        <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
-                    </a>
-                </div>
-                <g:if test="${footerTemplate}">
-                    <g:render template="${footerTemplate}" model="${[image: image]}" />
-                </g:if>
-            </div>
+            <a href="${createLink(controller:'image', action:'details', id: image.imageIdentifier)}">
+                <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
+            </a>
+            <g:if test="${footerTemplate}">
+                <g:render template="${footerTemplate}" model="${[image: image]}" />
+            </g:if>
+        </div>
     </g:each>
-    </div>
 </div>
+
+<!-- pagenation -->
 <div class="col-md-12">
     <tb:paginate total="${totalImageCount}" max="100"
                  action="list"
@@ -222,63 +246,9 @@
             deselectAllOnPage();
         });
 
-
-        $(".image-thumbnail").each(function() {
-            // var imageId = $(this).closest("[imageId]").attr("imageId");
-            // var title = $(this).closest("[imageId]").attr("title");
-            // if (imageId) {
-            //
-            //     $(this).attr('data-original-title', title);
-            //     $(this).tooltip({html:true});
-                %{--$(this).tooltip({--}%
-                %{--    html:true--}%
-                %{--    --}%%{--"title": function() {--}%
-                %{--    --}%%{--    console.log('loading tool tip content');--}%
-                %{--    --}%%{--    var contentTT= '';--}%
-                %{--    --}%%{--    $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {--}%
-                %{--    --}%%{--            contentTT = content;--}%
-                %{--    --}%%{--        },--}%
-                %{--    --}%%{--        function(xhr, status, error) {--}%
-                %{--    --}%%{--            contentTT =  status + ": " + error;--}%
-                %{--    --}%%{--        });--}%
-                %{--    --}%%{--    return contentTT;--}%
-                %{--    --}%%{--}--}%
-                %{--});--}%
-
-                %{--$(this).on('show.bs.tooltip', function () {--}%
-                %{--    // do something…--}%
-                %{--    $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {--}%
-                %{--        console.log('loading tool tip content');--}%
-                %{--        console.log($(this).id);--}%
-                %{--        $(this).attr('data-original-title', content);--}%
-                %{--    },--}%
-                %{--    function(xhr, status, error) {--}%
-                %{--        $(this).attr('data-original-title', status + ": " + error);--}%
-                %{--        console.log('ERROR loading tool tip content');--}%
-                %{--    });--}%
-                %{--});--}%
-
-                %{--$(this).qtip({--}%
-                %{--    content: {--}%
-                %{--        text: function(event, api) {--}%
-                %{--            $.ajax("${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {--}%
-                %{--                api.set("content.text", content);--}%
-                %{--            },--}%
-                %{--            function(xhr, status, error) {--}%
-                %{--                api.set("content.text", status + ": " + error);--}%
-                %{--            });--}%
-                %{--        }--}%
-                %{--    }--}%
-                %{--});--}%
-            // }
+        $(window).on("load", function() {
+            layoutImages();
         });
-
-        // $(window).scroll(function() {
-        //     if($(window).scrollTop() + $(window).height() == $(document).height()) {
-        //         alert("bottom!");
-        //     }
-        // });
-
     });
 
     function selectAllOnPage() {
@@ -312,6 +282,63 @@
             });
             imgvwr.hideSpinner();
         });
-
     }
+
+    var self = this,
+        $imageContainer = $('#imagesList'),
+        MAX_HEIGHT = 300;
+
+    function getheight (images, width) {
+        width -= images.length * 5;
+        var h = 0;
+        for (var i = 0; i < images.length; ++i) {
+            if ($(images[i]).data('width') === undefined) {
+                $(images[i]).data('width', $(images[i]).width());
+            }
+            if ($(images[i]).data('height') === undefined) {
+                $(images[i]).data('height', $(images[i]).height());
+            }
+            //console.log("original = " + $(images[i]).data('width') + '/' + $(images[i]).data('height'));
+            h += $(images[i]).data('width') / $(images[i]).data('height');
+        }
+        //console.log("row count = " + images.length + " row height = " + width / h);
+        return width / h;
+    };
+
+    function setheight (images, height) {
+        for (var i = 0; i < images.length; ++i) {
+            //console.log("setting width to " + height * $(images[i]).data('width') / $(images[i]).data('height'));
+            $(images[i]).css({
+                width: height * $(images[i]).data('width') / $(images[i]).data('height'),
+                height: height
+            });
+        }
+    };
+
+    function layoutImages (maxHeight) {
+
+        var size = $imageContainer.innerWidth(),
+            n = 0,
+            images = $imageContainer.find('img');
+        if (maxHeight === undefined) {
+            maxHeight = MAX_HEIGHT;
+        }
+
+        w: while (images.length > 0) {
+            for (var i = 1; i < images.length + 1; ++i) {
+                var slice = images.slice(0, i);
+                var h = self.getheight(slice, size);
+                if (h < maxHeight) {
+                    self.setheight(slice, h);
+                    n++;
+                    images = images.slice(i);
+                    continue w;
+                }
+            }
+
+            self.setheight(slice, Math.min(maxHeight, h));
+            n++;
+            break;
+        }
+    };
 </script>

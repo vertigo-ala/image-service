@@ -4,38 +4,35 @@
         <meta name="layout" content="adminLayout"/>
         <meta name="section" content="home"/>
         <title>ALA Images - Admin - Tags</title>
-
-        <r:require module="bootstrap" />
-        <r:require module="jstree" />
     </head>
-
-    <body class="content">
+    <body>
 
         <style>
             #searchTags {
                 margin-bottom: 0 !important;
             }
         </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 
         <content tag="pageTitle">Tags</content>
         <content tag="adminButtonBar" />
 
         <div class="row-fluid" style="margin-bottom: 10px">
-            <div class="span12">
-                <button class="btn btn-success" id="btnCreateNewTag"><i class="icon-plus icon-white"></i>&nbsp;Add</button>
-                <button class="btn" id="btnRenameSelectedTag">Rename</button>
-                <button class="btn btn-danger" id="btnDeleteSelectedTag"><i class="icon-remove icon-white"></i>&nbsp;Delete</button>
-                <button class="btn pull-right" id="btnUploadTags"><i class="icon-upload"></i>&nbsp;Upload tags from CSV file</button>
-
-                <input type="text" id="searchTags" placeholder="Find tags">
-                <button id="btnSearchTags" class="btn"><i class="icon-search"></i>&nbsp;Search</button>
-
-
+            <div class="col-md-12">
+                <form class="form-inline">
+                    <button class="btn btn-success" id="btnCreateNewTag"><i class="icon-plus icon-white"></i>&nbsp;Add</button>
+                    <button class="btn btn-default" id="btnRenameSelectedTag">Rename</button>
+                    <button class="btn btn-danger" id="btnDeleteSelectedTag"><i class="icon-remove icon-white"></i>&nbsp;Delete</button>
+                    <button class="btn btn-default pull-right" id="btnUploadTags"><i class="icon-upload"></i>&nbsp;Upload tags from CSV file</button>
+                    <input type="text" id="searchTags" class="form-control" placeholder="Find tags">
+                    <button id="btnSearchTags" class="btn btn-default"><i class="icon-search"></i>&nbsp;Search</button>
+                </form>
             </div>
         </div>
 
         <div class="row-fluid">
-            <div class="span12">
+            <div class="col-md-12">
                 <div id="tagContainer" class="well well-small">
                     <img:spinner />
                 </div>
