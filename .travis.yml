@@ -2,7 +2,7 @@ language: groovy
 dist: trusty
 jdk:
   - oraclejdk8
-  -grails3
+  - grails3
 sudo: false
 branches:
   only:
