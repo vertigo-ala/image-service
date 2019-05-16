@@ -17,14 +17,15 @@
         <title>Admin</title>
         <meta name="breadcrumbs" content="${g.createLink( controller: 'image', action: 'list')}, Images"/>
     </head>
-    <body>
+    <body class="fluid">
+        <asset:stylesheet src="application.css" />
         <div class="container-fluid">
             <h1>Admin tools</h1>
             <div class="row-fluid">
                 <div class="col-md-2">
                     <ul class="nav nav-pills nav-stacked">
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'dashboard')}" title="Dashboard" />
-                        <img:menuNavItem href="${createLink(controller: 'image', action: 'upload')}" title="Upload images" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'upload')}" title="Upload images" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'tools')}" title="Tools" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'duplicates')}" title="Duplicates" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'searchCriteria')}" title="Search Criteria" />

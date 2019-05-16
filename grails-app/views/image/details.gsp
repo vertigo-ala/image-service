@@ -6,11 +6,13 @@
         <meta name="layout" content="main"/>
         <title>${mediaTitle} - ${imageInstance.title ? imageInstance.title : imageInstance.imageIdentifier}</title>
         <meta name="breadcrumbs" content="${g.createLink( controller: 'image', action: 'list')}, Images"/>
+        <asset:stylesheet src="application.css" />
         <asset:stylesheet src="ala/images-client.css" />
         <style>
             td.property-value { font-weight: bold !important; }
             .audiojs { width: 100%; }
             .tab-pane { padding-top: 20px !important; }
+            .tabbable { font-size: 10pt;}
         </style>
     </head>
     <body class="fluid">
@@ -19,9 +21,9 @@
         </img:headerContent>
         <div class="container-fluid">
             <div class="row">
-                <div id="viewerContainerId" class="col-md-8">
+                <div id="viewerContainerId" class="col-md-9">
                 </div>
-                <div id="imageTabs" class="col-md-4">
+                <div id="imageTabs" class="col-md-3">
                     <div class="tabbable" >
                         <ul class="nav nav-tabs">
                             <li class="active">
@@ -134,31 +136,31 @@
 
                                     <tr>
                                         <td colspan="2">
-                                            <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier]" title="View JSON metadata" class="btn btn-small">
-                                                <i class="glyphicon glyphicon-icon-wrench"> </i>
+                                            <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier]" title="View JSON metadata" class="btn btn-default">
+                                                <i class="glyphicon glyphicon-wrench"> </i>
                                             </g:link>
 
                                             <g:if test="${isImage}">
-                                                <button class="btn btn-default" id="btnViewImage" title="View zoomable image"><i class="glyphicon glyphicon-icon-eye-open"></i></button>
+                                                <button class="btn btn-default" id="btnViewImage" title="View zoomable image"><span class="glyphicon glyphicon-eye-open"> </span></button>
                                             </g:if>
-                                            <a class="btn btn-default" href="${grailsApplication.config.serverName}${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="glyphicon glyphicon-icon-download-alt"></i></a>
+                                            <a class="btn btn-default" href="${grailsApplication.config.serverName}${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="glyphicon glyphicon-download-alt"></i></a>
 
                                             <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
                                                 <g:if test="${albums}">
-                                                    <button class="btn btn-default" title="Add this image to an album" id="btnAddToAlbum"><i class="glyphicon glyphicon-icon-book"></i></button>
+                                                    <button class="btn btn-default" title="Add this image to an album" id="btnAddToAlbum"><i class="glyphicon glyphicon-book"></i></button>
                                                 </g:if>
                                             </auth:ifAnyGranted>
 
                                             <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
-                                                <button class="btn btn-default" id="btnRegen" title="Regenerate artifacts"><i class="glyphicon glyphicon-icon-refresh"></i></button>
+                                                <button class="btn btn-default" id="btnRegen" title="Regenerate artifacts"><i class="glyphicon glyphicon-refresh"></i></button>
                                             </auth:ifAnyGranted>
 
                                             <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}" creatorUserId="${imageInstance.uploader}">
-                                                <button class="btn btn-danger" id="btnDeleteImage" title="Delete image (admin)"><i class="glyphicon glyphicon-icon-remove  glyphicon-icon-white"></i></button>
+                                                <button class="btn btn-danger" id="btnDeleteImage" title="Delete image (admin)"><i class="glyphicon glyphicon-remove  glyphicon-white"></i></button>
                                             </auth:ifAnyGranted>
                                             <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">
                                                 <img:userIsUploader image="${imageInstance}">
-                                                    <button class="btn btn-danger" id="btnDeleteImage" title="Delete your image"><i class="glyphicon glyphicon-icon-remove glyphicon-icon-white"></i></button>
+                                                    <button class="btn btn-danger" id="btnDeleteImage" title="Delete your image"><i class="glyphicon glyphicon-remove glyphicon-white"></i></button>
                                                 </img:userIsUploader>
                                             </auth:ifNotGranted>
                                         </td>
@@ -255,7 +257,6 @@
         <asset:javascript src="audiojs/audio.min.js"/>
 
     <script>
-
         function refreshMetadata(tabDiv) {
             var dest = $(tabDiv);
             dest.html("Loading...");
@@ -329,7 +330,7 @@
 
             $("#btnViewImage").click(function(e) {
                 e.preventDefault();
-                window.location = "${grailsApplication.config.serverName}${createLink(controller:'image', action:'view', id: imageInstance.id)}";
+                window.location = "${grailsApplication.config.serverName}${createLink(controller:'image', action:'view', id: imageInstance.imageIdentifier)}";
             });
 
             $("#btnRegen").click(function(e) {

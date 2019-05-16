@@ -1,44 +1,6 @@
-security:
-    cas:
-        service: 'dev.ala.org.au'
-        bypass: true
-        disableCAS: true
-
-imageservice:
-    imagestore:
-        root: '/data/images/store'
-    apache:
-        root: 'http://localhost:8880/store/'
-    thumbnail:
-        size: 300
-
-grails:
-    controllers:
-        upload:
-            maxFileSize: 200000000
-            maxRequestSize: 200000000
-    assets:
-        bundle: false
-
-serverName: 'http://localhost:8080'
-
-skin:
-    layout: 'main'
-    fluidLayout: true
-
-
-quartz:
-    autoStartup: true
-    jdbcStore : false
-    waitForJobsToCompleteOnShutdown: true
-    exposeSchedulerInRepository: false
-    props:
-        scheduler:
-            skipUpdateCheck: true
-
-
 ---
 grails:
+    serverURL: 'http://devt.ala.org.au:8080'
     profile: web
     codegen:
         defaultPackage: au.org.ala.images
@@ -47,26 +9,13 @@ grails:
             # Whether to translate GORM events into Reactor events
             # Disabled by default for performance reasons
             events: false
-info:
-    app:
-        name: '@info.app.name@'
-        version: '@info.app.version@'
-        grailsVersion: '@info.app.grailsVersion@'
-spring:
-    main:
-        banner-mode: "off"
-    groovy:
-        template:
-            check-template-location: false
-
-# Spring Actuator Endpoints are Disabled by Default
-endpoints:
-    enabled: false
-    jmx:
-        enabled: true
-
----
-grails:
+    assets:
+        bundle: false
+    config:
+        locations:
+            - file:///data/images/config/images-config.properties
+            - file:///data/images/config/images-config.yml
+            - file:///data/images/config/images-config.groovy
     mime:
         disable:
             accept:
@@ -103,6 +52,9 @@ grails:
         cache:
             maxsize: 1000
     controllers:
+        upload:
+            maxFileSize: 200000000
+            maxRequestSize: 200000000
         defaultScope: singleton
     converters:
         encoding: UTF-8
@@ -117,9 +69,6 @@ grails:
                 scriptlets: html
                 taglib: none
                 staticparts: none
-endpoints:
-    jmx:
-        unique-names: true
 
 ---
 hibernate:
@@ -145,11 +94,11 @@ environments:
     test:
         dataSource:
             dbCreate: update
-            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
     production:
         dataSource:
             dbCreate: none
-            url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
             properties:
                 jmxEnabled: true
                 initialSize: 5
@@ -168,3 +117,54 @@ environments:
                 testOnReturn: false
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
+security:
+    cas:
+        appServerName: 'http://devt.ala.org.au:8080'
+        uriFilterPattern: '/admin/.*,/admin,/admin/'
+        authenticateOnlyIfLoggedInPattern:  '/image/details/.*'
+        bypass: true
+        disableCAS: true
+
+imageservice:
+    imagestore:
+        root: '/data/images/store'
+    apache:
+        root: 'http://localhost:8880/store/'
+    thumbnail:
+        size: 300
+
+serverName: 'http://devt.ala.org.au:8080'
+
+skin:
+    layout: 'main'
+    fluidLayout: true
+
+
+quartz:
+    autoStartup: true
+    jdbcStore : false
+    waitForJobsToCompleteOnShutdown: true
+    exposeSchedulerInRepository: false
+    props:
+        scheduler:
+            skipUpdateCheck: true
+
+
+---
+info:
+    app:
+        name: '@info.app.name@'
+        version: '@info.app.version@'
+        grailsVersion: '@info.app.grailsVersion@'
+spring:
+    main:
+        banner-mode: "off"
+    groovy:
+        template:
+            check-template-location: false
+
+# Spring Actuator Endpoints are Disabled by Default
+endpoints:
+    enabled: false
+    jmx:
+        enabled: true

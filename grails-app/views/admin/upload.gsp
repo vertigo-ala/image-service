@@ -5,8 +5,8 @@
         <meta name="section" content="home"/>
         <title>Upload images</title>
         <meta name="breadcrumbs" content="${g.createLink( controller: 'image', action: 'list')}, Images"/>
-        <asset:stylesheet src="ala/images-client.css" />
-        <asset:javascript src="ala/images-client.js" />
+        <asset:stylesheet src="images-client.css" />
+        <asset:javascript src="images-client.js" />
     </head>
     <body>
 
@@ -84,7 +84,7 @@
 
                                 if (formData) {
                                     $.ajax({
-                                        url: "${createLink(action:'uploadImagesFromCSVFile', controller: 'image')}",
+                                        url: "${createLink(action:'uploadImagesFromCSVFile', controller: 'admin')}",
                                         data: formData,
                                         processData: false,
                                         contentType: false,
@@ -108,7 +108,7 @@
             <div class="row">
                     <div class="well">
                         <h1>Single Image Upload</h1>
-                        <g:form action="storeImage" controller="image" method="post" enctype="multipart/form-data">
+                        <g:form action="storeImage" controller="admin" method="post" enctype="multipart/form-data">
                             <input type="file" name="image" />
                             <g:submitButton class="btn btn-small btn-primary" name="Upload"/>
                         </g:form>

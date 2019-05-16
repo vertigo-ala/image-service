@@ -6,6 +6,14 @@
         <asset:stylesheet src="application.css" />
     </head>
     <body class="fluid">
+
+        <g:if test="${flash.message}">
+            <div class="alert alert-success" style="display: block">${flash.message}</div>
+        </g:if>
+        <g:if test="${flash.errorMessage}">
+            <div class="alert alert-danger" style="display: block">${flash.errorMessage}</div>
+        </g:if>
+
         <h1>${totalImageCount} Images</h1>
         <!-- search box -->
         <div class="search" style="margin-bottom:20px;">

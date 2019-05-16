@@ -461,7 +461,7 @@ class WebServiceController {
 
     private getUserIdForRequest(HttpServletRequest request) {
 
-        if(grailsApplication.config.security.cas.disableCAS.toBoolean()){
+        if (grailsApplication.config.security.cas.disableCAS.toBoolean()){
             return "-1"
         }
 
@@ -477,7 +477,7 @@ class WebServiceController {
         if (!userId) {
             userId = params.userId
         }
-        return userId
+        userId
     }
 
     def bulkAddUserMetadataToImage(String id) {

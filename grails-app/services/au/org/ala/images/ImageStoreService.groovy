@@ -204,7 +204,7 @@ class ImageStoreService {
      * The first thumbnail (preserved aspect ratio) is of type JPG to conserve disk space, whilst the square thumb is PNG as JPG does not support alpha transparency
      * @param imageIdentifier The id of the image to thumb
      */
-    public List<ThumbnailingResult> generateImageThumbnails(String imageIdentifier) {
+    List<ThumbnailingResult> generateImageThumbnails(String imageIdentifier) {
         def imageFile = getOriginalImageFile(imageIdentifier)
         def imageBytes = FileUtils.readFileToByteArray(imageFile)
         return generateThumbnailsImpl(imageBytes, imageIdentifier)
