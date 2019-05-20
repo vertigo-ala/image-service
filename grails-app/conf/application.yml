@@ -16,7 +16,6 @@ grails:
             - file:///data/image-service/config/image-service-config.properties
             - file:///data/image-service/config/image-service-config.yml
             - file:///data/image-service/config/image-service-config.groovy
-            - file:///data/image-service/config/logback.groovy
     mime:
         disable:
             accept:
