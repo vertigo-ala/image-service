@@ -13,9 +13,10 @@ grails:
         bundle: false
     config:
         locations:
-            - file:///data/images/config/images-config.properties
-            - file:///data/images/config/images-config.yml
-            - file:///data/images/config/images-config.groovy
+            - file:///data/image-service/config/images-service-config.properties
+            - file:///data/image-service/config/images-service-config.yml
+            - file:///data/image-service/config/images-service-config.groovy
+            - file:///data/image-service/config/logback.groovy
     mime:
         disable:
             accept:
@@ -81,16 +82,16 @@ dataSource:
     pooled: true
     jmxExport: true
     driverClassName: org.postgresql.Driver
-    username: mar759
-    password: ''
+    username: images
+    password: 'images'
 
 environments:
     development:
         dataSource:
             dbCreate: update
             url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
-            username: "mar759"
-            password: ""
+            username: "images"
+            password: "images"
     test:
         dataSource:
             dbCreate: update
