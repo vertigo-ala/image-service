@@ -24,6 +24,7 @@ There are other related repositories to this one:
 * Grails 3 web application ran in the tomcat 7 or as standalone executable jar
 * Open JDK 8
 * Postgres database (9.6 or above)
+* Elastic search 7
 
 ## Installation
 
