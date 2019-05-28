@@ -93,6 +93,18 @@
 
     }
 
+    .thumb-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0,0,0,0.5);
+        font-size: 12px;
+        line-height: 14px;
+        color: #fff;
+        padding: 4px 5px;
+    }
+
     /* Responsive layout - makes a two column-layout instead of four columns */
     @media screen and (max-width: 800px) {
         .column {
@@ -190,12 +202,14 @@
             <g:if test="${headerTemplate}">
                 <g:render template="${headerTemplate}" model="${[image: image]}" />
             </g:if>
-            <a href="${createLink(controller:'image', action:'details', id: image.imageIdentifier)}">
+            <a href="${createLink(mapping: 'image_url', params: [imageId: image.imageIdentifier])}">
                 <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
             </a>
             <g:if test="${footerTemplate}">
                 <g:render template="${footerTemplate}" model="${[image: image]}" />
             </g:if>
+
+            <img:imageSearchResult image="${image}" />
         </div>
     </g:each>
 </div>

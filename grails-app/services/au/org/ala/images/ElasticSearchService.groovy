@@ -178,6 +178,7 @@ class ElasticSearchService {
 
         // set pagination stuff
         SearchSourceBuilder source = pagenateQuery(params).query(query)
+        source.trackTotalHits(true)
 
         if (params.highlight) {
             source.highlight(new HighlightBuilder().preTags("<b>").postTags("</b>").field("_all", 60, 2))

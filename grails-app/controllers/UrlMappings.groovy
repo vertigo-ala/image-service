@@ -14,10 +14,14 @@ class UrlMappings {
             controller = "webService"
         }
 
-//        "/$imageId"(controller: "image", action: "details")
+        // legacy URLS
+        "/image/proxyImageThumbnail"(controller: "image", action: "proxyImageThumbnail")
+        "/image/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
+        "/image/proxyImageTile"(controller: "image", action: "proxyImageTile")
+        "/image/proxyImage"(controller: "image", action: "proxyImage")
+        "/image/details"(controller: "image", action: "details")
 
-//        "/image/$action?imageId=$imageId"(controller: "image")
-        "/image/$imageId"(controller: "image", action: "details")
+         name image_url: "/image/$imageId"(controller: "image", action: "details")
 
         "/"(controller:'image', action:'list')
         "500"(view:'/error')

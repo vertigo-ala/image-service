@@ -33,7 +33,7 @@ class ImageController {
         QueryResults<Image> results
 
         params.offset = params.offset ?: 0
-        params.max = params.max ?: 204
+        params.max = params.max ?: 50
         params.sort = params.sort ?: 'dateUploaded'
         params.order = params.order ?: 'desc'
 

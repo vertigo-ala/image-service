@@ -11,6 +11,13 @@
     <content tag="pageTitle">Tools</content>
     <content tag="adminButtonBar" />
 
+    <g:if test="${flash.message}">
+        <div class="alert alert-success" style="display: block">${flash.message}</div>
+    </g:if>
+    <g:if test="${flash.errorMessage}">
+        <div class="alert alert-danger" style="display: block">${flash.errorMessage}</div>
+    </g:if>
+
     <table class="table">
         <tr>
             <td>

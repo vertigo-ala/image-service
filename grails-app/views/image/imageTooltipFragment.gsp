@@ -31,7 +31,7 @@
             <div><small>*Subimage of <strong>${imageInstance.parent.originalFilename}</strong></small></div>
         </g:if>
 
-        <a href="${grailsApplication.config.serverName}${createLink(controller: 'image', action: 'details', params:[id:imageInstance.id])}">View metadata</a>
+        <a href="${grailsApplication.config.grails.serverURL}${createLink(controller: 'image', action: 'details', params:[id:imageInstance.id])}">View metadata</a>
     </div>
 </g:if>
 <g:else>

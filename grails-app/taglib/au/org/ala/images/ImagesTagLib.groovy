@@ -10,6 +10,7 @@ class ImagesTagLib {
     def groovyPageLocator
     def authService
     def searchCriteriaService
+    def collectoryService
 
     /**
      * @attr title
@@ -101,6 +102,23 @@ class ImagesTagLib {
     def imageThumbUrl = { attrs, body ->
         if (attrs.imageId) {
             out << imageService.getImageThumbUrl(attrs.imageId as String)
+        }
+    }
+
+    def imageSearchResult = { attrs, body ->
+        if (attrs.image) {
+            if(attrs.image.dataResourceUid){
+                def metadata = collectoryService.getResourceLevelMetadata(attrs.image.dataResourceUid)
+                out << '<div class="thumb-caption caption-detail">'
+                out <<  "<span class='resource-name'>${metadata.name}</span>  <span>${attrs.image.title? ' - ' + attrs.image.title: ''} ${attrs.image.creator ?  ' - ' + attrs.image.creator : ''}</span>"
+                out << '</div>'
+            } else {
+                if(attrs.image.dataResourceUid || attrs.image.title || attrs.image.creator){
+                    out << '<div class="thumb-caption caption-detail">'
+                    out << "${attrs.image.dataResourceUid ? attrs.image.dataResourceUid: ''} ${attrs.image.title ? attrs.image.title :''} ${attrs.image.creator ?  attrs.image.creator : ''}"
+                    out << '</div>'
+                }
+            }
         }
     }
 
@@ -239,8 +257,8 @@ class ImagesTagLib {
     def imageMetadata = { attrs, body ->
         if(attrs.image[attrs.field]){
             out << attrs.image[attrs.field]
-        } else if(attrs.resource[attrs.field]){
-            out << attrs.resource[attrs.field] + "<small> (resource level metadata) </small>"
+        } else if(attrs.resource && attrs.resource.imageMetadata && attrs.resource.imageMetadata[attrs.field]){
+            out << attrs.resource.imageMetadata[attrs.field] + "<small> (resource level metadata) </small>"
         }
     }
 

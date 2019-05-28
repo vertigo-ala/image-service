@@ -7,7 +7,7 @@ import java.lang.annotation.Target
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SearchableProperty {
+@interface SearchableProperty {
     CriteriaValueType valueType() default CriteriaValueType.StringDirectEntry;
     String units() default "";
     String description() default "";

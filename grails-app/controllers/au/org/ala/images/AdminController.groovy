@@ -160,7 +160,6 @@ class AdminController {
                 flash.errorMessage = "Delete failed. This is probably because there exists search critera that use this definition<br/>" + ex.message
             }
         }
-
         redirect(action:"searchCriteria")
     }
 
@@ -172,10 +171,12 @@ class AdminController {
 
     def reinitialiseImageIndex() {
         imageService.deleteIndex()
+        flash.message = "Initialised. Image index now empty. Reindex images to repopulate."
         redirect(action:'tools')
     }
 
     def reindexImages() {
+        flash.message = "Reindexing scheduled. Monitor progress using the dashboard."
         imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService))
         redirect(action:'tools')
     }

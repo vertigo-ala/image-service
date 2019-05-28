@@ -12,14 +12,17 @@
             td.property-value { font-weight: bold !important; }
             .audiojs { width: 100%; }
             .tab-pane { padding-top: 20px !important; }
-            .tabbable { font-size: 10pt;}
+            .tabbable { font-size: 9pt; margin-top:10px; }
+            /*#imageTabs .nav { margin-top:5px; }*/
+            div#main { padding-top: 0px; }
+            /*.leaflet-container { background: #E7E7E7;}*/
         </style>
     </head>
     <body class="fluid">
         <img:headerContent title="${mediaTitle} details ${imageInstance?.id}">
             <% pageScope.crumbs = []  %>
         </img:headerContent>
-        <div class="container-fluid">
+        <div class="container-fluid" style="padding-left:1px; padding-top:0px;">
             <div class="row">
                 <div id="viewerContainerId" class="col-md-9">
                 </div>
@@ -53,6 +56,16 @@
                         <div class="tab-content">
                             <div class="tab-pane active" id="tabProperties">
                                 <table class="table table-bordered table-condensed table-striped">
+                                    <g:if test="${imageInstance.dataResourceUid}">
+                                        <tr>
+                                            <td class="property-name">Data resource</td>
+                                            <td class="property-value">
+                                                <a href="${grailsApplication.config.collectory.baseURL}/public/show/${imageInstance.dataResourceUid}">
+                                                    ${resourceLevel.name}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </g:if>
                                     <tr>
                                         <td class="property-name">Image Identifier</td>
                                         <td class="property-value">${imageInstance.imageIdentifier}</td>
@@ -65,16 +78,32 @@
                                         <td class="property-name">Creator</td>
                                         <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="creator"/></td>
                                     </tr>
-                                    <tr>
-                                        <td class="property-name">Data resource UID</td>
-                                        <td class="property-value">${imageInstance.dataResourceUid}</td>
-                                    </tr>
+
                                     <g:if test="${imageInstance.parent}">
                                         <tr>
                                             <td>Parent image</td>
                                             <td imageId="${imageInstance.parent.id}">
                                                 <g:link controller="image" action="details" id="${imageInstance.parent.id}">${imageInstance.parent.originalFilename ?: imageInstance.parent.id}</g:link>
                                                 <i class="icon-info-sign image-info-button"></i>
+                                            </td>
+                                        </tr>
+                                    </g:if>
+                                    <g:if test="${isImage}">
+                                        <tr>
+                                            <td class="property-name">Zoom levels</td>
+                                            <td class="property-value">${imageInstance.zoomLevels}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="property-name">Linear scale</td>
+                                            <td class="property-value">
+                                                <g:if test="${imageInstance.mmPerPixel}">
+                                                    ${imageInstance.mmPerPixel} mm per pixel
+                                                    <button id="btnResetLinearScale" type="button" class="btn btn-sm btn-default pull-right" title="Reset calibation">
+                                                        <i class="glyphicon glyphicon-remove"></i></button>
+                                                </g:if>
+                                                <g:else>
+                                                    &lt;not calibrated&gt;
+                                                </g:else>
                                             </td>
                                         </tr>
                                     </g:if>
@@ -143,7 +172,7 @@
                                             <g:if test="${isImage}">
                                                 <button class="btn btn-default" id="btnViewImage" title="View zoomable image"><span class="glyphicon glyphicon-eye-open"> </span></button>
                                             </g:if>
-                                            <a class="btn btn-default" href="${grailsApplication.config.serverName}${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="glyphicon glyphicon-download-alt"></i></a>
+                                            <a class="btn btn-default" href="${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="glyphicon glyphicon-download-alt"></i></a>
 
                                             <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
                                                 <g:if test="${albums}">
@@ -168,8 +197,10 @@
                                 </table>
                             </div>
                             <div class="tab-pane" id="tabExif" metadataSource="${au.org.ala.images.MetaDataSourceType.Embedded}">
+                                <div class="metadataSource-container"></div>
                             </div>
                             <div class="tab-pane" id="tabUserDefined" metadataSource="${au.org.ala.images.MetaDataSourceType.UserDefined}">
+                                <div class="metadataSource-container"></div>
                             </div>
                             <div class="tab-pane" id="tabSystem" metadataSource="${au.org.ala.images.MetaDataSourceType.SystemDefined}" >
                                 <table class="table table-bordered table-condensed table-striped">
@@ -191,25 +222,7 @@
                                         <td class="property-name">Mime type</td>
                                         <td class="property-value">${imageInstance.mimeType}</td>
                                     </tr>
-                                    <g:if test="${isImage}">
-                                        <tr>
-                                            <td class="property-name">Zoom levels</td>
-                                            <td class="property-value">${imageInstance.zoomLevels}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="property-name">Linear scale</td>
-                                            <td class="property-value">
-                                                <g:if test="${imageInstance.mmPerPixel}">
-                                                    ${imageInstance.mmPerPixel} mm per pixel
-                                                    <button id="btnResetLinearScale" type="button" class="btn btn-default pull-right" title="Reset calibation">
-                                                        <i class="icon-remove"></i></button>
-                                                </g:if>
-                                                <g:else>
-                                                    &lt;not calibrated&gt;
-                                                </g:else>
-                                            </td>
-                                        </tr>
-                                    </g:if>
+
                                     <tr>
                                         <td class="property-name">${mediaTitle} URL</td>
                                         <td class="property-value">
@@ -231,6 +244,8 @@
                                         <td class="property-value"><img:sizeInBytes size="${sizeOnDisk}" /></td>
                                     </tr>
                                 </table>
+
+                                <div class="metadataSource-container"></div>
                             </div>
                             <div class="tab-pane" id="tabThumbnails">
                                 <ul class="list-unstyled">
@@ -245,6 +260,7 @@
                             </div>
                             <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                                 <div class="tab-pane" id="tabAuditMessages">
+                                    <div class="metadataSource-container"></div>
                                 </div>
                             </auth:ifAnyGranted>
                         </div>
@@ -257,19 +273,20 @@
         <asset:javascript src="audiojs/audio.min.js"/>
 
     <script>
+
         function refreshMetadata(tabDiv) {
             var dest = $(tabDiv);
-            dest.html("Loading...");
+            dest.find('.metadataSource-container').html("Loading...");
             var source = dest.attr("metadataSource");
-            $.ajax("${grailsApplication.config.serverName}${createLink(controller:'image', action:'imageMetadataTableFragment', id: imageInstance.id)}?source=" + source).done(function(content) {
-                dest.html(content);
+            $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'imageMetadataTableFragment', id: imageInstance.id)}?source=" + source).done(function(content) {
+                dest.find('.metadataSource-container').html(content);
             });
         }
 
         <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
 
         function refreshAuditTrail() {
-            $.ajax("${grailsApplication.config.serverName}${createLink(controller: 'image', action:'imageAuditTrailFragment', id: imageInstance.id)}").done(function(content) {
+            $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller: 'image', action:'imageAuditTrailFragment', id: imageInstance.id)}").done(function(content) {
                 $("#tabAuditMessages").html(content);
             });
         }
@@ -280,13 +297,13 @@
 
             var options = {
                 auxDataUrl : "${auxDataUrl ? auxDataUrl : ''}",
-                imageServiceBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}",
-                imageClientBaseUrl : "${grailsApplication.config.serverName}${grailsApplication.config.contextPath}",
+                imageServiceBaseUrl : "${grailsApplication.config.grails.serverURL}${grailsApplication.config.contextPath}",
+                imageClientBaseUrl : "${grailsApplication.config.grails.serverURL}${grailsApplication.config.contextPath}",
                 zoomFudgeFactor: 0.65
             };
 
             var screenHeight = $(window).height();
-            $('#viewerContainerId').css('height', (screenHeight - 200) + 'px');
+            $('#viewerContainerId').css('height', (screenHeight - 172) + 'px');
 
             imgvwr.viewImage($("#viewerContainerId"), '${imageInstance.imageIdentifier}', "", "", options);
             // imgvwr.getViewerInstance().setZoom(9)
@@ -295,7 +312,7 @@
             $("#btnAddToAlbum").click(function(e) {
                 e.preventDefault();
                 imgvwr.selectAlbum(function(albumId) {
-                    $.ajax("${grailsApplication.config.serverName}${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
+                    $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
                         if (result.success) {
                         }
                     });
@@ -308,7 +325,7 @@
                     title:"Reset calibration for this image?",
                     message:"Are you sure you wish to reset the linear scale for this image?",
                     affirmativeAction: function() {
-                        var url = "${grailsApplication.config.serverName}${createLink(controller:'webService', action:'resetImageCalibration')}?imageId=${imageInstance.imageIdentifier}";
+                        var url = "${grailsApplication.config.grails.serverURL}${createLink(controller:'webService', action:'resetImageCalibration')}?imageId=${imageInstance.imageIdentifier}";
                         $.ajax(url).done(function(result) {
                             window.location.reload(true);
                         });
@@ -330,13 +347,13 @@
 
             $("#btnViewImage").click(function(e) {
                 e.preventDefault();
-                window.location = "${grailsApplication.config.serverName}${createLink(controller:'image', action:'view', id: imageInstance.imageIdentifier)}";
+                window.location = "${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'view', id: imageInstance.imageIdentifier)}";
             });
 
             $("#btnRegen").click(function(e) {
                 e.preventDefault();
 
-                $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function(data) {
+                $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function(data) {
                     console.log(data);
                     alert('Regeneration scheduled - ' + data.message);
                 }).fail(function(){
@@ -349,8 +366,8 @@
                 var options = {
                     content: "Warning! This operation cannot be undone. Are you sure you wish to permanently delete this image?",
                     affirmativeAction: function() {
-                        $.ajax("${grailsApplication.config.serverName}${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
-                            window.location = "${grailsApplication.config.serverName}${createLink(controller:'image', action:'list')}";
+                        $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
+                            window.location = "${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'list')}";
                         });
                     }
                 };
@@ -363,7 +380,7 @@
                     $(this).qtip({
                         content: {
                             text: function(event, api) {
-                                $.ajax("${grailsApplication.config.serverName}${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {
+                                $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:"imageTooltipFragment")}/" + imageId).then(function(content) {
                                         api.set("content.text", content);
                                     },
                                     function(xhr, status, error) {
@@ -379,7 +396,7 @@
         });
 
         function loadTags() {
-            $.ajax("${grailsApplication.config.serverName}${createLink(action:'tagsFragment',id:imageInstance.id)}").done(function(html) {
+            $.ajax("${grailsApplication.config.grails.serverURL}${createLink(action:'tagsFragment',id:imageInstance.id)}").done(function(html) {
                 $("#tagsSection").html(html);
             });
         }

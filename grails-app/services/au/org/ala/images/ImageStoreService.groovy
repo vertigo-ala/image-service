@@ -179,14 +179,14 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public String getImageTilesRootUrl(String imageIdentifier) {
+    String getImageTilesRootUrl(String imageIdentifier) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
         path << "tms"
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public List<ThumbnailingResult> generateAudioThumbnails(String imageIdentifier) {
+    List<ThumbnailingResult> generateAudioThumbnails(String imageIdentifier) {
         def servletContext = ServletContextHolder.servletContext
         def res = servletContext.getResource('/images/audio-icon.png')
         def imageBytes = res.bytes

@@ -53,6 +53,8 @@ class Image {
     @SearchableProperty(valueType = CriteriaValueType.Boolean, description = "Should be harvested by the ALA")
     Boolean harvestable = false
 
+    Boolean deleted = false
+
     Double mmPerPixel
 
     Integer squareThumbSize
@@ -87,6 +89,8 @@ class Image {
         squareThumbSize nullable: true
         mmPerPixel nullable: true
         harvestable nullable: true
+
+        deleted  nullable: true
     }
 
     static mapping = {
