@@ -25,6 +25,16 @@
         <div class="container-fluid" style="padding-left:1px; padding-top:0px;">
             <div class="row">
                 <div id="viewerContainerId" class="col-md-9">
+                    <g:if test="${!imageInstance.mimeType.startsWith('image')}">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                        <div class="document-icon" style="height: 500px; margin-bottom: 30px;"></div>
+                        <g:if test="${imageInstance.mimeType.startsWith('audio')}">
+                            <audio src="${createLink(controller: 'image', action:'proxyImage', params: [imageId: imageInstance.imageIdentifier])}" preload="auto" />
+                        </g:if>
+                    </div>
+                    <div class="col-md-3"></div>
+                    </g:if>
                 </div>
                 <div id="imageTabs" class="col-md-3">
                     <div class="tabbable" >
@@ -54,6 +64,7 @@
                         </ul>
 
                         <div class="tab-content">
+
                             <div class="tab-pane active" id="tabProperties">
                                 <table class="table table-bordered table-condensed table-striped">
                                     <g:if test="${imageInstance.dataResourceUid}">
@@ -77,6 +88,10 @@
                                     <tr>
                                         <td class="property-name">Creator</td>
                                         <td class="property-value"><img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="creator"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="property-name">Description</td>
+                                        <td class="property-value">${imageInstance.description}</td>
                                     </tr>
 
                                     <g:if test="${imageInstance.parent}">
@@ -132,7 +147,15 @@
                                     <tr>
                                         <td class="property-name">Licence</td>
                                         <td class="property-value">
-                                            <img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="license"/>
+                                            ${imageInstance.license}
+                                            <g:if test="${imageInstance.recognisedLicense}">
+                                               <a href="${imageInstance.recognisedLicense.url}" title="${imageInstance.recognisedLicense.name +  ' (' + imageInstance.recognisedLicense.acronym + ')'}">
+                                                <img src="${imageInstance.recognisedLicense.imageUrl}">
+                                               </a>
+                                            </g:if>
+                                            <g:else>
+                                                <img:imageMetadata image="${imageInstance}" resource="${resourceLevel}" field="license"/>
+                                            </g:else>
                                         </td>
                                     </tr>
                                     <g:if test="${subimages}">
@@ -151,17 +174,17 @@
                                         </tr>
                                     </g:if>
 
-                                    <tr>
-                                        <td class="property-name">Harvested as occurrence record?</td>
-                                        <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
-                                            <td>
-                                                <g:checkBox name="chkIsHarvestable" data-size="small" data-on-text="Yes" data-off-text="No" checked="${imageInstance.harvestable}" />
-                                            </td>
-                                        </auth:ifAnyGranted>
-                                        <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">
-                                            <td class="property-value">${imageInstance.harvestable ? "Yes" : "No"}</td>
-                                        </auth:ifNotGranted>
-                                    </tr>
+%{--                                    <tr>--}%
+%{--                                        <td class="property-name">Harvested as occurrence record?</td>--}%
+%{--                                        <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">--}%
+%{--                                            <td>--}%
+%{--                                                <g:checkBox name="chkIsHarvestable" data-size="small" data-on-text="Yes" data-off-text="No" checked="${imageInstance.harvestable}" />--}%
+%{--                                            </td>--}%
+%{--                                        </auth:ifAnyGranted>--}%
+%{--                                        <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">--}%
+%{--                                            <td class="property-value">${imageInstance.harvestable ? "Yes" : "No"}</td>--}%
+%{--                                        </auth:ifNotGranted>--}%
+%{--                                    </tr>--}%
 
                                     <tr>
                                         <td colspan="2">
@@ -305,9 +328,22 @@
             var screenHeight = $(window).height();
             $('#viewerContainerId').css('height', (screenHeight - 172) + 'px');
 
+
+            <g:if test="${imageInstance.mimeType.startsWith('image')}">
             imgvwr.viewImage($("#viewerContainerId"), '${imageInstance.imageIdentifier}', "", "", options);
-            // imgvwr.getViewerInstance().setZoom(9)
+            </g:if>
+            <g:elseif test="${imageInstance.mimeType.startsWith('audio')}">
+            $('#viewerContainerId .document-icon').css('background-image', 'url("${grailsApplication.config.placeholder.sound.large}")');
+            $('#viewerContainerId .document-icon').css('background-repeat', 'no-repeat');
+            $('#viewerContainerId').css('background-position', 'center');
             audiojs.createAll();
+            </g:elseif>
+            <g:else>
+            $('#viewerContainerId .document-icon').css('background-image', 'url("${grailsApplication.config.placeholder.document.large}")');
+            $('#viewerContainerId .document-icon').css('background-repeat', 'no-repeat');
+            $('#viewerContainerId .document-icon').css('background-position', 'center');
+            </g:else>
+
 
             $("#btnAddToAlbum").click(function(e) {
                 e.preventDefault();

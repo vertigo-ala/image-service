@@ -45,6 +45,8 @@ class Image {
     @SearchableProperty(description="A legal document giving official permission to do something with the resource.")
     String license
 
+    License recognisedLicense
+
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The height of the thumbnail in pixels")
     Integer thumbHeight = 0
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The width of the thumbnail in pixels")
@@ -75,7 +77,7 @@ class Image {
         height nullable: true
         width nullable: true
         zoomLevels nullable: true
-
+        recognisedLicense nullable:true
         dataResourceUid nullable: true
         creator nullable: true
         title nullable: true

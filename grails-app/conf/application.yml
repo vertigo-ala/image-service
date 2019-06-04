@@ -168,3 +168,11 @@ endpoints:
     enabled: false
     jmx:
         enabled: true
+
+placeholder:
+    sound:
+        thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Speaker_Icon.svg/200px-Speaker_Icon.svg.png"
+        large: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Speaker_Icon.svg/500px-Speaker_Icon.svg.png"
+    document:
+        thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/200px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
+        large: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/500px-Document_icon_%28the_Noun_Project_27904%29.svg.png"

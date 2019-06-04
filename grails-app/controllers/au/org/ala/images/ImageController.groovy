@@ -51,7 +51,7 @@ class ImageController {
         def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
 
         ct.stop(true)
-        [images: results.list, q: query, totalImageCount: results.totalCount, isLoggedIn: isLoggedIn, selectedImageMap: selectedImageMap]
+        [images: results.list, facets:results.aggregations, q: query, totalImageCount: results.totalCount, isLoggedIn: isLoggedIn, selectedImageMap: selectedImageMap]
     }
 
     def proxyImage() {
@@ -66,8 +66,15 @@ class ImageController {
     def proxyImageThumbnail() {
         def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
-            def imageUrl = imageService.getImageThumbUrl(imageInstance.imageIdentifier)
-            proxyImageRequest(response, imageInstance, imageUrl, 0)
+            if(imageInstance.mimeType.startsWith('image')) {
+                def imageUrl = imageService.getImageThumbUrl(imageInstance.imageIdentifier)
+                proxyImageRequest(response, imageInstance, imageUrl, 0)
+            } else if(imageInstance.mimeType.startsWith('audio')){
+                proxyImageRequest(response, imageInstance, grailsApplication.config.placeholder.sound.thumbnail, 0)
+            } else {
+                proxyImageRequest(response, imageInstance, grailsApplication.config.placeholder.dcouemnt.thumbnail, 0)
+            }
+
         }
     }
 

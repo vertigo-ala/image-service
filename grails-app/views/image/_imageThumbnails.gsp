@@ -42,13 +42,10 @@
 
     .imgCon {
         display: inline-block;
-        /*margin-right: 8px;*/
         text-align: center;
         line-height: 1.3em;
         background-color: #DDD;
         color: #DDD;
-        /*padding: 5px;*/
-        /*margin-bottom: 8px;*/
         margin: 2px 0 2px 0;
         position: relative;
     }
@@ -189,29 +186,55 @@
 </table>
 
 <!-- results list -->
-<div id="imagesList">
-    <g:each in="${images}" var="image" status="imageIdx">
-        <div class="imgCon" imageId="${image.imageIdentifier}">
-            <g:if test="${allowSelection == true}">
-                <div class="selection-header">
-                    <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
-                                checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
-                    <label for="chkSelectImage${image.imageIdentifier}"></label>
-                </div>
-            </g:if>
-            <g:if test="${headerTemplate}">
-                <g:render template="${headerTemplate}" model="${[image: image]}" />
-            </g:if>
-            <a href="${createLink(mapping: 'image_url', params: [imageId: image.imageIdentifier])}">
-                <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
-            </a>
-            <g:if test="${footerTemplate}">
-                <g:render template="${footerTemplate}" model="${[image: image]}" />
-            </g:if>
-
-            <img:imageSearchResult image="${image}" />
-        </div>
+<div class="col-md-2 well">
+    <g:each in="${facets}" var="facet">
+        <h5><g:message code="facet.${facet.key}" default="${facet.key}"/> </h5>
+        <ul class="list-unstyled">
+            <g:each in="${facet.value}" var="facetCount">
+                <li>
+                    <a href="${request.getRequestURL().toString()}${request.getQueryString() ? '?' + request.getQueryString() : ''}${request.getQueryString() ? '&' : '?' }fq=${facet.key}:${facetCount.key}">
+                        <g:if test="${facet.key == 'dataResourceUid'}">
+                            <img:facetDataResourceResult dataResourceUid="${facetCount.key}"/>  (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
+                        </g:if>
+                        <g:else>
+                            ${facetCount.key}  (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
+                        </g:else>
+                    </a>
+                </li>
+            </g:each>
+        </ul>
     </g:each>
+</div>
+<div class="col-md-10" style="margin-right:0px; padding-right:0px;">
+    <div id="imagesList">
+        <g:each in="${images}" var="image" status="imageIdx">
+            <div class="imgCon" imageId="${image.imageIdentifier}">
+                <g:if test="${allowSelection == true}">
+                    <div class="selection-header">
+                        <g:checkBox class="chkSelectImage" name="chkSelectImage${image.id}"
+                                    checked="${selectedImageMap?.containsKey(image.imageIdentifier)}" />
+                        <label for="chkSelectImage${image.imageIdentifier}"></label>
+                    </div>
+                </g:if>
+                <g:if test="${headerTemplate}">
+                    <g:render template="${headerTemplate}" model="${[image: image]}" />
+                </g:if>
+                <a href="${createLink(mapping: 'image_url', params: [imageId: image.imageIdentifier])}">
+                    <g:if test="${image.mimeType.startsWith("image")}">
+                        <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
+                    </g:if>
+                    <g:else>
+                        <img src="${grailsApplication.config.placeholder.sound.thumbnail}"/>
+                    </g:else>
+                </a>
+                <g:if test="${footerTemplate}">
+                    <g:render template="${footerTemplate}" model="${[image: image]}" />
+                </g:if>
+
+                <img:imageSearchResult image="${image}" />
+            </div>
+        </g:each>
+    </div>
 </div>
 
 <!-- pagenation -->

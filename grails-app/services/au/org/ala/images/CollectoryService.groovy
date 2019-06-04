@@ -36,7 +36,6 @@ class CollectoryService {
 
         def metadata = getResourceLevelMetadata(image.dataResourceUid)
 
-
         if(metadata && metadata.imageMetadata) {
             //only add properties if they are blank on the source image
             metadata.imageMetadata.each { kvp ->

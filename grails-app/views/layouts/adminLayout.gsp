@@ -29,6 +29,7 @@
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'tools')}" title="Tools" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'duplicates')}" title="Duplicates" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'searchCriteria')}" title="Search Criteria" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'licences')}" title="Update Licences" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'tags')}" title="Tags" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'settings')}" title="Settings" />
                     </ul>

@@ -3,6 +3,7 @@ package au.org.ala.images
 import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
+import com.opencsv.CSVReader
 import grails.converters.JSON
 import grails.converters.XML
 import groovy.json.JsonSlurper
@@ -51,6 +52,8 @@ class AdminController {
         ImageStoreResult storeResult = imageService.storeImage(file, userId)
         if (storeResult.image) {
             imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
+        } else {
+            imageService.scheduleNonImagePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
         }
         flash.message = "Image uploaded with identifier: ${storeResult.image?.imageIdentifier}"
         redirect(action:'upload')
@@ -102,6 +105,61 @@ class AdminController {
             batchService.addTaskToBatch(batchId, new UploadFromUrlTask(srcImage, imageService, userId))
             imageCount++
         }
+    }
+
+    def licences(){}
+
+    def updateStoredLicences(){
+
+        def licensesCSV = params.licenses
+        def licenceMappingCSV = params.licenseMapping
+
+        //load licences
+        if (licensesCSV) {
+            def csv = new CSVReader(new StringReader(licensesCSV))
+            def iter = csv.iterator()
+            while (iter.hasNext()) {
+                def line = iter.next()
+                if (line && line.length >= 4 && line[0] && line[1] && line[2]){
+                    License license = License.findByAcronym(line[0])
+                    if (license){
+                        license.name = line[1]
+                        license.url = line[2]
+                        license.imageUrl = line[3]
+                        license.save(flush: true, failOnError: true)
+                    } else {
+                        license = new License(acronym: line[0], name: line[1], url: line[2], imageUrl: line[3])
+                        license.save(flush: true, failOnError: true)
+                    }
+                }
+            }
+        }
+
+        //load license mappings
+        if (licenceMappingCSV){
+            def csv2 = new CSVReader(new StringReader(licenceMappingCSV))
+            def iter2 = csv2.iterator()
+            while (iter2.hasNext()){
+                def line = iter2.next()
+                if (line && line.length >= 2 && line[0] && line[1]) {
+                    def license = License.findByAcronym(line[0])
+                    if (license) {
+                        LicenseMapping licenseMapping = LicenseMapping.findByValue(line[1])
+                        if (licenseMapping) {
+                            licenseMapping.license = license
+                            licenseMapping.save(flush: true, failOnError: true)
+                        } else {
+                            licenseMapping = new LicenseMapping(license: license, value: line[1])
+                            licenseMapping.save(flush: true, failOnError: true)
+                        }
+                    } else {
+                        log.error("Unable to find mapping for acronym" + line[0])
+                    }
+                }
+            }
+        }
+
+        redirect(action:'dashboard', message: "Licences updated")
     }
 
     private renderResults(Object results, int responseCode = 200) {
@@ -285,6 +343,12 @@ class AdminController {
 
     def uploadTagsFragment() {}
 
+    def clearQueues(){
+        imageService.clearImageTaskQueue()
+        imageService.clearTilingTaskQueueLength()
+        redirect(action:'tools', message: 'Queue cleared')
+    }
+
     def uploadTagsFile() {
         MultipartFile file = request.getFile('tagfile')
 
@@ -299,6 +363,11 @@ class AdminController {
         flash.message = "${count} tags loaded from file"
 
         redirect(action:'tags')
+    }
+
+    def rematchLicenses(){
+        imageService.scheduleBackgroundTask(new ScheduleLicenseReMatchAllBackgroundTask(imageService))
+        redirect(action:'tools', message: "Rematching licenses scheduled. Monitor progress using the dashboard.")
     }
 
     def indexSearch() {
@@ -322,6 +391,6 @@ class AdminController {
 
     def clearCollectoryCache(){
         collectoryService.clearCache()
-        redirect(action:'tools')
+        redirect(action:'tools', message: 'Cache is cleared')
     }
 }

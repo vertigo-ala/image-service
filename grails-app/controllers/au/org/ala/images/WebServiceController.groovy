@@ -305,6 +305,7 @@ class WebServiceController {
         results.title = image.title ?: ''
         results.creator = image.creator ?: ''
         results.license = image.license ?: ''
+        results.recognisedLicence = image.recognisedLicense
         results.dataResourceUid = image.dataResourceUid ?: ''
 
         collectoryService.addMetadataForResource(results)
@@ -602,6 +603,16 @@ class WebServiceController {
 
         renderResults([success:false, message:'POST with content type "application/JSON" required.'])
 
+    }
+
+    def licence(){
+        def licenses = License.findAll()
+        renderResults (licenses)
+    }
+
+    def licenceMapping(){
+        def licenses = LicenseMapping.findAll()
+        renderResults (licenses)
     }
 
     def findImagesByOriginalFilename() {

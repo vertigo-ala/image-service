@@ -29,6 +29,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
+import org.elasticsearch.search.aggregations.AggregationBuilder
+import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
 import org.elasticsearch.search.sort.SortOrder
@@ -103,8 +105,17 @@ class ElasticSearchService {
 //            data.metadata[it.name.toLowerCase()] = it.value
 //        }
 
-        def json = (data as JSON).toString()
+        if(image.recognisedLicense) {
+            data.recognisedLicence = image.recognisedLicense.acronym
+        } else {
+            data.recognisedLicence = "Unrecognised license"
+        }
 
+        if(image.creator){
+            image.creator = image.creator.replaceAll("[\"|']", "")
+        }
+
+        def json = (data as JSON).toString()
 
         IndexRequest request = new IndexRequest("images")
         request.id( image.id.toString())
@@ -134,6 +145,14 @@ class ElasticSearchService {
         QueryResults<Image> qr = new QueryResults<Image>()
         qr.list = imageList
         qr.totalCount = searchResponse.hits.totalHits.value
+
+        searchResponse.aggregations.each {
+            def facet = [:]
+            it.buckets.each { bucket ->
+                facet[bucket.getKeyAsString()] = bucket.getDocCount()
+            }
+            qr.aggregations.put(it.name, facet)
+        }
         qr
     }
 
@@ -174,10 +193,48 @@ class ElasticSearchService {
         }
         request.types(types as String[])
 
+        QueryBuilder queryBuilder = null
+
         QueryBuilder query = QueryBuilders.queryStringQuery(queryString)
 
+        def filterQueries = params.findAll { it.key == 'fq'}
+
+        def filters = []
+
+        if (filterQueries) {
+            filterQueries.each {
+
+                if(it.value instanceof String[]){
+                    it.value.each { filter ->
+                        def kv = filter.split(":")
+                        filters << QueryBuilders.termQuery(kv[0], kv[1])
+                    }
+                } else {
+                    def kv = it.value.split(":")
+                    filters << QueryBuilders.termQuery(kv[0], kv[1])
+                }
+            }
+        }
+
+        if (filters) {
+            BoolQueryBuilder builder = QueryBuilders.boolQuery()
+            filters.each {
+                builder.must(it)
+            }
+            queryBuilder = builder.must(query) //QueryBuilders.termQuery(qsQuery). builder)
+        }
+        else {
+            queryBuilder = query
+        }
+
         // set pagination stuff
-        SearchSourceBuilder source = pagenateQuery(params).query(query)
+        SearchSourceBuilder source = pagenateQuery(params).query(queryBuilder)
+
+
+        source.aggregation(AggregationBuilders.terms("dataResourceUid").field("dataResourceUid"))
+        source.aggregation(AggregationBuilders.terms("recognisedLicence").field("recognisedLicence"))
+        source.aggregation(AggregationBuilders.terms("creator").field("creator"))
+
         source.trackTotalHits(true)
 
         if (params.highlight) {
@@ -227,6 +284,10 @@ class ElasticSearchService {
     private def initialiseIndex() {
         try {
 
+            def
+
+
+
             boolean indexExists  = client.indices().exists(new org.elasticsearch.client.indices.GetIndexRequest("images"), RequestOptions.DEFAULT)
             if (!indexExists){
                 CreateIndexRequest request = new CreateIndexRequest("images")
@@ -244,7 +305,19 @@ class ElasticSearchService {
                                   "properties": {
                                     "dateUploaded": {
                                       "type": "date"
-                                    }
+                                    },
+                                    "dataResourceUid": {
+                                      "type": "keyword"
+                                    },               
+                                    "license": {
+                                      "type": "keyword"
+                                    },  
+                                    "recognisedLicence": {
+                                      "type": "keyword"
+                                    },                                     
+                                    "creator": {
+                                      "type": "keyword"
+                                    }                                                                                             
                                   }
                                 }""",
                         XContentType.JSON);

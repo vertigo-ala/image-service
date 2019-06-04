@@ -113,6 +113,15 @@ class ImageService {
         return _tilingQueue.size()
     }
 
+    def clearImageTaskQueue(){
+        return _backgroundQueue.clear()
+    }
+
+    def clearTilingTaskQueueLength() {
+        return _tilingQueue.clear();
+    }
+
+
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
                           String uploaderId, Map metadata = [:]) {
 
@@ -162,6 +171,10 @@ class ImageService {
         scheduleArtifactGeneration(imageId, uploaderId)
         scheduleImageIndex(imageId)
         scheduleImageMetadataPersist(imageId,identifier, fileName,  MetaDataSourceType.Embedded, uploaderId)
+    }
+
+    def scheduleNonImagePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
+        scheduleImageIndex(imageId)
     }
 
     Map getMetadataItemValuesForImages(List<Image> images, String key, MetaDataSourceType source = MetaDataSourceType.SystemDefined) {
@@ -214,6 +227,33 @@ class ImageService {
         return imageStoreService.getImageTilesRootUrl(imageIdentifier)
     }
 
+    def updateLicence(Image image){
+        if(image.license){
+            def licenceMapping = LicenseMapping.findByValue(image.license)
+            if (licenceMapping){
+                image.recognisedLicense = licenceMapping.license
+            } else {
+                image.recognisedLicense = null
+            }
+        } else {
+            image.recognisedLicense = null
+        }
+        image.save(flush:true)
+    }
+
+    //this is slow on large tables
+    def updateLicences(){
+        println("Updating license mapping for all images")
+        def licenseMapping = LicenseMapping.findAll()
+        licenseMapping.each {
+            println("Updating license mapping for string matching: " + it.value)
+            Image.executeUpdate("Update Image i set i.recognisedLicense = :recognisedLicense " +
+                    " where " +
+                    " i.license = :license" +
+                    "", [recognisedLicense: it.license, license: it.value])
+        }
+    }
+
     private static Date getImageTakenDate(byte[] bytes) {
         try {
             ImageMetadata metadata = Imaging.getMetadata(bytes)
@@ -262,6 +302,10 @@ class ImageService {
 
     def scheduleImageDeletion(long imageId, String userId) {
         scheduleBackgroundTask(new ImageBackgroundTask(imageId, this, ImageTaskType.Delete, userId))
+    }
+
+    def scheduleLicenseUpdate(long imageId) {
+        scheduleBackgroundTask(new LicenseMatchingBackgroundTask(imageId, imageService, elasticSearchService))
     }
 
     def scheduleImageIndex(long imageId) {

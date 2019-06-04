@@ -73,6 +73,22 @@
 
         <tr>
             <td>
+                <button id="btnRematchLicencesAllImages" class="btn btn-default">Rematch licences for all images</button>
+            </td>
+            <td>
+                Rematch licences for images
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button id="btnClearQueues" class="btn btn-default">Clear processing queues</button>
+            </td>
+            <td>
+                Clear processing queues (tiling, background queues)
+            </td>
+        </tr>
+        <tr>
+            <td>
                 <button id="btnSearchIndex" class="btn btn-default">Search image index</button>
             </td>
             <td>
@@ -110,6 +126,16 @@
             e.preventDefault();
             $.ajax("${createLink(controller:'webService', action:'scheduleKeywordRegeneration')}").done(function() {
             });
+        });
+
+        $("#btnRematchLicencesAllImages").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'rematchLicenses')}";
+        });
+
+        $("#btnClearQueues").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'clearQueues')}";
         });
 
         $("#btnImportFromLocalInbox").click(function(e) {
