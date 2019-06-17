@@ -186,19 +186,31 @@
 </table>
 
 <!-- results list -->
-<div class="col-md-2 well">
+<div id="facetWell" class="col-md-2 well well-sm">
     <g:each in="${facets}" var="facet">
-        <h5><g:message code="facet.${facet.key}" default="${facet.key}"/> </h5>
-        <ul class="list-unstyled">
+        <h4>
+            <span class="FieldName"><g:message code="facet.${facet.key}" default="${facet.key}"/></span>
+        </h4>
+        <ul class="facets list-unstyled">
             <g:each in="${facet.value}" var="facetCount">
-                <li>
+                <li class="">
+
                     <a href="${request.getRequestURL().toString()}${request.getQueryString() ? '?' + request.getQueryString() : ''}${request.getQueryString() ? '&' : '?' }fq=${facet.key}:${facetCount.key}">
+                        <span class="fa fa-square-o">&nbsp;</span>
+                        <span class="facet-item">
                         <g:if test="${facet.key == 'dataResourceUid'}">
-                            <img:facetDataResourceResult dataResourceUid="${facetCount.key}"/>  (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
+                            <img:facetDataResourceResult dataResourceUid="${facetCount.key}"/>
+                            <span class="facetCount">
+                            (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
+                            </span>
                         </g:if>
                         <g:else>
-                            ${facetCount.key}  (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
+                            ${facetCount.key}
+                            <span class="facetCount">
+                            (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
+                            </span>
                         </g:else>
+                        </span>
                     </a>
                 </li>
             </g:each>
