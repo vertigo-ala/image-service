@@ -22,12 +22,16 @@ class AdminController {
     def elasticSearchService
     def collectoryService
     def batchService
+    def analyticsService
 
     def index() {
         redirect(action:'dashboard')
     }
 
     def upload() { }
+    def analytics() {
+        render(view: 'analytics', model:[results:analyticsService.byAll()])
+    }
 
     def storeImage() {
 

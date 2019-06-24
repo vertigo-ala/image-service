@@ -176,3 +176,25 @@ placeholder:
     document:
         thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/200px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
         large: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/500px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
+
+
+swagger:
+    info:
+    description: "Move your app forward with the Swagger API Documentation"
+    version: "ttn-swagger-1.0.0"
+    title: "Swagger API"
+    termsOfServices: "http://swagger.io/"
+    contact:
+        name: "Contact Us"
+        url: "http://swagger.io"
+        email: "contact@gmail.com"
+    license:
+        name: "licence under http://www.tothenew.com/"
+        url: "http://www.tothenew.com/"
+
+facets: ["dataResourceUid", "recognisedLicence", "creator"]
+
+
+analytics:
+    baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
+    viewID: "ga:8736349"

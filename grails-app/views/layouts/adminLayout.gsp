@@ -20,9 +20,9 @@
     <body class="fluid">
         <asset:stylesheet src="application.css" />
         <div class="container-fluid">
-            <h1>Admin tools</h1>
             <div class="row-fluid">
                 <div class="col-md-2">
+                    <h1>Admin tools</h1>
                     <ul class="nav nav-pills nav-stacked">
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'dashboard')}" title="Dashboard" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'upload')}" title="Upload images" />
@@ -32,6 +32,7 @@
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'licences')}" title="Update Licences" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'tags')}" title="Tags" />
                         <img:menuNavItem href="${createLink(controller: 'admin', action: 'settings')}" title="Settings" />
+                        <img:menuNavItem href="${createLink(controller: 'admin', action: 'analytics')}" title="Analytics" />
                     </ul>
                 </div>
                 <div class="col-md-10">

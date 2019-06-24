@@ -21,7 +21,11 @@ class UrlMappings {
         "/image/proxyImage"(controller: "image", action: "proxyImage")
         "/image/details"(controller: "image", action: "details")
 
-         name image_url: "/image/$imageId"(controller: "image", action: "details")
+        //analytics
+        "/ws/analytics"(controller: "analytics", action: "byAll")
+        "/ws/analytics/dataResource/$dataResourceUID"(controller: "analytics", action: "byDataResource")
+
+        name image_url: "/image/$imageId"(controller: "image", action: "details")
 
         "/"(controller:'image', action:'list')
         "500"(view:'/error')

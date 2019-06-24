@@ -3,8 +3,6 @@ package au.org.ala.images
 import grails.converters.JSON
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest
 import org.elasticsearch.action.delete.DeleteRequest
-import org.elasticsearch.action.index.IndexRequestBuilder
-import org.elasticsearch.client.core.AcknowledgedResponse
 import org.elasticsearch.common.xcontent.XContentType
 import groovy.json.JsonOutput
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -17,7 +15,6 @@ import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.search.SearchPhaseExecutionException
 import org.elasticsearch.action.search.SearchRequest
-import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.RequestOptions
@@ -29,7 +26,6 @@ import org.elasticsearch.index.query.BoolQueryBuilder
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
-import org.elasticsearch.search.aggregations.AggregationBuilder
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
@@ -193,7 +189,7 @@ class ElasticSearchService {
         }
         request.types(types as String[])
 
-        QueryBuilder queryBuilder = null
+
 
         QueryBuilder query = QueryBuilders.queryStringQuery(queryString)
 
@@ -216,24 +212,25 @@ class ElasticSearchService {
             }
         }
 
+        QueryBuilder queryBuilder = null
         if (filters) {
             BoolQueryBuilder builder = QueryBuilders.boolQuery()
             filters.each {
                 builder.must(it)
             }
             queryBuilder = builder.must(query) //QueryBuilders.termQuery(qsQuery). builder)
-        }
-        else {
+
+        } else {
             queryBuilder = query
         }
 
         // set pagination stuff
         SearchSourceBuilder source = pagenateQuery(params).query(queryBuilder)
 
-
-        source.aggregation(AggregationBuilders.terms("dataResourceUid").field("dataResourceUid"))
-        source.aggregation(AggregationBuilders.terms("recognisedLicence").field("recognisedLicence"))
-        source.aggregation(AggregationBuilders.terms("creator").field("creator"))
+        // aggregations = facets
+        grailsApplication.config.facets.each { facet ->
+            source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String))
+        }
 
         source.trackTotalHits(true)
 
@@ -284,10 +281,6 @@ class ElasticSearchService {
     private def initialiseIndex() {
         try {
 
-            def
-
-
-
             boolean indexExists  = client.indices().exists(new org.elasticsearch.client.indices.GetIndexRequest("images"), RequestOptions.DEFAULT)
             if (!indexExists){
                 CreateIndexRequest request = new CreateIndexRequest("images")
@@ -337,7 +330,6 @@ class ElasticSearchService {
 
         // split out by criteria type
         def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
-
 
         def filter  = QueryBuilders.boolQuery()
 
@@ -398,6 +390,11 @@ class ElasticSearchService {
                 searchSourceBuilder.sort(params.sort as String, order)
             }
 
+            // aggregations = facets
+            grailsApplication.config.facets.each { facet ->
+                searchSourceBuilder.aggregation(AggregationBuilders.terms(facet as String).field(facet as String))
+            }
+
             def ct = new CodeTimer("Index search")
             SearchRequest searchRequest = new SearchRequest();
             searchRequest.indices("images");
@@ -408,14 +405,22 @@ class ElasticSearchService {
 
             ct = new CodeTimer("Object retrieval (${searchResponse.hits.hits.length} of ${searchResponse.hits.totalHits} hits)")
             def imageList = []
+            def aggregations = [:]
             if (searchResponse.hits) {
                 searchResponse.hits.each { hit ->
                     imageList << Image.get(hit.id.toLong())
                 }
+                searchResponse.aggregations.each {
+                    def facet = [:]
+                    it.buckets.each { bucket ->
+                        facet[bucket.getKeyAsString()] = bucket.getDocCount()
+                    }
+                    aggregations.put(it.name, facet)
+                }
             }
             ct.stop(true)
 
-            return new QueryResults<Image>(list: imageList, totalCount: searchResponse?.hits?.totalHits.value ?: 0)
+            return new QueryResults<Image>(list: imageList, aggregations:aggregations, totalCount: searchResponse?.hits?.totalHits.value ?: 0)
         } catch (SearchPhaseExecutionException e) {
             log.warn(".SearchPhaseExecutionException thrown - this is expected behaviour for a new empty system.")
             return new QueryResults<Image>(list: [], totalCount: 0)

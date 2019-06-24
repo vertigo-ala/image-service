@@ -3,16 +3,14 @@ package au.org.ala.images
 import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
-import grails.converters.JSON
-import grails.converters.XML
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
-import org.springframework.web.multipart.MultipartRequest
 
 import javax.servlet.http.HttpServletResponse
-import java.util.regex.Pattern
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.POST
 
 class ImageController {
 
@@ -60,6 +58,7 @@ class ImageController {
             def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
             boolean contentDisposition = params.boolean("contentDisposition")
             proxyImageRequest(response, imageInstance, imageUrl, (int) imageInstance.fileSize ?: 0, contentDisposition)
+            sendAnalytics(imageInstance, 'imageview')
         }
     }
 
@@ -69,12 +68,12 @@ class ImageController {
             if(imageInstance.mimeType.startsWith('image')) {
                 def imageUrl = imageService.getImageThumbUrl(imageInstance.imageIdentifier)
                 proxyImageRequest(response, imageInstance, imageUrl, 0)
+                sendAnalytics(imageInstance, 'imagethumbview')
             } else if(imageInstance.mimeType.startsWith('audio')){
                 proxyImageRequest(response, imageInstance, grailsApplication.config.placeholder.sound.thumbnail, 0)
             } else {
-                proxyImageRequest(response, imageInstance, grailsApplication.config.placeholder.dcouemnt.thumbnail, 0)
+                proxyImageRequest(response, imageInstance, grailsApplication.config.placeholder.document.thumbnail, 0)
             }
-
         }
     }
 
@@ -83,6 +82,7 @@ class ImageController {
         if (imageInstance) {
             def imageUrl = imageService.getImageThumbLargeUrl(imageInstance.imageIdentifier)
             proxyImageRequest(response, imageInstance, imageUrl, 0)
+            sendAnalytics(imageInstance, 'imagelargeview')
         }
     }
 
@@ -109,6 +109,8 @@ class ImageController {
     }
 
     private void proxyUrl(URL u, HttpServletResponse response) {
+
+        //async call to google analytics....
         InputStream is = null
         try {
             is = u.openStream()
@@ -122,6 +124,38 @@ class ImageController {
             } finally {
                 is.close()
                 response.flushBuffer()
+            }
+        }
+    }
+
+    def sendAnalytics(Image imageInstance, String eventCategory){
+        if (imageInstance){
+            def queryURL =  "https://www.google-analytics.com"
+            def requestBody = [
+                           'v': 1,
+                           'tid': 'UA-4355440-1',
+                           'cid': UUID.randomUUID().toString(),  //anonymous client ID
+                           't': 'event',
+                           'ec': eventCategory, // event category
+                           'ea': imageInstance.dataResourceUid, //event value
+                           'ua' : request.getHeader("User-Agent")
+            ]
+
+            println "Posting analytics for " + imageInstance.dataResourceUid
+
+            def http = new HTTPBuilder(queryURL)
+            http.request( POST ) {
+                uri.path = '/collect'
+                requestContentType = groovyx.net.http.ContentType.URLENC
+                body =  requestBody
+
+                response.success = { resp ->
+                    println "POST response status: ${resp.statusLine}"
+                }
+
+                response.failure = { resp ->
+                    println 'request failed = ' + resp.status
+                }
             }
         }
     }
@@ -169,6 +203,8 @@ class ImageController {
             //add additional metadata
             def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
 
+            sendAnalytics(image, 'imagedetailedview')
+
             [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
              squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
         }
@@ -180,6 +216,7 @@ class ImageController {
             flash.errorMessage = "Could not find image with id ${params.int("id")}!"
         }
         def subimages = Subimage.findAllByParentImage(image)*.subimage
+        sendAnalytics(image, 'imagelargeviewer')
         render (view: 'viewer', model: [imageInstance: image, subimages: subimages])
     }
 
@@ -242,6 +279,7 @@ class ImageController {
 
     def viewer() {
         def imageInstance = imageService.getImageFromParams(params)
+        sendAnalytics(imageInstance, 'imagelargeviewer')
         [imageInstance: imageInstance, auxDataUrl: params.infoUrl]
     }
 
@@ -418,8 +456,6 @@ class ImageController {
                     imageStagingService, batchId, harvestable))
             imageCount++
         }
-
         redirect(action:"stagedImages")
     }
-
 }

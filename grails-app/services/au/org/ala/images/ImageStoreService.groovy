@@ -140,35 +140,35 @@ class ImageStoreService {
         return results
     }
 
-    public String getImageUrl(String imageIdentifier) {
+    String getImageUrl(String imageIdentifier) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
         path << "original"
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public String getImageThumbUrl(String imageIdentifier) {
+    String getImageThumbUrl(String imageIdentifier) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
         path << "thumbnail"
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public String getImageThumbLargeUrl(String imageIdentifier) {
+    String getImageThumbLargeUrl(String imageIdentifier) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
         path << "thumbnail_large"
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public String getThumbUrlByName(String imageIdentifier, String name) {
+    String getThumbUrlByName(String imageIdentifier, String name) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
         path << name
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
-    public String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor) {
+    String getImageSquareThumbUrl(String imageIdentifier, String backgroundColor) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
         if (backgroundColor) {

@@ -11,10 +11,11 @@ import org.springframework.web.multipart.MultipartRequest
 
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
-import java.util.zip.ZipOutputStream
 
 class WebServiceController {
 
+
+    static namespace = 'ws'
     static allowedMethods = [findImagesByMetadata: 'POST']
 
     def imageService
@@ -26,6 +27,10 @@ class WebServiceController {
     def elasticSearchService
     def collectoryService
     def authService
+
+    def index(){
+//        redirect(controller: 'apiDoc')
+    }
 
     /**
      * This service is used directly in front end in an AJAX fashion.

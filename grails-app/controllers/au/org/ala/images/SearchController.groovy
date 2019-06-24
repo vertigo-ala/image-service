@@ -69,10 +69,8 @@ class SearchController {
                 metadataItemValue = matcher.group(2)
             }
         }
-
         [criteriaDefinition: criteriaDefinition, criteria: criteria, metadataNames: metadataNames, metadataItemName: metadataItemName, metadataItemValue: metadataItemValue]
     }
-
 
     def ajaxErrorFragment() {
         def title = params.title ?: "Error!"
@@ -136,7 +134,7 @@ class SearchController {
             selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
         }
 
-        [imageList: searchResults.list, totalCount: searchResults.totalCount, selectedImageMap: selectedImageMap]
+        [imageList: searchResults.list, totalCount: searchResults.totalCount, facets:searchResults.aggregations, selectedImageMap: selectedImageMap]
     }
 
     @AlaSecured(value=[CASRoles.ROLE_USER], anyRole = true)

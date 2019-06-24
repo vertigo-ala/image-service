@@ -8,7 +8,7 @@
     </head>
 
     <body class="content">
-        <div class="container">
+        <div class="container-fluid">
             <h1>Advanced search</h1>
             <div class="row-fluid">
                 <div class="well well-small">
@@ -133,6 +133,7 @@
                         e.preventDefault();
                         doAjaxSearch($(this).attr("href"));
                     });
+                    layoutImages();
                 });
             }
 

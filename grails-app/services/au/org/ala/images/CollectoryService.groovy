@@ -16,6 +16,8 @@ class CollectoryService {
     //a low rent cache of image metadata
     static _lookupCache = [:]
 
+    static _uidLookupCache = [:]
+
     /**
      * Adds the image metadata (dublin core terms) to the image
      * for the image's associated data resource definition in the collectory.
@@ -49,6 +51,7 @@ class CollectoryService {
     def clearCache() {
         log.info("Clearing cache - current size: " + _lookupCache.size())
         _lookupCache.clear()
+        _uidLookupCache.clear()
     }
 
     def getResourceLevelMetadata(dataResourceUid){
@@ -77,5 +80,26 @@ class CollectoryService {
         }
 
         metadata
+    }
+
+    def getNameForUID(uid){
+
+        if(!uid){
+            return null
+        }
+
+        //lookup the resource UID
+        if(!_uidLookupCache.containsKey(uid)){
+            def url = grailsApplication.config.collectory.baseURL + "/ws/lookup/name/" + uid
+            try {
+                def js = new JsonSlurper()
+                def json = js.parseText(new URL(url).text)
+                _uidLookupCache.put(uid, json.name)
+            } catch (Exception e){
+                log.warn("Unable to load metadata from ${url}")
+            }
+        } else {
+            _uidLookupCache.get(uid)
+        }
     }
 }
