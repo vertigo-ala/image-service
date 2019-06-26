@@ -5,7 +5,7 @@
     <head>
         <meta name="layout" content="main"/>
         <title>${mediaTitle} - ${imageInstance.title ? imageInstance.title : imageInstance.imageIdentifier}</title>
-        <meta name="breadcrumbs" content="${g.createLink( controller: 'image', action: 'list')}, Images"/>
+        <meta name="breadcrumbs" content="${g.createLink( controller: 'search', action: 'list')}, Images"/>
         <asset:stylesheet src="application.css" />
         <asset:stylesheet src="ala/images-client.css" />
         <style>

@@ -5,6 +5,8 @@
         <meta name="section" content="home"/>
         <title>Advanced search</title>
         <meta name="breadcrumbs" content="${g.createLink( controller: 'image', action: 'list')}, Images"/>
+        <asset:stylesheet src="search.css" />
+        <asset:javascript src="search.js" />
     </head>
 
     <body class="content">
@@ -65,7 +67,7 @@
 
             $("#btnStartOver").click(function(e) {
                 e.preventDefault();
-                $.ajax("${createLink(action:"ajaxClearSearchCriteria")}").done(function() {
+                $.ajax("${createLink(action:"ajaxClearSearchCriteria", controller:"search")}").done(function() {
                     renderCriteria();
                     clearResults();
                 });
@@ -85,7 +87,7 @@
                     $("#addButtonDiv").css('display', 'none');
                 } else {
                     // $("#criteriaDetail").html(loadingSpinner());
-                    $.ajax("${createLink(action: "criteriaDetailFragment")}?searchCriteriaDefinitionId=" + criteriaDefinitionId).done(function(content) {
+                    $.ajax("${createLink(action: "criteriaDetailFragment",  controller:"search")}?searchCriteriaDefinitionId=" + criteriaDefinitionId).done(function(content) {
                         $("#addButtonDiv").css("display", "block");
                         $("#criteriaDetail").html(content);
                     });
@@ -98,7 +100,7 @@
                 var formData = $("#criteriaForm").serialize();
                 var errorDiv = $("#errorMessageDiv");
                 errorDiv.css("display",'none');
-                $.post('${createLink(action:'ajaxAddSearchCriteria')}',formData, function(data) {
+                $.post('${createLink(action:'ajaxAddSearchCriteria',  controller:"search")}',formData, function(data) {
                     if (data.errorMessage) {
                         errorDiv.html(data.errorMessage);
                         errorDiv.css("display",'block');
@@ -122,7 +124,7 @@
             }
 
             function doSearch() {
-                doAjaxSearch("${createLink(action:'searchResultsFragment')}");
+                doAjaxSearch("${createLink(action:'searchResultsFragment',  controller:'search')}");
             }
 
             function doAjaxSearch(url) {
@@ -138,7 +140,7 @@
             }
 
             function renderCriteria() {
-                $.ajax("${createLink(action: 'criteriaListFragment', params:[:])}").done(function (content) {
+                $.ajax("${createLink(action: 'criteriaListFragment',  controller:"search", params:[:])}").done(function (content) {
                     $("#searchCriteria").html(content);
                 });
             }

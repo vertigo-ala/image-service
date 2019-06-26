@@ -15,7 +15,7 @@
 <g:applyLayout name="main">
     <head>
         <title>Admin</title>
-        <meta name="breadcrumbs" content="${g.createLink( controller: 'image', action: 'list')}, Images"/>
+        <meta name="breadcrumbs" content="${g.createLink( controller: 'search', action: 'list')}, Images"/>
     </head>
     <body class="fluid">
         <asset:stylesheet src="application.css" />

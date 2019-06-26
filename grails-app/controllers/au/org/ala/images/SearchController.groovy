@@ -4,6 +4,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
+import org.apache.commons.lang.StringUtils
 
 import java.util.regex.Pattern
 
@@ -13,12 +14,77 @@ class SearchController {
     def searchCriteriaService
     def selectionService
     def elasticSearchService
+    def collectoryService
 
     def index() {
         boolean hasCriteria = searchService.getSearchCriteriaList()?.size() > 0
         def criteriaDefinitions = searchCriteriaService.getCriteriaDefinitionList()
         [criteriaDefinitions: criteriaDefinitions]
         render(view: 'advancedSearch', model:[hasCriteria: hasCriteria, criteriaDefinitions: criteriaDefinitions])
+    }
+
+    def list() {
+
+        def ct = new CodeTimer("Image list")
+
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+
+        def query = params.q as String
+
+        QueryResults<Image> results = searchService.search(params)
+
+        def userId = AuthenticationUtils.getUserId(request)
+
+        def isLoggedIn = StringUtils.isNotEmpty(userId)
+        def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
+
+        def filters = [:]
+
+        def filterQueries = params.findAll { it.key == 'fq'}
+        filterQueries.each {
+            if(it.value instanceof String[]){
+                it.value.each { filter ->
+                    def kv = filter.split(":")
+                    if (kv[0] == "dataResourceUid"){
+                        filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = filter
+                    } else {
+                        filters["${kv[0]}: ${kv[1]}"] = filter
+                    }
+                }
+            } else {
+                def kv = it.value.split(":")
+                if (kv[0] == "dataResourceUid"){
+                    filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] =  it.value
+                } else {
+                    filters["${kv[0]}: ${kv[1]}"] = it.value
+                }
+            }
+        }
+
+        ct.stop(true)
+        [images: results.list,
+         facets: results.aggregations,
+         criteria: [],
+         q: query,
+         totalImageCount: results.totalCount,
+         isLoggedIn: isLoggedIn,
+         selectedImageMap: selectedImageMap,
+         filters: filters,
+         searchCriteria: searchService.getSearchCriteriaList(),
+         criteriaDefinitions: searchCriteriaService.getCriteriaDefinitionList()
+        ]
+    }
+
+    def removeCriterion(){
+        searchService.removeSearchCriteria(params.criteriaId)
+        redirect(action:'list', params:[q:params.q, fq:params.fq])
+    }
+
+    def download(){
+        def query = params.q as String
     }
 
     def addSearchCriteriaFragment() {
@@ -83,15 +149,16 @@ class SearchController {
         def results = [status: 'ok']
         try {
 
-            def existing = searchService.getSearchCriteria(params.criteriaId)
-            if (existing) {
+            def searchCriteria = searchService.getSearchCriteria(params.criteriaId)
+            if (searchCriteria) {
                 // we are saving a change to an existing criteria...
-                searchService.saveSearchCriteria(existing.id, params)
+                searchService.saveSearchCriteria(searchCriteria.id, params)
             } else {
                 // we create a new criteria
-                searchService.addSearchCriteria(params)
+                searchCriteria = searchService.addSearchCriteria(params)
             }
 
+            results["criteriaID"] = searchCriteria.id
 
         } catch (Exception ex) {
             results.status = "error"
@@ -124,10 +191,8 @@ class SearchController {
     }
 
     def searchResultsFragment() {
-
         params.max = params.max ?: 48
-
-        def searchResults = searchService.searchUsingCriteria(params)
+        def searchResults = searchService.search(params)
         def userId = AuthenticationUtils.getUserId(request)
         def selectedImageMap = [:]
         if (userId) {

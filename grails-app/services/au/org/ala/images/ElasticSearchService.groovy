@@ -1,5 +1,6 @@
 package au.org.ala.images
 
+import com.opencsv.CSVWriter
 import grails.converters.JSON
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest
 import org.elasticsearch.action.delete.DeleteRequest
@@ -128,9 +129,9 @@ class ElasticSearchService {
         }
     }
 
-    QueryResults<Image> simpleImageSearch(String query, GrailsParameterMap params) {
+    QueryResults<Image> simpleImageSearch(List<SearchCriteria> searchCriteria, GrailsParameterMap params) {
         log.debug "search params: ${params}"
-        SearchRequest request = buildSearchRequest(query, params, "images", [:])
+        SearchRequest request = buildSearchRequest(params, searchCriteria, "images")
         SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
         def imageList = []
         if (searchResponse.hits) {
@@ -152,9 +153,17 @@ class ElasticSearchService {
         qr
     }
 
+
+    /**
+     * Execute the search using a map query.
+     *
+     * @param query
+     * @param params
+     * @return
+     */
     QueryResults<Image> search(Map query, GrailsParameterMap params) {
         log.debug "search params: ${params}"
-        SearchRequest request = buildSearchRequest(JsonOutput.toJson(query), params, "images", [:])
+        SearchRequest request = buildSearchRequest(JsonOutput.toJson(query), params, "images")
         SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
         def imageList = []
         if (searchResponse.hits) {
@@ -177,7 +186,8 @@ class ElasticSearchService {
      * @param geoSearchCriteria geo search criteria.
      * @return SearchRequest
      */
-    SearchRequest buildSearchRequest(String queryString, Map params, String index, Map geoSearchCriteria = [:]) {
+    SearchRequest buildSearchRequest(Map params, List<SearchCriteria> criteriaList, String index) {
+
         SearchRequest request = new SearchRequest()
         request.searchType SearchType.DFS_QUERY_THEN_FETCH
 
@@ -189,49 +199,40 @@ class ElasticSearchService {
         }
         request.types(types as String[])
 
+        //create query builder
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
+        boolQueryBuilder.must(QueryBuilders.queryStringQuery(params.q ?: "*:*"))
 
-
-        QueryBuilder query = QueryBuilders.queryStringQuery(queryString)
-
+        // Add FQ query filters
         def filterQueries = params.findAll { it.key == 'fq'}
-
-        def filters = []
-
         if (filterQueries) {
             filterQueries.each {
 
                 if(it.value instanceof String[]){
                     it.value.each { filter ->
                         def kv = filter.split(":")
-                        filters << QueryBuilders.termQuery(kv[0], kv[1])
+                        boolQueryBuilder.must(QueryBuilders.termQuery(kv[0], kv[1]))
                     }
                 } else {
                     def kv = it.value.split(":")
-                    filters << QueryBuilders.termQuery(kv[0], kv[1])
+                    boolQueryBuilder.must(QueryBuilders.termQuery(kv[0], kv[1]))
                 }
             }
         }
 
-        QueryBuilder queryBuilder = null
-        if (filters) {
-            BoolQueryBuilder builder = QueryBuilders.boolQuery()
-            filters.each {
-                builder.must(it)
-            }
-            queryBuilder = builder.must(query) //QueryBuilders.termQuery(qsQuery). builder)
+        //add search criteria
+        boolQueryBuilder = createQueryFromCriteria(boolQueryBuilder, criteriaList)
 
-        } else {
-            queryBuilder = query
-        }
 
         // set pagination stuff
-        SearchSourceBuilder source = pagenateQuery(params).query(queryBuilder)
+        SearchSourceBuilder source = pagenateQuery(params).query(boolQueryBuilder)
 
-        // aggregations = facets
+        // request aggregations (facets)
         grailsApplication.config.facets.each { facet ->
             source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String))
         }
 
+        //ask for the total
         source.trackTotalHits(true)
 
         if (params.highlight) {
@@ -240,7 +241,7 @@ class ElasticSearchService {
 
         request.source(source)
 
-        return request
+        request
     }
 
     private SearchSourceBuilder pagenateQuery(Map params) {
@@ -250,33 +251,6 @@ class ElasticSearchService {
         source.sort('dateUploaded', SortOrder.DESC)
         source
     }
-//
-//    private QueryBuilder buildQuery(String query, Map params, Map geoSearchCriteria = null, String index) {
-//        QueryBuilder queryBuilder
-//        List filters = []
-//
-//        if (params.terms) {
-//            filters << QueryBuilders.termQuery(params.terms.field, params.terms.values)
-//        }
-//
-//        QueryStringQueryBuilder qsQuery = QueryBuilders.queryStringQuery(query)
-//
-//        if (filters) {
-//            BoolQueryBuilder builder = QueryBuilders.boolQuery()
-//            builder.must(*filters)
-//
-//            queryBuilder = builder.must(qsQuery) //QueryBuilders.termQuery(qsQuery). builder)
-//        }
-//        else {
-//            queryBuilder = qsQuery
-//        }
-//
-//        if (params.weightResultsByEntity) {
-//            queryBuilder = applyWeightingToEntities(queryBuilder)
-//        }
-//
-//        queryBuilder
-//    }
 
     private def initialiseIndex() {
         try {
@@ -324,18 +298,21 @@ class ElasticSearchService {
         }
     }
 
-    def searchUsingCriteria(List<SearchCriteria> criteriaList, GrailsParameterMap params) {
+    /**
+     * Create a boolean elastic search query builder from the supplied criteria.
+     * @param criteriaList
+     * @return
+     */
+    private BoolQueryBuilder createQueryFromCriteria(BoolQueryBuilder boolQueryBuilder, List<SearchCriteria> criteriaList) {
 
         def metaDataPattern = Pattern.compile("^(.*)[:](.*)\$")
 
         // split out by criteria type
         def criteriaMap = criteriaList.groupBy { it.criteriaDefinition.type }
 
-        def filter  = QueryBuilders.boolQuery()
-
         def list = criteriaMap[CriteriaType.ImageProperty]
         if (list) {
-            ESSearchCriteriaUtils.buildCriteria(filter, list)
+            ESSearchCriteriaUtils.buildCriteria(boolQueryBuilder, list)
         }
 
         list = criteriaMap[CriteriaType.ImageMetadata]
@@ -348,16 +325,15 @@ class ElasticSearchService {
                     def term = matcher.group(2)?.replaceAll('\\*', '%')
                     term = term.replaceAll(":", "\\:")
 
-                    filter.must(QueryBuilders.queryFilter(QueryBuilders.queryStringQuery("${matcher.group(1)}:${term}")))
+                    boolQueryBuilder.must(QueryBuilders.queryFilter(QueryBuilders.queryStringQuery("${matcher.group(1)}:${term}")))
                 }
             }
         }
 
-        return executeFilterSearch(filter, params)
+        boolQueryBuilder
     }
 
     QueryResults<Image> searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
-
         def queryString = values.collect { key.toLowerCase() + ":\"" + it + "\""}.join(" OR ")
         QueryStringQueryBuilder builder = QueryBuilders.queryStringQuery(queryString)
         builder.defaultField("content")
@@ -366,15 +342,44 @@ class ElasticSearchService {
         return executeSearch(searchSourceBuilder, params)
     }
 
-    private QueryResults<Image> executeFilterSearch(QueryBuilder filterBuilder, GrailsParameterMap params) {
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
-        searchSourceBuilder.query(filterBuilder)
-        executeSearch(searchSourceBuilder, params)
-    }
-
-    private QueryResults<Image> executeSearch(SearchSourceBuilder searchSourceBuilder, GrailsParameterMap params) {
+    private QueryResults<Image> executeSearch(GrailsParameterMap params) {
 
         try {
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+
+            QueryBuilder queryBuilder = QueryBuilders.queryStringQuery(params.q)
+
+            def filterQueries = params.findAll { it.key == 'fq'}
+
+            def filters = []
+
+            if (filterQueries) {
+                filterQueries.each {
+
+                    if(it.value instanceof String[]){
+                        it.value.each { filter ->
+                            def kv = filter.split(":")
+                            filters << QueryBuilders.termQuery(kv[0], kv[1])
+                        }
+                    } else {
+                        def kv = it.value.split(":")
+                        filters << QueryBuilders.termQuery(kv[0], kv[1])
+                    }
+                }
+            }
+
+            if (filters) {
+                BoolQueryBuilder builder = QueryBuilders.boolQuery()
+                filters.each {
+                    builder.must(it)
+                }
+                queryBuilder = builder.must(queryBuilder) //QueryBuilders.termQuery(qsQuery). builder)
+            }
+
+
+            createQueryFromCriteria()
+
+
             if (params?.offset) {
                 searchSourceBuilder.from(params.int("offset"))
             }
@@ -396,9 +401,9 @@ class ElasticSearchService {
             }
 
             def ct = new CodeTimer("Index search")
-            SearchRequest searchRequest = new SearchRequest();
-            searchRequest.indices("images");
-            searchRequest.source(searchSourceBuilder);
+            SearchRequest searchRequest = new SearchRequest()
+            searchRequest.indices("images")
+            searchRequest.source(searchSourceBuilder)
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
 
             ct.stop(true)
@@ -441,9 +446,5 @@ class ElasticSearchService {
             names = metadata.collect { it.key }
         }
         return names
-    }
-
-    def ping() {
-        logService.log("ElasticSearch Service is ${node ? '' : 'NOT' } alive.")
     }
 }

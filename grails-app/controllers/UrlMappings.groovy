@@ -27,7 +27,7 @@ class UrlMappings {
 
         name image_url: "/image/$imageId"(controller: "image", action: "details")
 
-        "/"(controller:'image', action:'list')
+        "/"(controller:'search', action:'list')
         "500"(view:'/error')
 	}
 }

@@ -5,6 +5,7 @@ import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
+import org.elasticsearch.index.query.QueryBuilders
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
@@ -24,33 +25,6 @@ class ImageController {
     def collectoryService
 
     def index() { }
-
-    def list() {
-
-        def ct = new CodeTimer("Image list")
-        QueryResults<Image> results
-
-        params.offset = params.offset ?: 0
-        params.max = params.max ?: 50
-        params.sort = params.sort ?: 'dateUploaded'
-        params.order = params.order ?: 'desc'
-
-        def query = params.q as String
-
-        if (query) {
-            results = searchService.simpleSearch(query, params)
-        } else {
-            results = searchService.allImages(params)
-        }
-
-        def userId = AuthenticationUtils.getUserId(request)
-
-        def isLoggedIn = StringUtils.isNotEmpty(userId)
-        def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
-
-        ct.stop(true)
-        [images: results.list, facets:results.aggregations, q: query, totalImageCount: results.totalCount, isLoggedIn: isLoggedIn, selectedImageMap: selectedImageMap]
-    }
 
     def proxyImage() {
         def imageInstance = imageService.getImageFromParams(params)

@@ -35,7 +35,7 @@
 </auth:ifAnyGranted>
 
 
-<g:render template="/image/imageThumbnails" model="${[images: imageList, totalImageCount: totalCount, allowSelection: true, thumbsTitle:"Album '${album.name}' (${totalCount} images)", paginateActionId: album.id, footerTemplate:'imageThumbFooter', toolButtons: buttons, selectedImageMap: selectedImageMap]}" />
+<g:render template="/search/imageThumbnails" model="${[images: imageList, totalImageCount: totalCount, allowSelection: true, thumbsTitle:"Album '${album.name}' (${totalCount} images)", paginateActionId: album.id, footerTemplate:'imageThumbFooter', toolButtons: buttons, selectedImageMap: selectedImageMap]}" />
 
 <script>
 

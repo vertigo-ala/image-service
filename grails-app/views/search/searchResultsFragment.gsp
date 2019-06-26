@@ -3,7 +3,7 @@
         def toolButtons = []
         toolButtons << [label: "Select all matching images (${totalCount})", id:"btnSelectAllImages"]
     %>
-    <g:render template="/image/imageThumbnails"
+    <g:render template="/search/imageThumbnails"
               model="${[images: imageList, totalImageCount: totalCount, allowSelection: true, selectedImageMap: selectedImageMap, thumbsTitle: "${totalCount} matching images", toolButtons: toolButtons]}" />
 </div>
 <script>
