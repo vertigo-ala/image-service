@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="images"/>
+    <meta name="layout" content="main"/>
     <title>My Albums | ${grailsApplication.config.skin.orgNameLong}</title>
     <style>
         #buttonsDiv {

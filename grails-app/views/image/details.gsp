@@ -403,7 +403,7 @@
                     content: "Warning! This operation cannot be undone. Are you sure you wish to permanently delete this image?",
                     affirmativeAction: function() {
                         $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
-                            window.location = "${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'list')}";
+                            window.location = "${grailsApplication.config.grails.serverURL}${createLink(controller:'search', action:'list')}";
                         });
                     }
                 };

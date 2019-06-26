@@ -4,6 +4,8 @@ import com.opencsv.CSVWriter
 import grails.converters.JSON
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest
 import org.elasticsearch.action.delete.DeleteRequest
+import org.elasticsearch.action.search.SearchScrollRequest
+import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.common.xcontent.XContentType
 import groovy.json.JsonOutput
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -27,6 +29,9 @@ import org.elasticsearch.index.query.BoolQueryBuilder
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
+import org.elasticsearch.search.Scroll
+import org.elasticsearch.search.SearchHit
+import org.elasticsearch.search.SearchHits
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
@@ -158,50 +163,56 @@ class ElasticSearchService {
 
     void simpleImageDownload(List<SearchCriteria> searchCriteria, GrailsParameterMap params, OutputStream outputStream) {
 
-        ZipOutputStream out = new ZipOutputStream(outputStream);
-        ZipEntry e = new ZipEntry("images.csv");
+        ZipOutputStream out = new ZipOutputStream(outputStream)
+        ZipEntry e = new ZipEntry("images.csv")
         out.putNextEntry(e)
 
         def csvWriter = new CSVWriter(new OutputStreamWriter(out))
-        def PAGE_SIZE = 1000
+        def PAGE_SIZE = 10000
         params.offset = 0
-        params.max = PAGE_SIZE
-        def finished = false
+        params.max = 1000
+        def totalWritten = 0
+        def fields = null
 
-        while (!finished){
-            SearchRequest request = buildSearchRequest(params, searchCriteria, "images")
-            SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
-            def fields = null
-            //add paging....
-            if (searchResponse.hits) {
-                searchResponse.hits.each { hit ->
-                    def map = hit.properties.sourceAsMap
-                    if (fields == null){
-                        fields = map.keySet().sort()
-                        csvWriter.writeNext(fields as String[])
-                    }
-                    def values = []
-                    fields.each {
-                        values << map.get(it) ?: ""
-                    }
-                    csvWriter.writeNext(values as String[])
+        final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+        SearchRequest searchRequest = buildSearchRequest(params, searchCriteria, "images")
+        searchRequest.scroll(scroll)
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
+
+        String scrollId = searchResponse.getScrollId()
+        SearchHits hits = searchResponse.getHits()
+
+        //Scroll until no hits are returned
+        while (hits.getHits().length != 0) {
+            for (SearchHit hit : hits.getHits()) {
+                def map = hit.properties.sourceAsMap
+                if (fields == null){
+                    fields = map.keySet().sort()
+                    csvWriter.writeNext(fields as String[])
                 }
+                def values = []
+                fields.each {
+                    values << map.get(it) ?: ""
+                }
+                csvWriter.writeNext(values as String[])
+                totalWritten += 1
             }
 
-            params.offset += PAGE_SIZE
+            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId)
+            scrollRequest.scroll(TimeValue.timeValueSeconds(30))
 
-            if(searchResponse.hits.size() < PAGE_SIZE) {
-                finished = true
-            }
+            searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT)
+            scrollId = searchResponse.getScrollId()
+            hits = searchResponse.getHits()
         }
 
+        params.offset += PAGE_SIZE
+        log.debug("Writing complete...." + totalWritten)
         csvWriter.flush()
-        csvWriter.close()
-
-        out.closeEntry();
-        out.close();
+        out.closeEntry()
+        out.close()
     }
-
 
     /**
      * Execute the search using a map query.
@@ -300,7 +311,9 @@ class ElasticSearchService {
     private SearchSourceBuilder pagenateQuery(Map params) {
         SearchSourceBuilder source = new SearchSourceBuilder()
         source.from(params.offset ? params.offset as int : 0)
-        source.size(params.max ? params.max as int : 10)
+        if(params.max > 0) {
+            source.size(params.max ? params.max as int : 10)
+        }
         source.sort('dateUploaded', SortOrder.DESC)
         source
     }
@@ -428,10 +441,6 @@ class ElasticSearchService {
                 }
                 queryBuilder = builder.must(queryBuilder) //QueryBuilders.termQuery(qsQuery). builder)
             }
-
-
-            createQueryFromCriteria()
-
 
             if (params?.offset) {
                 searchSourceBuilder.from(params.int("offset"))

@@ -130,7 +130,7 @@
 <div class="col-md-12">
     <tb:paginate total="${totalImageCount}" max="100"
                  action="list"
-                 controller="image"
+                 controller="search"
                  params="${[q:params.q]}"
     />
 </div>

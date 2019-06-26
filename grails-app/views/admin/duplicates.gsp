@@ -28,7 +28,7 @@
                         <img src="<img:imageThumbUrl imageId="${dupe.image.imageIdentifier}" />" width="100">
                     </td>
                     <td>
-                        <a href="${createLink(controller:'image', action:'list', params:[q:"contentMD5Hash=${dupe.hash}"])}">
+                        <a href="${createLink(controller:'search', action:'list', params:[q:"contentMD5Hash=${dupe.hash}"])}">
                             ${dupe.hash}
                         </a>
                     </td>

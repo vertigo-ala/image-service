@@ -39,7 +39,7 @@
         $(document).ready(function() {
             $("#btnSearch").click(function(e) {
                 e.preventDefault();
-                window.location = "${createLink(controller:'image', action: 'list')}?q=" + $("#search").val();
+                window.location = "${createLink(controller:'search', action: 'list')}?q=" + $("#search").val();
             });
         });
     </script>

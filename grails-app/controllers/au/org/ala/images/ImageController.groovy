@@ -4,8 +4,6 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import org.apache.commons.io.IOUtils
-import org.apache.commons.lang.StringUtils
-import org.elasticsearch.index.query.QueryBuilders
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
@@ -17,14 +15,16 @@ class ImageController {
 
     def imageService
     def imageStoreService
-    def searchService
-    def selectionService
     def logService
     def imageStagingService
     def batchService
     def collectoryService
 
     def index() { }
+
+    def list(){
+        redirect(controller: 'search', action:'list')
+    }
 
     def proxyImage() {
         def imageInstance = imageService.getImageFromParams(params)
