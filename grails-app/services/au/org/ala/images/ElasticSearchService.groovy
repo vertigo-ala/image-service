@@ -47,6 +47,7 @@ class ElasticSearchService {
 
     def logService
     def grailsApplication
+    def imageStoreService
 
     private RestHighLevelClient client
 
@@ -188,12 +189,18 @@ class ElasticSearchService {
             for (SearchHit hit : hits.getHits()) {
                 def map = hit.properties.sourceAsMap
                 if (fields == null){
-                    fields = map.keySet().sort()
+                    fields = ["imageURL"]
+                    fields.addAll(map.keySet().sort())
                     csvWriter.writeNext(fields as String[])
                 }
                 def values = []
+
                 fields.each {
-                    values << map.get(it) ?: ""
+                    if(it == "imageURL"){
+                        values.add(imageStoreService.getImageUrl(map.get("imageIdentifier")))
+                    } else {
+                        values.add(map.get(it) ?: "")
+                    }
                 }
                 csvWriter.writeNext(values as String[])
                 totalWritten += 1
@@ -311,9 +318,7 @@ class ElasticSearchService {
     private SearchSourceBuilder pagenateQuery(Map params) {
         SearchSourceBuilder source = new SearchSourceBuilder()
         source.from(params.offset ? params.offset as int : 0)
-        if(params.max > 0) {
-            source.size(params.max ? params.max as int : 10)
-        }
+        source.size(params.max ? params.max as int : 10)
         source.sort('dateUploaded', SortOrder.DESC)
         source
     }
