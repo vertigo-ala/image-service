@@ -355,8 +355,10 @@ class WebServiceController {
             json {
                 def jsonStr = results as JSON
                 if (params.callback) {
+                    response.setContentType("text/javascript")
                     render("${params.callback}(${jsonStr})")
                 } else {
+                    response.setContentType("application/json")
                     render(jsonStr)
                 }
             }
