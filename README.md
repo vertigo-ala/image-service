@@ -31,3 +31,19 @@ There are other related repositories to this one:
 There are ansible scripts for this applications (and other ALA tools) in the [ala-install](https://github.com/AtlasOfLivingAustralia/ala-install) project. The ansible playbook for the image-service is [here](https://github.com/AtlasOfLivingAustralia/ala-install/blob/master/ansible/image-service.yml)
 
 You can also run this application locally by following the instructions on its [wiki page](https://github.com/AtlasOfLivingAustralia/image-service/wiki)
+
+## Running it locally
+
+There is a docker-compose YML file that can be used to run elastic search locally for local development purposes.
+To use run:
+
+```$xslt
+docker-compose -f elastic.yml up -d
+```
+
+And to shutdown
+
+
+```$xslt
+docker-compose -f elastic.yml kill
+```
