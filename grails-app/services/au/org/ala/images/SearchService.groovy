@@ -17,6 +17,12 @@ class SearchService {
         return elasticSearchService.simpleImageSearch(getSearchCriteriaList(), params)
     }
 
+    QueryResults<Image> download(GrailsParameterMap params, OutputStream output) {
+        return elasticSearchService.simpleImageDownload(getSearchCriteriaList(), params, output)
+    }
+
+
+
     QueryResults<Image> findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
         return elasticSearchService.searchByMetadata(metaDataKey, values, params)
     }

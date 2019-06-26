@@ -29,13 +29,6 @@
 
         <div class="radio">
             <label>
-                <g:radio class="radioButton" name="operator" value="eq" checked="${evaluator == null || evaluator?.operator == 'eq' ? 'checked' : ''}"/>
-                Equal to
-            </label>
-        </div>
-
-        <div class="radio">
-            <label>
                 <g:radio class="radioButton" name="operator" value="gt" checked="${evaluator?.operator == 'gt' ? 'checked' : ''}"/>
                 Greater than or equal to
             </label>

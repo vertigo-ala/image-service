@@ -35,6 +35,8 @@ import org.elasticsearch.search.sort.SortOrder
 import javax.annotation.PreDestroy
 import java.util.regex.Pattern
 import javax.annotation.PostConstruct
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class ElasticSearchService {
 
@@ -154,6 +156,53 @@ class ElasticSearchService {
     }
 
 
+    void simpleImageDownload(List<SearchCriteria> searchCriteria, GrailsParameterMap params, OutputStream outputStream) {
+
+        ZipOutputStream out = new ZipOutputStream(outputStream);
+        ZipEntry e = new ZipEntry("images.csv");
+        out.putNextEntry(e)
+
+        def csvWriter = new CSVWriter(new OutputStreamWriter(out))
+        def PAGE_SIZE = 1000
+        params.offset = 0
+        params.max = PAGE_SIZE
+        def finished = false
+
+        while (!finished){
+            SearchRequest request = buildSearchRequest(params, searchCriteria, "images")
+            SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT)
+            def fields = null
+            //add paging....
+            if (searchResponse.hits) {
+                searchResponse.hits.each { hit ->
+                    def map = hit.properties.sourceAsMap
+                    if (fields == null){
+                        fields = map.keySet().sort()
+                        csvWriter.writeNext(fields as String[])
+                    }
+                    def values = []
+                    fields.each {
+                        values << map.get(it) ?: ""
+                    }
+                    csvWriter.writeNext(values as String[])
+                }
+            }
+
+            params.offset += PAGE_SIZE
+
+            if(searchResponse.hits.size() < PAGE_SIZE) {
+                finished = true
+            }
+        }
+
+        csvWriter.flush()
+        csvWriter.close()
+
+        out.closeEntry();
+        out.close();
+    }
+
+
     /**
      * Execute the search using a map query.
      *
@@ -210,12 +259,16 @@ class ElasticSearchService {
 
                 if(it.value instanceof String[]){
                     it.value.each { filter ->
-                        def kv = filter.split(":")
-                        boolQueryBuilder.must(QueryBuilders.termQuery(kv[0], kv[1]))
+                        if(filter) {
+                            def kv = filter.split(":")
+                            boolQueryBuilder.must(QueryBuilders.termQuery(kv[0], kv[1]))
+                        }
                     }
                 } else {
-                    def kv = it.value.split(":")
-                    boolQueryBuilder.must(QueryBuilders.termQuery(kv[0], kv[1]))
+                    if(it.value) {
+                        def kv = it.value.split(":")
+                        boolQueryBuilder.must(QueryBuilders.termQuery(kv[0], kv[1]))
+                    }
                 }
             }
         }

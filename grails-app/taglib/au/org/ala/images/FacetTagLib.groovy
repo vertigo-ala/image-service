@@ -3,8 +3,6 @@ package au.org.ala.images
 class FacetTagLib {
     static namespace = 'facet'
 
-    def collectoryService
-
     def selectedFacetLink = { attrs, body ->
 
         def query = params.q

@@ -43,23 +43,27 @@ class SearchController {
 
         def filters = [:]
 
-        def filterQueries = params.findAll { it.key == 'fq'}
+        def filterQueries = params.findAll { it.key == 'fq' && it.value}
         filterQueries.each {
             if(it.value instanceof String[]){
                 it.value.each { filter ->
-                    def kv = filter.split(":")
-                    if (kv[0] == "dataResourceUid"){
-                        filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = filter
-                    } else {
-                        filters["${kv[0]}: ${kv[1]}"] = filter
+                    if(filter) {
+                        def kv = filter.split(":")
+                        if (kv[0] == "dataResourceUid") {
+                            filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = filter
+                        } else {
+                            filters["${kv[0]}: ${kv[1]}"] = filter
+                        }
                     }
                 }
             } else {
-                def kv = it.value.split(":")
-                if (kv[0] == "dataResourceUid"){
-                    filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] =  it.value
-                } else {
-                    filters["${kv[0]}: ${kv[1]}"] = it.value
+                if(it.value) {
+                    def kv = it.value.split(":")
+                    if (kv[0] == "dataResourceUid") {
+                        filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = it.value
+                    } else {
+                        filters["${kv[0]}: ${kv[1]}"] = it.value
+                    }
                 }
             }
         }
@@ -84,7 +88,9 @@ class SearchController {
     }
 
     def download(){
-        def query = params.q as String
+        response.setHeader("Content-Disposition", "attachment; filename=\"images.zip\"")
+        response.setHeader("Content-Type", "application/zip")
+        searchService.download(params, response.getOutputStream())
     }
 
     def addSearchCriteriaFragment() {
