@@ -4,6 +4,7 @@ buildscript {
         mavenLocal()
         maven { url "https://nexus.ala.org.au/content/groups/public/" }
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://dl.bintray.com/ajay-kumar/plugins" }
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
@@ -75,6 +76,9 @@ dependencies {
     compile 'org.apache.tika:tika-core:1.18'
     compile 'com.github.jai-imageio:jai-imageio-core:1.4.0'
     compile 'au.org.ala:image-utils:1.8.5'
+    
+    // Swagger
+    compile 'org.grails.plugins:swagger:1.0.1'
 
     // Google analytics requirement
     compile 'com.google.api-client:google-api-client:1.25.0'

@@ -4,6 +4,12 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.CASRoles
 import grails.converters.JSON
 import grails.converters.XML
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiImplicitParams
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.apache.http.HttpStatus
 import grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
@@ -12,6 +18,7 @@ import org.springframework.web.multipart.MultipartRequest
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
 
+@Api(value = "/ws", tags = ["Image Services"], description = "Image Service Api's")
 class WebServiceController {
 
 
@@ -28,9 +35,7 @@ class WebServiceController {
     def collectoryService
     def authService
 
-    def index(){
-//        redirect(controller: 'apiDoc')
-    }
+    def index(){}
 
     /**
      * This service is used directly in front end in an AJAX fashion.
@@ -280,16 +285,6 @@ class WebServiceController {
         renderResults([success: success])
     }
 
-    def getImageInfo() {
-        def results = [success:false]
-        def image = Image.findByImageIdentifier(params.id as String)
-        if (image) {
-            results.success = true
-            addImageInfoToMap(image, results, params.boolean("includeTags"), params.boolean("includeMetadata"))
-        }
-
-        renderResults(results)
-    }
 
     private addImageInfoToMap(Image image, Map results, Boolean includeTags, Boolean includeMetadata) {
 
@@ -333,6 +328,47 @@ class WebServiceController {
 
     }
 
+    @ApiOperation(
+            value = "Get Image Details",
+            nickname = "image/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
+    def getImageInfo() {
+        def results = [success:false]
+        def image = Image.findByImageIdentifier(params.imageID as String)
+        if (image) {
+            results.success = true
+            addImageInfoToMap(image, results, params.boolean("includeTags"), params.boolean("includeMetadata"))
+        }
+
+        renderResults(results)
+    }
+
+    @ApiOperation(
+            value = "Get Image PopUpDetails",
+            nickname = "imagePopupInfo/{id}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def imagePopupInfo() {
         def results = [success:false]
 
@@ -370,19 +406,54 @@ class WebServiceController {
         response.status = responseCode
     }
 
+    @ApiOperation(
+            value = "Repository stats",
+            nickname = "repositoryStatistics",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getRepositoryStatistics() {
         def results = [:]
         results.imageCount = Image.count()
         results.sizeOnDisk =
-
         renderResults(results)
     }
 
+    @ApiOperation(
+            value = "Repository stats",
+            nickname = "repositoryStatistics",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getRepositorySizeOnDisk() {
         def results = [ repoSizeOnDisk : ImageUtils.formatFileSize(imageStoreService.getRepositorySizeOnDisk()) ]
         renderResults(results)
     }
 
+    @ApiOperation(
+            value = "BackgroundQueueStats stats",
+            nickname = "getBackgroundQueueStats",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getBackgroundQueueStats() {
         def results = [:]
         results.queueLength = imageService.getImageTaskQueueLength()
@@ -607,21 +678,55 @@ class WebServiceController {
             renderResults([success: true, results: results, invalidImageIds: errors])
             return
         }
-
         renderResults([success:false, message:'POST with content type "application/JSON" required.'])
-
     }
 
+    @ApiOperation(
+            value = "Retrieve a list of recognised Licences",
+            nickname = "licence",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def licence(){
         def licenses = License.findAll()
         renderResults (licenses)
     }
 
+    @ApiOperation(
+            value = "Retrieve a list of string to licence mappings in use by the image service",
+            nickname = "licenceMapping",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def licenceMapping(){
         def licenses = LicenseMapping.findAll()
         renderResults (licenses)
     }
 
+    @ApiOperation(
+            value = "findImagesByOriginalFilename",
+            nickname = "findImagesByOriginalFilename",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def findImagesByOriginalFilename() {
 
         CodeTimer ct = new CodeTimer("Original file lookup")
@@ -659,6 +764,19 @@ class WebServiceController {
         ct.stop(true)
     }
 
+
+    @ApiOperation(
+            value = "findImagesByMetadata",
+            nickname = "findImagesByMetadata",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def findImagesByMetadata() {
 
         def query = request.JSON
@@ -776,6 +894,18 @@ class WebServiceController {
      *
      * @return
      */
+    @ApiOperation(
+            value = "updateMetadata",
+            nickname = "updateMetadata",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def updateMetadata(){
 
         CodeTimer ct = new CodeTimer("Update Image metadata ${params.imageIdentifier}")
@@ -809,6 +939,19 @@ class WebServiceController {
      *
      * @return
      */
+
+    @ApiOperation(
+            value = "uploadImage",
+            nickname = "uploadImage",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def uploadImage() {
         // Expect a multipart file request
         try {
@@ -881,6 +1024,19 @@ class WebServiceController {
         }
     }
 
+
+    @ApiOperation(
+            value = "uploadImagesFromUrls",
+            nickname = "uploadImagesFromUrls",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def uploadImagesFromUrls() {
 
         def userId = getUserIdForRequest(request)
@@ -995,6 +1151,19 @@ class WebServiceController {
         renderResults([success:false, message:'Missing or invalid batchId'])
     }
 
+
+    @ApiOperation(
+            value = "darwinCoreTerms",
+            nickname = "darwinCoreTerms",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def darwinCoreTerms() {
         def terms = []
 
@@ -1038,6 +1207,18 @@ class WebServiceController {
         }
     }
 
+    @ApiOperation(
+            value = "exportCSV",
+            nickname = "exportCSV",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def exportCSV(){
         response.setHeader("Content-disposition", "attachment;filename=images-export.csv.gz")
         response.contentType = "application/gzip"
