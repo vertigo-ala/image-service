@@ -76,7 +76,8 @@ dependencies {
     compile 'org.apache.tika:tika-core:1.18'
     compile 'com.github.jai-imageio:jai-imageio-core:1.4.0'
     compile 'au.org.ala:image-utils:1.8.5'
-    compile "org.grails.plugins:ala-ws-security:2.0"
+    compile 'org.grails.plugins:ala-ws-security-plugin:2.0'
+    compile 'org.grails.plugins:ala-admin-plugin:2.1'
     
     // Swagger
     compile 'org.grails.plugins:swagger:1.0.1'
