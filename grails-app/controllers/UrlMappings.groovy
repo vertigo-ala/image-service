@@ -11,6 +11,7 @@ class UrlMappings {
         "/ws/updateMetadata/$imageIdentifier"(controller: "webService", action: "updateMetadata")
         "/ws/getImageInfo/$imageID"(controller: "webService", action:'getImageInfo')
         "/ws/repositoryStatistics"(controller: "webService", action:'getRepositoryStatistics')
+        "/ws/repositorySizeOnDisk"(controller: "webService", action:'getRepositorySizeOnDisk')
         "/ws/backgroundQueueStats"(controller: "webService", action:'getBackgroundQueueStats')
 
         "/ws/$action?/$id?(.$format)?" {

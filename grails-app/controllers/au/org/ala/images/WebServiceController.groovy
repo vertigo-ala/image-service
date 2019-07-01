@@ -18,9 +18,8 @@ import org.springframework.web.multipart.MultipartRequest
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
 
-@Api(value = "/ws", tags = ["Image Services"], description = "Image Service Api's")
+@Api(value = "/ws", tags = ["Image Services"], description = "Image Web Services")
 class WebServiceController {
-
 
     static namespace = 'ws'
     static allowedMethods = [findImagesByMetadata: 'POST']
@@ -34,8 +33,7 @@ class WebServiceController {
     def elasticSearchService
     def collectoryService
     def authService
-
-    def index(){}
+    def apiKeyService
 
     /**
      * This service is used directly in front end in an AJAX fashion.
@@ -56,7 +54,7 @@ class WebServiceController {
         if (image) {
             def userId = getUserIdForRequest(request)
 
-            if(userId){
+            if (userId){
                 //is user in ROLE_ADMIN or the original owner of the image
                 def isAdmin = authService.userInRole(CASRoles.ROLE_ADMIN)
                 def isImageOwner = image.uploader == userId
@@ -285,7 +283,6 @@ class WebServiceController {
         renderResults([success: success])
     }
 
-
     private addImageInfoToMap(Image image, Map results, Boolean includeTags, Boolean includeMetadata) {
 
         results.height = image.height
@@ -337,6 +334,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -350,12 +348,11 @@ class WebServiceController {
             results.success = true
             addImageInfoToMap(image, results, params.boolean("includeTags"), params.boolean("includeMetadata"))
         }
-
         renderResults(results)
     }
 
     @ApiOperation(
-            value = "Get Image PopUpDetails",
+            value = "Get Image PopUp details",
             nickname = "imagePopupInfo/{id}",
             produces = "application/json",
             consumes = "application/json",
@@ -363,6 +360,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -407,7 +405,7 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Repository stats",
+            value = "Repository statistics",
             nickname = "repositoryStatistics",
             produces = "application/json",
             consumes = "application/json",
@@ -415,6 +413,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -426,14 +425,15 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Repository stats",
-            nickname = "repositoryStatistics",
+            value = "Repository size statistics",
+            nickname = "repositorySizeOnDisk",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -443,14 +443,15 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "BackgroundQueueStats stats",
-            nickname = "getBackgroundQueueStats",
+            value = "Background queue statistics",
+            nickname = "backgroundQueueStats",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -548,7 +549,6 @@ class WebServiceController {
         def userId = AuthenticationUtils.getUserId(request)
         // If not found (i.e. urls not mapped), look for standard ALA auth header
         if (!userId) {
-            //TODO check the app is authorised
             userId = request.getHeader("X-ALA-userId")
         }
 
@@ -690,6 +690,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -697,6 +698,7 @@ class WebServiceController {
         def licenses = License.findAll()
         renderResults (licenses)
     }
+
 
     @ApiOperation(
             value = "Retrieve a list of string to licence mappings in use by the image service",
@@ -707,6 +709,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -716,7 +719,7 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "findImagesByOriginalFilename",
+            value = "Find image by original filename (URL)",
             nickname = "findImagesByOriginalFilename",
             produces = "application/json",
             consumes = "application/json",
@@ -724,6 +727,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -766,7 +770,7 @@ class WebServiceController {
 
 
     @ApiOperation(
-            value = "findImagesByMetadata",
+            value = "Find images by image metadata",
             nickname = "findImagesByMetadata",
             produces = "application/json",
             consumes = "application/json",
@@ -774,6 +778,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -895,7 +900,7 @@ class WebServiceController {
      * @return
      */
     @ApiOperation(
-            value = "updateMetadata",
+            value = "Update image metadata using a JSON payload",
             nickname = "updateMetadata",
             produces = "application/json",
             consumes = "application/json",
@@ -903,6 +908,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -941,7 +947,7 @@ class WebServiceController {
      */
 
     @ApiOperation(
-            value = "uploadImage",
+            value = "Upload a single image, with by URL or multipart HTTP file upload",
             nickname = "uploadImage",
             produces = "application/json",
             consumes = "application/json",
@@ -949,6 +955,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -1026,7 +1033,7 @@ class WebServiceController {
 
 
     @ApiOperation(
-            value = "uploadImagesFromUrls",
+            value = "Upload images by supplying a list of URLs in  a JSON  payload",
             nickname = "uploadImagesFromUrls",
             produces = "application/json",
             consumes = "application/json",
@@ -1034,6 +1041,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -1153,7 +1161,7 @@ class WebServiceController {
 
 
     @ApiOperation(
-            value = "darwinCoreTerms",
+            value = "List the recognised darwin core terms",
             nickname = "darwinCoreTerms",
             produces = "application/json",
             consumes = "application/json",
@@ -1161,6 +1169,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
@@ -1208,7 +1217,7 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "exportCSV",
+            value = "Export CSV of entire image catalogue",
             nickname = "exportCSV",
             produces = "application/json",
             consumes = "application/json",
@@ -1216,6 +1225,7 @@ class WebServiceController {
             response = Map.class
     )
     @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )

@@ -1,6 +1,6 @@
 ---
 grails:
-    serverURL: 'http://devt.ala.org.au:8080'
+    serverURL: 'http://dev.ala.org.au:8080'
     profile: web
     codegen:
         defaultPackage: au.org.ala.images
@@ -122,8 +122,8 @@ security:
         appServerName: 'http://devt.ala.org.au:8080'
         uriFilterPattern: '/admin/.*,/admin,/admin/'
         authenticateOnlyIfLoggedInPattern:  '/image/details/.*'
-        bypass: true
-        disableCAS: true
+        bypass: false
+        disableCAS: false
 
 imageservice:
     imagestore:
@@ -177,23 +177,25 @@ placeholder:
         thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/200px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
         large: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/500px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
 
-
 swagger:
     info:
-    description: "Move your app forward with the Swagger API Documentation"
-    version: "ttn-swagger-1.0.0"
-    title: "Swagger API"
-    termsOfServices: "http://swagger.io/"
-    contact:
-        name: "Contact Us"
-        url: "http://swagger.io"
-        email: "contact@gmail.com"
-    license:
-        name: "licence under http://www.tothenew.com/"
-        url: "http://www.tothenew.com/"
+        description: "API Documentation for Image Services"
+        version: "image-service-1.0.0"
+        title: "Image Service API"
+        termsOfServices: "https://www.ala.org.au/who-we-are/terms-of-use/"
+        contact:
+            name: "ALA Support"
+            url: "https://www.ala.org.au"
+            email: "support@ala.org.au"
+        license:
+            name: "MPL 1.1"
+            url: "https://www.mozilla.org/en-US/MPL/"
+    schemes:
+        - "HTTP"
+    consumes:
+        - "application/json"
 
 facets: ["dataResourceUid", "recognisedLicence", "creator"]
-
 
 analytics:
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
