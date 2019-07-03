@@ -93,8 +93,13 @@ environments:
             password: "images"
     test:
         dataSource:
+            pooled: true
+            jmxExport: true
+            driverClassName: org.h2.Driver
+            username: sa
+            password: ''
             dbCreate: update
-            url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
+            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
     production:
         dataSource:
             dbCreate: update
