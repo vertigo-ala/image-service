@@ -211,4 +211,7 @@ analytics:
     viewID: "ga:8736349"
 
 elasticsearch:
-  host: localhost
+  host: "127.0.0.1"
+  scheme: "http"
+  port1: 9200
+  port2: 9201

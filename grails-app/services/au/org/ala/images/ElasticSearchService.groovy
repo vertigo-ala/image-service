@@ -55,8 +55,8 @@ class ElasticSearchService {
     def initialize() {
         client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("${grailsApplication.config.elasticsearch.host}", 9200, "http"),
-                        new HttpHost("${grailsApplication.config.elasticsearch.host}", 9201, "http")
+                        new HttpHost("${grailsApplication.config.elasticsearch.host}", grailsApplication.config.elasticsearch.port1 as Integer, "${grailsApplication.config.elasticsearch.scheme}"),
+                        new HttpHost("${grailsApplication.config.elasticsearch.host}", grailsApplication.config.elasticsearch.port2 as Integer, "${grailsApplication.config.elasticsearch.scheme}")
                 )
         )
         initialiseIndex()
