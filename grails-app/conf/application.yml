@@ -198,3 +198,6 @@ facets: ["dataResourceUid", "recognisedLicence", "creator"]
 analytics:
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
     viewID: "ga:8736349"
+
+elasticsearch:
+  host: localhost
