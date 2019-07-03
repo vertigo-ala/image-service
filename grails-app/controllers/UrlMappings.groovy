@@ -7,7 +7,9 @@ class UrlMappings {
             }
         }
 
-        "/ws/image/$imageID?(.$format)?"(controller: "webService", action: "getImageInfo")
+        "/ws/image/$imageID?(.$format)?"(controller: "webService") {
+                action = [GET: 'getImageInfo', DELETE: 'deleteImageService']
+        }
         "/ws/updateMetadata/$imageIdentifier"(controller: "webService", action: "updateMetadata")
         "/ws/getImageInfo/$imageID"(controller: "webService", action:'getImageInfo')
         "/ws/repositoryStatistics"(controller: "webService", action:'getRepositoryStatistics')
@@ -37,7 +39,7 @@ class UrlMappings {
         "/image/$id/tms"(controller: "image", action: "proxyImageTile")
         "/image/$id/original"(controller: "image", action: "proxyImage")
 
-
+        "/admin/image/$imageId"(controller: "admin", action: "image")
         "/image/details"(controller: "image", action: "details")
 
         //analytics

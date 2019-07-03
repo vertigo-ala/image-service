@@ -1,16 +1,28 @@
 package au.org.ala.images
 
+import au.ala.org.ws.security.RequireApiKey
 import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
+import grails.converters.JSON
+import grails.converters.XML
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiImplicitParams
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.apache.commons.io.IOUtils
+import org.springframework.http.MediaType
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.Method.POST
 
+@Api(value = "/image", tags = ["Image Services"], description = "Image Web Services")
 class ImageController {
 
     def imageService
@@ -19,6 +31,7 @@ class ImageController {
     def imageStagingService
     def batchService
     def collectoryService
+    def authService
 
     def index() { }
 
@@ -26,6 +39,20 @@ class ImageController {
         redirect(controller: 'search', action:'list')
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Get image",
+            nickname = "{id}",
+            produces = "image/jpeg",
+            httpMethod = "GET"
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def proxyImage() {
         def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
@@ -36,6 +63,19 @@ class ImageController {
         }
     }
 
+    @ApiOperation(
+            value = "Get image thumbnail",
+            nickname = "{id}/thumbnail",
+            produces = "image/jpeg",
+            httpMethod = "GET"
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def proxyImageThumbnail() {
         def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
@@ -51,6 +91,19 @@ class ImageController {
         }
     }
 
+    @ApiOperation(
+            value = "Get image large version",
+            nickname = "{id}/large",
+            produces = "image/jpeg",
+            httpMethod = "GET"
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def proxyImageThumbnailLarge() {
         def imageInstance = imageService.getImageFromParams(params)
         if (imageInstance) {
@@ -60,6 +113,22 @@ class ImageController {
         }
     }
 
+    @ApiOperation(
+            value = "Get image tile - for use with tile mapping service clients such as LeafletJS or Oepnlayers",
+            nickname = "{id}/tms/{z}/{x}/{y}.png",
+            produces = "image/jpeg",
+            httpMethod = "GET"
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string"),
+            @ApiImplicitParam(name = "x", paramType = "path", required = true, value = "Tile mapping service X value", dataType = "string"),
+            @ApiImplicitParam(name = "y", paramType = "path", required = true, value = "Tile mapping service Y value", dataType = "string"),
+            @ApiImplicitParam(name = "z", paramType = "path", required = true, value = "Tile mapping service Z value", dataType = "string")
+    ])
     def proxyImageTile() {
         def imageIdentifier = params.id
         def url = imageService.getImageTilesRootUrl(imageIdentifier)
@@ -102,20 +171,26 @@ class ImageController {
         }
     }
 
+    /**
+     * POST event data to google analytics.
+     *
+     * @param imageInstance
+     * @param eventCategory
+     * @return
+     */
+
     def sendAnalytics(Image imageInstance, String eventCategory){
-        if (imageInstance){
-            def queryURL =  "https://www.google-analytics.com"
+        if (imageInstance && grailsApplication.config.analytics.ID){
+            def queryURL =  grailsApplication.config.analytics.URL
             def requestBody = [
                            'v': 1,
-                           'tid': 'UA-4355440-1',
+                           'tid': grailsApplication.config.analytics.ID,
                            'cid': UUID.randomUUID().toString(),  //anonymous client ID
                            't': 'event',
                            'ec': eventCategory, // event category
                            'ea': imageInstance.dataResourceUid, //event value
                            'ua' : request.getHeader("User-Agent")
             ]
-
-            println "Posting analytics for " + imageInstance.dataResourceUid
 
             def http = new HTTPBuilder(queryURL)
             http.request( POST ) {
@@ -134,14 +209,52 @@ class ImageController {
         }
     }
 
+    /**
+     * This service is used directly in front end in an AJAX fashion.
+     * method to authenticate client applications.
+     *
+     * @return
+     */
+    def deleteImage() {
+
+        def success = false
+
+        def message = ""
+
+        def image = Image.findByImageIdentifier(params.id as String)
+
+        if (image) {
+            def userId = getUserIdForRequest(request)
+
+            if (userId){
+                //is user in ROLE_ADMIN or the original owner of the image
+                def isAdmin = authService.userInRole(CASRoles.ROLE_ADMIN)
+                def isImageOwner = image.uploader == userId
+                if (isAdmin || isImageOwner){
+                    success = imageService.scheduleImageDeletion(image.id, userId)
+                    message = "Image scheduled for deletion."
+                } else {
+                    message = "Logged in user is not authorised."
+                }
+            } else {
+                message = "Unable to obtain user details."
+            }
+        } else {
+            message = "Invalid image identifier."
+        }
+        renderResults(["success": success, message: message])
+    }
+
+    @AlaSecured(value = [CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
     def scheduleArtifactGeneration() {
 
         def imageInstance = imageService.getImageFromParams(params)
         def userId = AuthenticationUtils.getUserId(request)
+        def results = [success: true]
 
         if (imageInstance) {
             imageService.scheduleArtifactGeneration(imageInstance.id, userId)
-            flash.message = "Image artifact generation scheduled for image ${imageInstance.id}"
+            results.message = "Image artifact generation scheduled for image ${imageInstance.id}"
         } else {
             def imageList = Image.findAll()
             long count = 0
@@ -149,38 +262,55 @@ class ImageController {
                 imageService.scheduleArtifactGeneration(image.id, userId)
                 count++
             }
-            flash.message = "Image artifact generation scheduled for ${count} images."
+            results.message = "Image artifact generation scheduled for ${count} images."
         }
 
-        redirect(action:'list')
+        renderResults(results)
     }
 
     def details() {
-        def image = imageService.getImageFromParams(params)
-        if (!image) {
-            flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
-            redirect(action:'list')
-        } else {
-            def subimages = Subimage.findAllByParentImage(image)*.subimage
-            def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
-
-            def userId = AuthenticationUtils.getUserId(request)
-            def albums = []
-            if (userId) {
-                albums = Album.findAllByUserId(userId, [sort:'name'])
+        if (request.getHeader('accept') && request.getHeader('accept').indexOf(MediaType.IMAGE_JPEG.toString()) > -1) {
+            def imageInstance = imageService.getImageFromParams(params)
+            if (imageInstance) {
+                def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
+                boolean contentDisposition = params.boolean("contentDisposition")
+                proxyImageRequest(response, imageInstance, imageUrl, (int) imageInstance.fileSize ?: 0, contentDisposition)
+                sendAnalytics(imageInstance, 'imageview')
             }
+        } else {
+            def image = imageService.getImageFromParams(params)
+            if (!image) {
+                flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
+                redirect(action:'list')
+            } else {
+                def subimages = Subimage.findAllByParentImage(image)*.subimage
+                def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
 
-            def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
+                //accessible from cookie
+                def userEmail = AuthenticationUtils.getEmailAddress(request)
+                def userDetails = authService.getUserForEmailAddress(userEmail, true)
+                def userId = userDetails ? userDetails.id : ""
 
-            boolean isImage = imageService.isImageType(image)
+                def isAdmin = false
+                if (userDetails){
+                    if (userDetails.getRoles().contains("ROLE_ADMIN"))
+                        isAdmin = true
+                }
 
-            //add additional metadata
-            def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+                def albums = []
 
-            sendAnalytics(image, 'imagedetailedview')
+                def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
 
-            [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
-             squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel]
+                boolean isImage = imageService.isImageType(image)
+
+                //add additional metadata
+                def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+
+                sendAnalytics(image, 'imagedetailedview')
+
+                [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
+                 squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId]
+            }
         }
     }
 
@@ -432,4 +562,44 @@ class ImageController {
         }
         redirect(action:"stagedImages")
     }
+
+    private renderResults(Object results, int responseCode = 200) {
+
+        withFormat {
+            json {
+                def jsonStr = results as JSON
+                if (params.callback) {
+                    response.setContentType("text/javascript")
+                    render("${params.callback}(${jsonStr})")
+                } else {
+                    response.setContentType("application/json")
+                    render(jsonStr)
+                }
+            }
+            xml {
+                render(results as XML)
+            }
+        }
+        response.addHeader("Access-Control-Allow-Origin", "")
+        response.status = responseCode
+    }
+
+    @AlaSecured(value = [CASRoles.ROLE_USER, CASRoles.ROLE_ADMIN], anyRole = true, redirectUri = "/")
+    def resetImageCalibration() {
+        def image = Image.findByImageIdentifier(params.imageId)
+        if (image) {
+            imageService.resetImageLinearScale(image)
+            renderResults([success: true, message:"Image linear scale has been reset"])
+            return
+        }
+        renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
+    }
+
+    private getUserIdForRequest(HttpServletRequest request) {
+        if (grailsApplication.config.security.cas.disableCAS.toBoolean()){
+            return "-1"
+        }
+        AuthenticationUtils.getUserId(request)
+    }
 }
+

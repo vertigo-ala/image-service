@@ -444,12 +444,12 @@ class ImageService {
             // Delete from the index...
             elasticSearchService.deleteImage(image)
 
-            // and delete domain object
-            image.delete(flush: true, failonerror: true)
+            image.dateDeleted = new Date()
+            image.save(flush: true, failonerror: true)
 
             // Finally need to delete images on disk.
             // This might fail (if the file is held open somewhere), but that's ok, we can clean up later.
-            imageStoreService.deleteImage(image?.imageIdentifier)
+//            imageStoreService.deleteImage(image?.imageIdentifier)
 
             auditService.log(image?.imageIdentifier, "Image deleted", userId)
 

@@ -23,10 +23,47 @@ class AdminController {
     def collectoryService
     def batchService
     def analyticsService
+    def imageStoreService
+    def authService
 
     def index() {
         redirect(action:'dashboard')
     }
+
+    def image() {
+        def image = imageService.getImageFromParams(params)
+        if (!image) {
+            flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
+            redirect(action:'list')
+        } else {
+            def subimages = Subimage.findAllByParentImage(image)*.subimage
+            def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
+
+            //accessible from cookie
+            def userEmail = AuthenticationUtils.getEmailAddress(request)
+            def userDetails = authService.getUserForEmailAddress(userEmail, true)
+            def userId = userDetails ? userDetails.id : ""
+
+            def isAdmin = false
+            if (userDetails){
+                if (userDetails.getRoles().contains("ROLE_ADMIN"))
+                    isAdmin = true
+            }
+
+            def albums = []
+
+            def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
+
+            boolean isImage = imageService.isImageType(image)
+
+            //add additional metadata
+            def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+
+            render( view:"../image/details", model: [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
+             squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId, isAdminView:true])
+        }
+    }
+
 
     def upload() { }
     def analytics() {

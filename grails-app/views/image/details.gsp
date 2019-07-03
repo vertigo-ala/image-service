@@ -98,7 +98,7 @@
                                         <tr>
                                             <td>Parent image</td>
                                             <td imageId="${imageInstance.parent.id}">
-                                                <g:link controller="image" action="details" id="${imageInstance.parent.id}">${imageInstance.parent.originalFilename ?: imageInstance.parent.id}</g:link>
+                                                <g:link controller="image" action="details" id="${imageInstance.parent.imageIdentifier}">${imageInstance.parent.originalFilename ?: imageInstance.parent.imageIdentifier}</g:link>
                                                 <i class="icon-info-sign image-info-button"></i>
                                             </td>
                                         </tr>
@@ -165,7 +165,7 @@
                                                 <ul>
                                                     <g:each in="${subimages}" var="subimage">
                                                         <li imageId="${subimage.id}">
-                                                            <g:link controller="image" action="details" id="${subimage.id}">${subimage.originalFilename ?: subimage.id}</g:link>
+                                                            <g:link controller="image" action="details" id="${subimage.imageIdentifier}">${subimage.originalFilename ?: subimage.imageIdentifier}</g:link>
                                                             <i class="icon-info-sign image-info-button"></i>
                                                         </li>
                                                     </g:each>
@@ -197,24 +197,14 @@
                                             </g:if>
                                             <a class="btn btn-default" href="${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'proxyImage', id:imageInstance.id, params:[contentDisposition: 'true'])}" title="Download full image" target="imageWindow"><i class="glyphicon glyphicon-download-alt"></i></a>
 
-                                            <auth:ifAnyGranted roles="${au.org.ala.web.CASRoles.ROLE_USER}, ${au.org.ala.web.CASRoles.ROLE_USER}">
-                                                <g:if test="${albums}">
-                                                    <button class="btn btn-default" title="Add this image to an album" id="btnAddToAlbum"><i class="glyphicon glyphicon-book"></i></button>
-                                                </g:if>
-                                            </auth:ifAnyGranted>
-
-                                            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
+                                            <g:if test="${isAdminView}">
                                                 <button class="btn btn-default" id="btnRegen" title="Regenerate artifacts"><i class="glyphicon glyphicon-refresh"></i></button>
-                                            </auth:ifAnyGranted>
-
-                                            <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}" creatorUserId="${imageInstance.uploader}">
                                                 <button class="btn btn-danger" id="btnDeleteImage" title="Delete image (admin)"><i class="glyphicon glyphicon-remove  glyphicon-white"></i></button>
-                                            </auth:ifAnyGranted>
-                                            <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">
-                                                <img:userIsUploader image="${imageInstance}">
-                                                    <button class="btn btn-danger" id="btnDeleteImage" title="Delete your image"><i class="glyphicon glyphicon-remove glyphicon-white"></i></button>
-                                                </img:userIsUploader>
-                                            </auth:ifNotGranted>
+                                            </g:if>
+                                            <g:elseif test="${isAdmin}">
+                                                <g:link class="btn btn-danger" controller="admin" action="image" params="[imageId: imageInstance.imageIdentifier]">Admin view</g:link>
+                                            </g:elseif>
+
                                         </td>
                                     </tr>
                                 </table>
@@ -389,7 +379,7 @@
             $("#btnRegen").click(function(e) {
                 e.preventDefault();
 
-                $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'webService', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function(data) {
+                $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'scheduleArtifactGeneration', id: imageInstance.imageIdentifier)}").done(function(data) {
                     console.log(data);
                     alert('Regeneration scheduled - ' + data.message);
                 }).fail(function(){
@@ -402,7 +392,7 @@
                 var options = {
                     content: "Warning! This operation cannot be undone. Are you sure you wish to permanently delete this image?",
                     affirmativeAction: function() {
-                        $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'webService', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
+                        $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'image', action:'deleteImage', id: imageInstance.imageIdentifier)}").done(function() {
                             window.location = "${grailsApplication.config.grails.serverURL}${createLink(controller:'search', action:'list')}";
                         });
                     }

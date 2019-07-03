@@ -9,6 +9,11 @@
     <body>
         <content tag="pageTitle">Dashboard</content>
         <content tag="adminButtonBar" />
+
+        <g:if test="${grailsApplication.config.security.cas.disableCAS.toBoolean()}">
+            <div class="alert alert-warning" style="display: block">WARNING: CAS authentication disabled - this means admin functions are exposed!</div>
+        </g:if>
+
         <div class="well well-small">
             <h4>Statistics</h4>
             <table class="table table-striped">

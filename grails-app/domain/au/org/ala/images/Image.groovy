@@ -17,7 +17,6 @@ class Image {
     String extension
     @SearchableProperty(valueType = CriteriaValueType.DateRange, description = "The date the image was uploaded")
     Date dateUploaded
-
     String uploader
     @SearchableProperty(valueType = CriteriaValueType.DateRange, description = "The date the image was captured or authored")
     Date dateTaken
@@ -55,7 +54,7 @@ class Image {
     @SearchableProperty(valueType = CriteriaValueType.Boolean, description = "Should be harvested by the ALA")
     Boolean harvestable = false
 
-    Boolean deleted = false
+    Date dateDeleted
 
     Double mmPerPixel
 
@@ -92,7 +91,7 @@ class Image {
         mmPerPixel nullable: true
         harvestable nullable: true
 
-        deleted  nullable: true
+        dateDeleted  nullable: true
     }
 
     static mapping = {

@@ -1,7 +1,8 @@
 package au.org.ala.images
 
+import au.ala.org.ws.security.RequireApiKey
 import au.org.ala.cas.util.AuthenticationUtils
-import au.org.ala.web.CASRoles
+import au.org.ala.ws.security.ApiKeyInterceptor
 import grails.converters.JSON
 import grails.converters.XML
 import io.swagger.annotations.Api
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiImplicitParams
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import io.swagger.annotations.Authorization
 import org.apache.http.HttpStatus
 import grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
@@ -22,7 +24,7 @@ import java.util.zip.GZIPOutputStream
 class WebServiceController {
 
     static namespace = 'ws'
-    static allowedMethods = [findImagesByMetadata: 'POST']
+    static allowedMethods = [findImagesByMetadata: 'POST', getImageInfoForIdList: 'POST']
 
     def imageService
     def imageStoreService
@@ -32,45 +34,44 @@ class WebServiceController {
     def batchService
     def elasticSearchService
     def collectoryService
-    def authService
-    def apiKeyService
 
-    /**
-     * This service is used directly in front end in an AJAX fashion.
-     *
-     * TODO produce an analogue to this service that will use the APIKey
-     * method to authenticate client applications.
-     *
-     * @return
-     */
-    def deleteImage() {
+    @RequireApiKey
+    @ApiOperation(
+            value = "Delete image",
+            nickname = "image/{id}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "DELETE",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey")
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
+    def deleteImageService() {
 
         def success = false
-
         def message = ""
 
-        def image = Image.findByImageIdentifier(params.id as String)
+        def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
 
-        if (image) {
-            def userId = getUserIdForRequest(request)
-
-            if (userId){
-                //is user in ROLE_ADMIN or the original owner of the image
-                def isAdmin = authService.userInRole(CASRoles.ROLE_ADMIN)
-                def isImageOwner = image.uploader == userId
-                if(isAdmin || isImageOwner){
-                    success = imageService.scheduleImageDeletion(image.id, userId)
-                    message = "Image scheduled for deletion."
-                } else {
-                    message = "Logged in user is not authorised."
-                }
-            } else {
-                message = "Unable to obtain user details."
-            }
+        if(!userId) {
+            response.sendError(400, "Must include API key")
         } else {
-            message = "Invalid image identifier."
+            def image = Image.findByImageIdentifier(params.imageID as String)
+            if (image) {
+                success = imageService.scheduleImageDeletion(image, userId)
+                message = "Image scheduled for deletion."
+            } else {
+                message = "Invalid image identifier."
+            }
+            renderResults(["success": success, message: message])
         }
-        renderResults(["success": success, message: message])
     }
 
     private long forEachImageId(closure) {
@@ -91,6 +92,7 @@ class WebServiceController {
         return count
     }
 
+    @RequireApiKey
     def scheduleThumbnailGeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
         def userId = getUserIdForRequest(request)
@@ -114,10 +116,11 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @RequireApiKey
     def scheduleArtifactGeneration() {
 
         def imageInstance = Image.findByImageIdentifier(params.id as String)
-        def userId = getUserIdForRequest(request)
+        def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
         def results = [success: true]
 
         if (params.id && !imageInstance) {
@@ -134,13 +137,13 @@ class WebServiceController {
                 results.message = "Image artifact generation scheduled for ${count} images."
             }
         }
-
         renderResults(results)
     }
 
+    @RequireApiKey
     def scheduleKeywordRegeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
-        def userId = getUserIdForRequest(request)
+        def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
         def results = [success:true]
         if (params.id && !imageInstance) {
             results.success = false
@@ -238,7 +241,6 @@ class WebServiceController {
         def newParent = Tag.get(params.int("newParentTagId"))
 
         if (target) {
-
             tagService.moveTag(target, newParent)
         }
 
@@ -379,7 +381,6 @@ class WebServiceController {
             results.linkText = "Image details..."
             results.title = "Image properties"
         }
-
         renderResults(results)
     }
 
@@ -462,6 +463,21 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @ApiOperation(
+            value = "Create Subimage",
+            nickname = "createSubimage",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey")
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @RequireApiKey
     def createSubimage() {
         def image = Image.findByImageIdentifier(params.id as String)
         if (!image) {
@@ -541,21 +557,14 @@ class WebServiceController {
 
     private getUserIdForRequest(HttpServletRequest request) {
 
+        //check for API access
         if (grailsApplication.config.security.cas.disableCAS.toBoolean()){
             return "-1"
         }
 
         // First check the CAS filter cookie thing
         def userId = AuthenticationUtils.getUserId(request)
-        // If not found (i.e. urls not mapped), look for standard ALA auth header
-        if (!userId) {
-            userId = request.getHeader("X-ALA-userId")
-        }
 
-        // If still cannot be found look for it as a parameter
-        if (!userId) {
-            userId = params.userId
-        }
         userId
     }
 
@@ -592,6 +601,19 @@ class WebServiceController {
         renderResults([success: success])
     }
 
+    @ApiOperation(
+            value = "getMetadataKeys",
+            nickname = "getMetadataKeys",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getMetadataKeys() {
 
         def source = params.source as MetaDataSourceType
@@ -617,6 +639,19 @@ class WebServiceController {
         renderResults(results?.sort { it?.toLowerCase() })
     }
 
+    @ApiOperation(
+            value = "Get Image Links For MetaData Values",
+            nickname = "getImageLinksForMetaDataValues",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getImageLinksForMetaDataValues() {
 
         def key = params.key as String
@@ -646,6 +681,19 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @ApiOperation(
+            value = "Get image image for a list of image IDs",
+            nickname = "getImageInfoForIdList",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getImageInfoForIdList() {
 
         def query = request.JSON
@@ -698,7 +746,6 @@ class WebServiceController {
         def licenses = License.findAll()
         renderResults (licenses)
     }
-
 
     @ApiOperation(
             value = "Retrieve a list of string to licence mappings in use by the image service",
@@ -764,10 +811,8 @@ class WebServiceController {
         } else {
             renderResults([success:false, message:'POST with content type "application/JSON" required.'])
         }
-
         ct.stop(true)
     }
-
 
     @ApiOperation(
             value = "Find images by image metadata",
@@ -905,13 +950,15 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
-            response = Map.class
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
+    @RequireApiKey
     def updateMetadata(){
 
         CodeTimer ct = new CodeTimer("Update Image metadata ${params.imageIdentifier}")
@@ -945,20 +992,21 @@ class WebServiceController {
      *
      * @return
      */
-
     @ApiOperation(
             value = "Upload a single image, with by URL or multipart HTTP file upload",
             nickname = "uploadImage",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
-            response = Map.class
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
+    @RequireApiKey
     def uploadImage() {
         // Expect a multipart file request
         try {
@@ -1031,20 +1079,21 @@ class WebServiceController {
         }
     }
 
-
     @ApiOperation(
             value = "Upload images by supplying a list of URLs in  a JSON  payload",
             nickname = "uploadImagesFromUrls",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
-            response = Map.class
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
+    @RequireApiKey
     def uploadImagesFromUrls() {
 
         def userId = getUserIdForRequest(request)
@@ -1120,6 +1169,21 @@ class WebServiceController {
         }
     }
 
+    @ApiOperation(
+            value = "Schedule upload from URLs",
+            nickname = "scheduleUploadFromUrls",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey")
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @RequireApiKey
     def scheduleUploadFromUrls() {
 
         def userId = getUserIdForRequest(request)
@@ -1149,16 +1213,27 @@ class WebServiceController {
         renderResults([success:false, message:'POST with content type "application/JSON" required.'])
     }
 
+    @ApiOperation(
+            value = "Get batch status",
+            nickname = "getBatchStatus",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getBatchStatus() {
         def status = batchService.getBatchStatus(params.batchId)
         if (status) {
             renderResults([success:true, taskCount: status.taskCount, tasksCompleted: status.tasksCompleted, batchId: status.batchId, timeStarted: status.timeStarted.getTime(), timeFinished: status.timeFinished?.getTime() ?: 0])
             return
         }
-
         renderResults([success:false, message:'Missing or invalid batchId'])
     }
-
 
     @ApiOperation(
             value = "List the recognised darwin core terms",

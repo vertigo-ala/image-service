@@ -56,7 +56,9 @@ class ElasticSearchService {
         client = new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9201, "http")));
+                        new HttpHost("localhost", 9201, "http")
+                )
+        )
         initialiseIndex()
     }
 
@@ -90,9 +92,17 @@ class ElasticSearchService {
     }
 
     def indexImage(Image image) {
+
         if (!image){
             log.error("Supplied image was null")
+            return
         }
+
+        if (image.dateDeleted){
+            log.debug("Supplied image is deleted")
+            return
+        }
+
         def ct = new CodeTimer("Index Image ${image.id}")
         // only add the fields that are searchable. They are marked with an annotation
         def fields = Image.class.declaredFields
@@ -102,13 +112,6 @@ class ElasticSearchService {
                 data[field.name] = image."${field.name}"
             }
         }
-
-        def md = ImageMetaDataItem.findAllByImage(image)
-//        data.metadata = [:]
-//        md.each {
-//            // Keys get lowercased here and when being searched for to make the case insensitive
-//            data.metadata[it.name.toLowerCase()] = it.value
-//        }
 
         if(image.recognisedLicense) {
             data.recognisedLicence = image.recognisedLicense.acronym
@@ -160,7 +163,6 @@ class ElasticSearchService {
         }
         qr
     }
-
 
     void simpleImageDownload(List<SearchCriteria> searchCriteria, GrailsParameterMap params, OutputStream outputStream) {
 
@@ -358,7 +360,7 @@ class ElasticSearchService {
                                     }                                                                                             
                                   }
                                 }""",
-                        XContentType.JSON);
+                        XContentType.JSON)
                 def resp = client.indices().putMapping(putMappingRequest, RequestOptions.DEFAULT)
             } else {
                 log.info "Index already exists"
@@ -512,6 +514,6 @@ class ElasticSearchService {
         if (metadata) {
             names = metadata.collect { it.key }
         }
-        return names
+        names
     }
 }
