@@ -385,7 +385,8 @@ class WebServiceController {
     }
 
     private renderResults(Object results, int responseCode = 200) {
-
+        response.addHeader("Access-Control-Allow-Origin", "")
+        response.status = responseCode
         withFormat {
             json {
                 def jsonStr = results as JSON
@@ -401,8 +402,6 @@ class WebServiceController {
                 render(results as XML)
             }
         }
-        response.addHeader("Access-Control-Allow-Origin", "")
-        response.status = responseCode
     }
 
     @ApiOperation(
@@ -1080,7 +1079,7 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Upload images by supplying a list of URLs in  a JSON  payload",
+            value = "Asynchronous upload images by supplying a list of URLs in  a JSON  payload",
             nickname = "uploadImagesFromUrls",
             produces = "application/json",
             consumes = "application/json",
@@ -1127,10 +1126,9 @@ class WebServiceController {
             }
 
             renderResults([success: true, results: results])
-            return
+        } else {
+            renderResults([success:false, message:'POST with content type "application/JSON" required.'], 400)
         }
-
-        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
     }
 
     def calibrateImageScale() {
