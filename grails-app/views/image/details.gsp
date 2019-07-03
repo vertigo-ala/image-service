@@ -18,7 +18,7 @@
             /*.leaflet-container { background: #E7E7E7;}*/
         </style>
     </head>
-    <body class="fluid">
+    <body>
         <img:headerContent title="${mediaTitle} details ${imageInstance?.id}">
             <% pageScope.crumbs = []  %>
         </img:headerContent>

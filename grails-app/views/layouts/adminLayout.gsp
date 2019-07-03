@@ -17,7 +17,7 @@
         <title>Admin</title>
         <meta name="breadcrumbs" content="${g.createLink( controller: 'search', action: 'list')}, Images"/>
     </head>
-    <body class="fluid">
+    <body>
         <asset:stylesheet src="application.css" />
         <div class="container-fluid">
             <div class="row-fluid">

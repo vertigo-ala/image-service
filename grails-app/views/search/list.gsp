@@ -7,8 +7,7 @@
         <asset:stylesheet src="search.css" />
         <asset:javascript src="search.js" />
     </head>
-    <body class="fluid">
-
+    <body>
         <g:if test="${flash.message}">
             <div class="alert alert-success" style="display: block">${flash.message}</div>
         </g:if>
