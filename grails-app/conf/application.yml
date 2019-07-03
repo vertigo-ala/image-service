@@ -209,3 +209,9 @@ analytics:
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
     viewID: "ga:8736349"
+
+elasticsearch:
+  host: "127.0.0.1"
+  scheme: "http"
+  port1: 9200
+  port2: 9201
