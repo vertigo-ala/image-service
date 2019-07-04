@@ -4,12 +4,13 @@ import grails.plugins.rest.client.RestBuilder
 import grails.plugins.rest.client.RestResponse
 import grails.testing.mixin.integration.Integration
 import grails.transaction.*
+import image.service.Application
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import spock.lang.Shared
 import spock.lang.Specification
 
-@Integration
+@Integration(applicationClass = Application.class)
 @Rollback
 class ImageUploadSpec extends Specification {
 
