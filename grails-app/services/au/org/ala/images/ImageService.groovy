@@ -147,6 +147,7 @@ class ImageService {
             image.originalFilename = originalFilename
             image.dateTaken = getImageTakenDate(bytes) ?: image.dateUploaded
         } else {
+            image.dateDeleted = null //reset date deleted if image resubmitted...
             preExisting = true
         }
 

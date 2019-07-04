@@ -20,7 +20,7 @@
                 <h1><g:formatNumber number="${totalImageCount}" format="###,###,###" /> Images</h1>
             </div>
             <!-- search box -->
-            <div class="search col-md-9" style="margin-bottom:20px;">
+            <div class="search col-md-7" style="margin-bottom:20px;">
                 <g:form action="list" controller="search" method="get">
                     <div class="input-group">
                         <input type="text" class="input-large form-control" id="keyword" name="q" value="${params.q}" />
@@ -39,6 +39,13 @@
                         </div>
                     </div>
                 </g:form>
+            </div>
+
+            <div class="col-md-2">
+                <g:link controller="apiDoc" action="getDocuments" class="btn btn-info" type="submit">
+                    <span class="glyphicon glyphicon-cog"></span>
+                    View API
+                </g:link>
             </div>
         </div>
 

@@ -422,7 +422,7 @@
         });
 
         function loadTags() {
-            $.ajax("${grailsApplication.config.grails.serverURL}${createLink(action:'tagsFragment',id:imageInstance.id)}").done(function(html) {
+            $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller: 'image', action:'tagsFragment', id:imageInstance.id)}").done(function(html) {
                 $("#tagsSection").html(html);
             });
         }

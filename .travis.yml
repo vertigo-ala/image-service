@@ -15,7 +15,7 @@ cache:
     - $HOME/.gradle/wrapper/
 
 after_success:
-  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish'
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish --stacktrace --info'
 env:
   global:
   - secure: rWlywM7xq6UpiQJKSmfXM/lEURpBBtczVabWTFsL2APFu/ZkqeN8WTlLvvyupi6B4MXBUCpXkVQyGSdsoxUNrAQ6+HI7vYuCI0C44j+SelkoMgLjxsfWvRmc4FnP924LX3c9KqAjkjuMZ/cfUjomEuWiUiMCvwJO5laCCE9+Do4=
