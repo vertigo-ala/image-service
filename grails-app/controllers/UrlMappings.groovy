@@ -24,7 +24,7 @@ class UrlMappings {
             controller = "webService"
         }
 
-        "/ws"(controller: 'apiDoc', action: 'getDocuments')
+        name api_doc: "/ws"(controller: 'apiDoc', action: 'getDocuments')
         "/ws/"(controller: 'apiDoc', action: 'getDocuments')
 
         // legacy URLS

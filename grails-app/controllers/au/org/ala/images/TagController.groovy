@@ -2,9 +2,7 @@ package au.org.ala.images
 
 class TagController {
 
-    def index() {
-
-    }
+    def index() {}
 
     def createTagFragment() {
         def parentTag = Tag.get(params.int("parentTagId"))
@@ -24,6 +22,4 @@ class TagController {
     def selectTagFragment() {
         [:]
     }
-
-
 }

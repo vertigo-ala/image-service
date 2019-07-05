@@ -15,6 +15,7 @@ class SearchController {
     def selectionService
     def elasticSearchService
     def collectoryService
+    def authService
 
     def index() {
         boolean hasCriteria = searchService.getSearchCriteriaList()?.size() > 0
@@ -40,6 +41,15 @@ class SearchController {
 
         def isLoggedIn = StringUtils.isNotEmpty(userId)
         def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
+
+        def isAdmin = false
+        def userEmail = AuthenticationUtils.getEmailAddress(request)
+        def userDetails = authService.getUserForEmailAddress(userEmail, true)
+
+        if (userDetails){
+            if (userDetails.getRoles().contains("ROLE_ADMIN"))
+                isAdmin = true
+        }
 
         def filters = [:]
 
@@ -78,7 +88,8 @@ class SearchController {
          selectedImageMap: selectedImageMap,
          filters: filters,
          searchCriteria: searchService.getSearchCriteriaList(),
-         criteriaDefinitions: searchCriteriaService.getCriteriaDefinitionList()
+         criteriaDefinitions: searchCriteriaService.getCriteriaDefinitionList(),
+         isAdmin: isAdmin
         ]
     }
 

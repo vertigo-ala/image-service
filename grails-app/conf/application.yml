@@ -131,7 +131,7 @@ security:
     cas:
         appServerName: 'http://dev.ala.org.au:8080'
         uriFilterPattern: '/admin/.*,/admin,/admin/,/image/deleteImage/.*'
-        authenticateOnlyIfLoggedInPattern:  '/image/details/.*'
+        authenticateOnlyIfLoggedInPattern:  ''
         bypass: false
         disableCAS: false
 

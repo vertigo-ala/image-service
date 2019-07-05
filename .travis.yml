@@ -21,7 +21,7 @@ after_success:
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish --stacktrace --info'
 
 after_script:
-  - docker-compose -f elastic.yml up -d
+  - docker-compose -f elastic.yml kill
 
 env:
   global:

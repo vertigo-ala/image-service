@@ -42,8 +42,14 @@
             </div>
 
             <div class="col-md-2">
-                <g:link controller="apiDoc" action="getDocuments" class="btn btn-info" type="submit">
-                    <span class="glyphicon glyphicon-cog"></span>
+                <g:if test="${isAdmin}">
+                    <g:link   controller="admin" action="dashboard" class="btn btn-danger" type="submit">
+                        <span class="glyphicon glyphicon-cog"></span>
+                        Admin
+                    </g:link>
+                </g:if>
+                <g:link mapping="api_doc" class="btn btn-info" type="submit">
+                    <span class="glyphicon glyphicon-wrench"></span>
                     View API
                 </g:link>
             </div>

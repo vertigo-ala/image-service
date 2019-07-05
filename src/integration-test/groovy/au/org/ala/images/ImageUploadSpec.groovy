@@ -62,4 +62,28 @@ class ImageUploadSpec extends Specification {
         println(resp.text)
     }
 
+    void 'test iNaturalist bug'(){
+        when:
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>()
+        form.add("imageUrl", "https://static.inaturalist.org/photos/35335345/original.jpeg?1555821308")
+        RestResponse resp = rest.post("http://localhost:${serverPort}/ws/uploadImage", {
+            contentType("application/x-www-form-urlencoded")
+            body(form)
+        })
+
+        MultiValueMap<String, String> form2 = new LinkedMultiValueMap<String, String>()
+        form.add("imageUrl", "https://static.inaturalist.org/photos/35335341/original.jpeg?1555821307")
+        RestResponse resp2 = rest.post("http://localhost:${serverPort}/ws/uploadImage", {
+            contentType("application/x-www-form-urlencoded")
+            body(form2)
+        })
+
+
+
+        then:
+        resp.status == 200
+        println(resp.text)
+    }
+
 }

@@ -334,17 +334,6 @@
             $('#viewerContainerId .document-icon').css('background-position', 'center');
             </g:else>
 
-
-            $("#btnAddToAlbum").click(function(e) {
-                e.preventDefault();
-                imgvwr.selectAlbum(function(albumId) {
-                    $.ajax("${grailsApplication.config.grails.serverURL}${createLink(controller:'album', action:'ajaxAddImageToAlbum')}/" + albumId + "?imageId=${imageInstance.id}").done(function(result) {
-                        if (result.success) {
-                        }
-                    });
-                });
-            });
-
             $("#btnResetLinearScale").click(function(e) {
                 e.preventDefault();
                 imgvwr.areYouSure({

@@ -39,10 +39,9 @@ class ImageController {
         redirect(controller: 'search', action:'list')
     }
 
-    @RequireApiKey
     @ApiOperation(
-            value = "Get image",
-            nickname = "{id}",
+            value = "Get original image",
+            nickname = "{id}/original",
             produces = "image/jpeg",
             httpMethod = "GET"
     )
@@ -268,6 +267,20 @@ class ImageController {
         renderResults(results)
     }
 
+    @ApiOperation(
+            value = "Get original image",
+            nickname = "{id}",
+            notes = "To get an image, supply an Accept-Content header with a value of 'image/jpeg'",
+            produces = "image/jpeg",
+            httpMethod = "GET"
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def details() {
         if (request.getHeader('accept') && request.getHeader('accept').indexOf(MediaType.IMAGE_JPEG.toString()) > -1) {
             def imageInstance = imageService.getImageFromParams(params)
