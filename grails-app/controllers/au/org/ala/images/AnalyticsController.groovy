@@ -1,6 +1,12 @@
 package au.org.ala.images
 
 import grails.converters.JSON
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiImplicitParams
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 
 /**
  * Instructions for obtaining required JSON...
@@ -23,11 +29,28 @@ import grails.converters.JSON
  *   "client_x509_cert_url": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
  * }
  */
+@Api(value = "/ws", tags = ["Image Services"], description = "Image Web Services")
 class AnalyticsController {
 
     def analyticsService
 
-    def byDataResource = {
+    @ApiOperation(
+            value = "Get image usage for data resource. e.g dataResourceUID=dr123",
+            nickname = "analytics/{dataResourceUID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "dataResourceUID", paramType = "path", required = true, value = "Data Resource UID", dataType = "string" )
+    ])
+    def byDataResource() {
 
         def dataResourceUID = params.dataResourceUID
         if (!dataResourceUID){
@@ -39,7 +62,20 @@ class AnalyticsController {
         }
     }
 
-    def byAll = {
+    @ApiOperation(
+            value = "Get overall image usage for the system",
+            nickname = "analytics",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "POST",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    def byAll() {
         def results = analyticsService.byAll()
         render (results as JSON)
     }

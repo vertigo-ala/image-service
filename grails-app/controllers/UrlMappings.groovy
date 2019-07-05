@@ -44,6 +44,7 @@ class UrlMappings {
 
         //analytics
         "/ws/analytics"(controller: "analytics", action: "byAll")
+        "/ws/analytics/$dataResourceUID"(controller: "analytics", action: "byDataResource")
         "/ws/analytics/dataResource/$dataResourceUID"(controller: "analytics", action: "byDataResource")
 
         name image_url: "/image/$imageId"(controller: "image", action: "details")
