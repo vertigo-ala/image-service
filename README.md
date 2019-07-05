@@ -11,8 +11,10 @@ It includes:
 * Webservices for image upload
 * Generate of derivative images for thumbnail presentation
 * Tagging support
-* Creation of albums of images and bulk tagging
 * Administrator console for image management
+* Swagger API
+* Integration with google analytics to monitor image usage by data resource
+
 
 There are other related repositories to this one:
 * [images-client-plugin](https://github.com/AtlasOfLivingAustralia/images-client-plugin) - a grails plugin to provide a Javascript based viewer to be used in other applications requiring a image viewer. This viewer is based on LeafletJS.
