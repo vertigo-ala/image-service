@@ -154,6 +154,15 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
+    String getImageThumbUrl(String imageIdentifier,  Integer idx) {
+        def path = []
+        computeAndAppendLocalDirectoryPath(imageIdentifier, path)
+        path << "thumbnail"
+        def roots = grailsApplication.config.imageservice.apache.multiple_roots.split(' ')
+        def root = roots[idx % (roots.length)]
+        return root + path.join("/")
+    }
+
     String getImageThumbLargeUrl(String imageIdentifier) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
