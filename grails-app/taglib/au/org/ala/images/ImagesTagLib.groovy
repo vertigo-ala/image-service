@@ -100,7 +100,9 @@ class ImagesTagLib {
     }
 
     def imageThumbUrl = { attrs, body ->
-        if (attrs.imageId) {
+        if (attrs.imageId && attrs.idx) {
+            out << imageService.getImageThumbUrl(attrs.imageId as String, attrs.idx)
+        } else if (attrs.imageId ){
             out << imageService.getImageThumbUrl(attrs.imageId as String)
         }
     }
@@ -109,12 +111,12 @@ class ImagesTagLib {
         if (attrs.image) {
             if(attrs.image.dataResourceUid){
                 def metadata = collectoryService.getResourceLevelMetadata(attrs.image.dataResourceUid)
-                out << '<div class="thumb-caption caption-detail">'
+                out << """<div class="thumb-caption caption-detail ${attrs.css?:''}">"""
                 out <<  "<span class='resource-name'>${metadata.name}</span>  <span>${attrs.image.title? ' - ' + attrs.image.title: ''} ${attrs.image.creator ?  ' - ' + attrs.image.creator : ''}</span>"
                 out << '</div>'
             } else {
                 if(attrs.image.dataResourceUid || attrs.image.title || attrs.image.creator){
-                    out << '<div class="thumb-caption caption-detail">'
+                    out << """<div class="thumb-caption caption-detail ${attrs.css?:''}">"""
                     out << "${attrs.image.dataResourceUid ? attrs.image.dataResourceUid: ''} ${attrs.image.title ? attrs.image.title :''} ${attrs.image.creator ?  attrs.image.creator : ''}"
                     out << '</div>'
                 }

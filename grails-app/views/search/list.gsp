@@ -164,6 +164,7 @@
                     doAjaxSearch($(this).attr("href"));
                 });
                 layoutImages();
+                $('.thumb-caption').removeClass('hide');
             });
         }
 

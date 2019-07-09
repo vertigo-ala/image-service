@@ -200,6 +200,10 @@ class ImageService {
         return imageStoreService.getImageThumbUrl(imageIdentifier)
     }
 
+    String getImageThumbUrl(String imageIdentifier, Integer idx) {
+        return imageStoreService.getImageThumbUrl(imageIdentifier,  idx)
+    }
+
     String getImageThumbLargeUrl(String imageIdentifier) {
         return imageStoreService.getImageThumbLargeUrl(imageIdentifier)
     }
