@@ -294,7 +294,7 @@ class ImageController {
             def image = imageService.getImageFromParams(params)
             if (!image) {
                 flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
-                redirect(action:'list')
+                redirect(action:'list', controller: 'search')
             } else {
                 def subimages = Subimage.findAllByParentImage(image)*.subimage
                 def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)

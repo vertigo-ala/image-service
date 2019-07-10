@@ -54,7 +54,8 @@
 <div class="col-md-10" style="margin-right:0px; padding-right:0px;">
     <div id="imagesList">
         <g:each in="${images}" var="image" status="imageIdx">
-            <div class="imgCon" imageId="${image.imageIdentifier}">
+            <g:if test="${image}">
+              <div class="imgCon" imageId="${image.imageIdentifier}">
                 <g:if test="${headerTemplate}">
                     <g:render template="${headerTemplate}" model="${[image: image]}" />
                 </g:if>
@@ -71,6 +72,7 @@
                 </g:if>
                 <img:imageSearchResult image="${image}" />
             </div>
+            </g:if>
         </g:each>
     </div>
 </div>
