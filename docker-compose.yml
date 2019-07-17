@@ -34,8 +34,8 @@ services:
       - pgdbimage
     env_file: ./env/.envimage
     volumes:
-      - data_images:/data/images/store
-      - data_elastic:/data/images/elasticsearch
+      - data_images:/data/image-service-store
+      - data_elastic:/data/image-service/elasticsearch
 
 volumes:
   db_data_imageservice:

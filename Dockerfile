@@ -5,12 +5,13 @@
 FROM tomcat:8-jre8-alpine
 
 RUN mkdir -p /data \
-	/data/images \
-	/data/images/config \
-    /data/images/elasticsearch \
-    /data/images/store \
-    /data/images/incoming \
-    /data/images/bin/imgcnv
+	/data/image-service \
+	/data/image-service/config \
+    /data/image-service/elasticsearch \
+    /data/image-service-store/store \
+    /data/image-service/incoming && \
+    chmod +rw /data/image-service-store/store
+#    /data/images/bin/imgcnv
 
 #ARG ARTIFACT_URL=http://192.168.0.19/web/image-service-1.0.1.war
 ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/image-service/1.0.1/image-service-1.0.1.war
@@ -41,11 +42,8 @@ RUN wget $ARTIFACT_URL -q -O /tmp/$WAR_NAME && \
 # 1.x
 COPY ./data/images/config/images-config.properties /data/image-service/config/image-service-config.properties
 
-
 # Tomcat configs
-#COPY ./tomcat-conf/* /usr/local/tomcat/conf/	
-
-VOLUME /data/images/store /data/images/elasticsearch
+COPY ./tomcat-conf/* /usr/local/tomcat/conf/	
 
 EXPOSE 8080
 
@@ -54,6 +52,16 @@ EXPOSE 8080
 #ENV ALA_REPLACE_FILES /data/images/config/images-config.properties
 # muda entrypoint, mantém cmd
 #ENTRYPOINT ["/opt/ala-entrypoint.sh","tini", "--"]
+
+# NON-ROOT
+RUN addgroup -g 101 tomcat && \
+    adduser -G tomcat -u 101 -S tomcat && \
+    chown -R tomcat:tomcat /usr/local/tomcat && \
+    chown -R tomcat:tomcat /data
+
+VOLUME /data/image-service-store /data/image-service/elasticsearch
+
+USER tomcat
 
 ENTRYPOINT ["tini", "--"]
 CMD ["catalina.sh", "run"]
