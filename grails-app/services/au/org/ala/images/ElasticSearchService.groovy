@@ -35,6 +35,7 @@ import org.elasticsearch.search.Scroll
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.SearchHits
 import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.aggregations.BucketOrder
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
 import org.elasticsearch.search.sort.SortOrder
@@ -508,7 +509,7 @@ class ElasticSearchService {
         SearchSourceBuilder source = pagenateQuery(params).query(boolQueryBuilder)
 
         // request aggregations (facets)
-        source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(10000))
+        source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(10000).order(BucketOrder.key(true)))
 
         //ask for the total
         source.trackTotalHits(false)
