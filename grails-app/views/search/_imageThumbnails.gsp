@@ -49,9 +49,9 @@
                 </li>
             </g:each>
 
-            <g:if test="${false && facet.value.size() >= 10}">
+            <g:if test="${true || facet.value.size() >= 10}">
             <a href="#multipleFacets" class="multipleFacetsLink" id="multi-${facet.key}"
-               role="button" data-toggle="modal" data-target="#multipleFacets" data-displayname="Scientific Name">
+               role="button" data-toggle="modal" data-target="#multipleFacets" data-facet="${facet.key}">
                 <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span> choose more...
             </a>
             </g:if>
@@ -99,28 +99,8 @@
                 <h3 id="multipleFacetsLabel">Refine your search</h3>
             </div>
             <div class="modal-body">
-                <div id="dynamic" class="tableContainer">
-%{--                    <form name="facetRefineForm" id="facetRefineForm" method="GET" action="/occurrences/search/facets">--}%
-%{--                        <table class="table table-bordered table-condensed table-striped scrollTable" id="fullFacets">--}%
-%{--                            <thead class="fixedHeader">--}%
-%{--                            <tr class="tableHead">--}%
-%{--                                <th>&nbsp;</th>--}%
-%{--                                <th id="indexCol" width="80%"><a href="#index" class="fsort" data-sort="index" data-foffset="0"></a></th>--}%
-%{--                                <th style="border-right-style: none;text-align: right;"><a href="#count" class="fsort" data-sort="count" data-foffset="0" title="Sort by record count">Count</a></th>--}%
-%{--                            </tr>--}%
-%{--                            </thead>--}%
-%{--                            <tbody class="scrollContent">--}%
-%{--                            <tr class="hide">--}%
-%{--                                <td><input type="checkbox" name="fqs" class="fqs" value=""></td>--}%
-%{--                                <td><a href=""></a></td>--}%
-%{--                                <td style="text-align: right; border-right-style: none;"></td>--}%
-%{--                            </tr>--}%
-%{--                            <tr id="spinnerRow">--}%
-%{--                                <td colspan="3" style="text-align: center;">loading data... <img src="/assets/spinner-c7b3cbb3ec8249a7121b722cdd76b870.gif" id="spinner2" class="spinner" alt="spinner icon"/></td>--}%
-%{--                            </tr>--}%
-%{--                            </tbody>--}%
-%{--                        </table>--}%
-%{--                    </form>--}%
+                <div id="facetContent" class="tableContainer" style="max-height: 500px; overflow-y: auto;">
+
                 </div>
             </div>
             <div id='submitFacets' class="modal-footer" style="text-align: left;">
@@ -140,6 +120,15 @@
     $(document).ready(function() {
         $(window).on("load", function() {
             layoutImages();
+        });
+    });
+
+    $("#multipleFacets").on('show.bs.modal', function(e){
+        $("#facetContent").html("");
+        var facet = $(e.relatedTarget).data('facet');
+        $.ajax("${createLink(controller:'search',action: "facet")}?q=${params.q}&fq=${params.fq}&facet=" + facet).done(function(content) {
+            $("#addButtonDiv").css("display", "block");
+            $("#facetContent").html(content);
         });
     });
 </script>

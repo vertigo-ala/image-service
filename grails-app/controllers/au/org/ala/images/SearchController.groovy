@@ -102,12 +102,16 @@ class SearchController {
     }
 
     def facet(){
+        if(!params.facet){
+            response.sendError(400, "Missing facet param")
+            return
+        }
         params.offset = params.offset ?: 0
         params.max = params.max ?: 50
         params.sort = params.sort ?: 'dateUploaded'
         params.order = params.order ?: 'desc'
         def results = searchService.facet(params)
-        render(results.aggregations as JSON)
+        render(view: 'facetFragment', model:[facet:params.facet, facetValues:results.aggregations.get(params.facet)])
     }
 
     def removeCriterion(){

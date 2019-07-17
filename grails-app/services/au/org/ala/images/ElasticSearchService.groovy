@@ -221,6 +221,22 @@ class ElasticSearchService {
             data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : "not_supplied"
             data.dataResourceUid = data.dataResourceUid ?: "no_dataresource"
 
+            def imageSize = data.height.toInteger() * data.width.toInteger()
+
+            if (imageSize < 100){
+                data.imageSize = "less than 1000"
+            } else if (imageSize < 1000){
+                data.imageSize = "less than 10000"
+            } else if (imageSize < 10000){
+                data.imageSize = "less than 10000"
+            } else if (imageSize < 100000){
+                data.imageSize = "less than 10000"
+            } else if (imageSize < 1000000){
+                data.imageSize = "less than 10000"
+            } else {
+                data.imageSize = (imageSize / 1000000).intValue() * 1000000
+            }
+
             def json = (data as JSON).toString()
             indexRequest.id(data.imageIdentifier)
             indexRequest.source(json, XContentType.JSON)
@@ -541,7 +557,10 @@ class ElasticSearchService {
                                     },  
                                     "recognisedLicence": {
                                       "type": "keyword"
-                                    },                                     
+                                    },    
+                                    "imageSize":{
+                                       "type": "keyword"
+                                    },                                 
                                     "creator": {
                                       "type": "keyword"
                                     }                                                                                             

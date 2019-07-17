@@ -214,7 +214,7 @@ swagger:
                 in: "header"
                 name: "Authorization"
 
-facets: ["recognisedLicence", "dataResourceUid", "creator"]
+facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize"]
 
 analytics:
     URL: "https://www.google-analytics.com"

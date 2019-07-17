@@ -117,7 +117,6 @@
 
             $("#btnSaveCriteria").on('click', function(e) {
 
-                console.log('save criteria');
                 var formData = $("#criteriaForm").serialize();
                 var errorDiv = $("#errorMessageDiv");
                 errorDiv.css("display",'none');
