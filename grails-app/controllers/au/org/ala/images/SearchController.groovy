@@ -60,9 +60,13 @@ class SearchController {
                     if(filter) {
                         def kv = filter.split(":")
                         if (kv[0] == "dataResourceUid") {
-                            filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = filter
+                            def name = collectoryService.getNameForUID(kv[1])
+                            if(!name){
+                                name = message(code:"no_dataresource")
+                            }
+                            filters["Data resource: ${name}"] = filter
                         } else {
-                            filters["${kv[0]}: ${kv[1]}"] = filter
+                            filters["""${message(code:kv[0])}: ${message(code:kv[1], default:kv[1])}"""] = filter
                         }
                     }
                 }
@@ -70,9 +74,13 @@ class SearchController {
                 if(it.value) {
                     def kv = it.value.split(":")
                     if (kv[0] == "dataResourceUid") {
-                        filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = it.value
+                        def name = collectoryService.getNameForUID(kv[1])
+                        if(!name){
+                            name = message(code:"no_dataresource")
+                        }
+                        filters["Data resource: ${name}"] =  it.value
                     } else {
-                        filters["${kv[0]}: ${kv[1]}"] = it.value
+                        filters["""${message(code:kv[0])}: ${message(code:kv[1], default:kv[1])}"""] = it.value
                     }
                 }
             }
@@ -91,6 +99,15 @@ class SearchController {
          criteriaDefinitions: searchCriteriaService.getCriteriaDefinitionList(),
          isAdmin: isAdmin
         ]
+    }
+
+    def facet(){
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+        def results = searchService.facet(params)
+        render(results.aggregations as JSON)
     }
 
     def removeCriterion(){

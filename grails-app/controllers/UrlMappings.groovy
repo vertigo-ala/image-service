@@ -15,6 +15,9 @@ class UrlMappings {
         "/ws/repositoryStatistics"(controller: "webService", action:'getRepositoryStatistics')
         "/ws/repositorySizeOnDisk"(controller: "webService", action:'getRepositorySizeOnDisk')
         "/ws/backgroundQueueStats"(controller: "webService", action:'getBackgroundQueueStats')
+        "/ws/metadatakeys"(controller: "webService", action:'getMetadataKeys')
+        "/ws/batchstatus"(controller: "webService", action:'getBatchStatus')
+        "/ws/imageInfoForList"(controller: "webService", action: "getImageInfoForIdList")
 
         "/ws/$action?/$id?(.$format)?" {
             controller = "webService"
@@ -32,6 +35,7 @@ class UrlMappings {
         "/image/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
         "/image/proxyImageTile"(controller: "image", action: "proxyImageTile")
         "/image/proxyImage"(controller: "image", action: "proxyImage")
+        "/image/viewer"(controller:"image", action: "viewer")
 
         // homogeneous URLs
         "/image/$id/thumbnail"(controller: "image", action: "proxyImageThumbnail")

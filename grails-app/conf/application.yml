@@ -137,11 +137,12 @@ security:
 
 imageservice:
     imagestore:
-        root: '/data/images/store'
+        root: '/data/image-service/store'
     apache:
         root: 'http://localhost:8880/store/'
         # space separated list
         multiple_roots: 'http://localhost:8880/store/'
+    exportDir: '/data/image-service/exports'
     thumbnail:
         size: 300
 
@@ -150,7 +151,6 @@ serverName: 'http://devt.ala.org.au:8080'
 skin:
     layout: 'main'
     fluidLayout: true
-
 
 quartz:
     autoStartup: true
@@ -214,7 +214,7 @@ swagger:
                 in: "header"
                 name: "Authorization"
 
-facets: ["dataResourceUid", "recognisedLicence", "creator"]
+facets: ["recognisedLicence", "dataResourceUid", "creator"]
 
 analytics:
     URL: "https://www.google-analytics.com"
@@ -223,6 +223,7 @@ analytics:
     viewID: "ga:8736349"
 
 elasticsearch:
+  indexName: "images"
   host: "127.0.0.1"
   scheme: "http"
   port1: 9200

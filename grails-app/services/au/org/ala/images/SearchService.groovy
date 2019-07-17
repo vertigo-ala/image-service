@@ -17,6 +17,11 @@ class SearchService {
         return elasticSearchService.simpleImageSearch(getSearchCriteriaList(), params)
     }
 
+    def facet(GrailsParameterMap params) {
+        return elasticSearchService.simpleFacetSearch(getSearchCriteriaList(), params)
+    }
+
+
     QueryResults<Image> download(GrailsParameterMap params, OutputStream output) {
         return elasticSearchService.simpleImageDownload(getSearchCriteriaList(), params, output)
     }

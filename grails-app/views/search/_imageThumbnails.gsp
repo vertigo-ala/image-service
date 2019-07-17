@@ -1,6 +1,6 @@
 <!-- results list -->
 <div id="facetWell" class="col-md-2 well well-sm">
-
+    <h2 class="hidden-xs">Refine results</h2>
     <g:if test="${filters || searchCriteria}">
         <h5>Selected filters</h5>
         <ul class="facets list-unstyled">
@@ -15,7 +15,7 @@
                 <li searchCriteriaId="${criteria.id}" >
                     <a href="${facet.selectedCriterionLink(criteriaId:  criteria.id)}" title="Click to remove this filter">
                         <span class="fa fa-check-square-o">&nbsp;</span>
-                        <img:searchCriteriaDescription criteria="${criteria}" />
+                        <img:searchCriteriaDescription criteria="${criteria}"/>
                     </a>
                 </li>
             </g:each>
@@ -23,12 +23,12 @@
     </g:if>
 
     <g:each in="${facets}" var="facet">
-        <h5>
+        <h4>
             <span class="FieldName"><g:message code="facet.${facet.key}" default="${facet.key}"/></span>
-        </h5>
+        </h4>
         <ul class="facets list-unstyled">
             <g:each in="${facet.value}" var="facetCount">
-                <li class="">
+                <li>
                     <a href="${request.getRequestURL().toString()}${request.getQueryString() ? '?' + request.getQueryString() : ''}${request.getQueryString() ? '&' : '?' }fq=${facet.key}:${facetCount.key}">
                         <span class="fa fa-square-o">&nbsp;</span>
                         <span class="facet-item">
@@ -39,7 +39,7 @@
                             </span>
                         </g:if>
                         <g:else>
-                            ${facetCount.key}
+                            <g:message code="${facetCount.key}" default="${facetCount.key}" />
                             <span class="facetCount">
                             (<g:formatNumber number="${facetCount.value}" format="###,###,###" />)
                             </span>
@@ -48,6 +48,13 @@
                     </a>
                 </li>
             </g:each>
+
+            <g:if test="${false && facet.value.size() >= 10}">
+            <a href="#multipleFacets" class="multipleFacetsLink" id="multi-${facet.key}"
+               role="button" data-toggle="modal" data-target="#multipleFacets" data-displayname="Scientific Name">
+                <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span> choose more...
+            </a>
+            </g:if>
         </ul>
     </g:each>
 </div>
@@ -75,17 +82,56 @@
             </g:if>
         </g:each>
     </div>
-</div>
-
-<!-- pagenation -->
-<div class="col-md-12">
     <tb:paginate total="${totalImageCount}" max="100"
                  action="list"
                  controller="search"
-                 params="${[q:params.q]}"
+                 params="${[q:params.q, fq:params.fq]}"
     />
 </div>
 
+
+<!-- modal popup for "choose more" link -->
+<div id="multipleFacets" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="multipleFacetsLabel"><!-- BS modal div -->
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="multipleFacetsLabel">Refine your search</h3>
+            </div>
+            <div class="modal-body">
+                <div id="dynamic" class="tableContainer">
+%{--                    <form name="facetRefineForm" id="facetRefineForm" method="GET" action="/occurrences/search/facets">--}%
+%{--                        <table class="table table-bordered table-condensed table-striped scrollTable" id="fullFacets">--}%
+%{--                            <thead class="fixedHeader">--}%
+%{--                            <tr class="tableHead">--}%
+%{--                                <th>&nbsp;</th>--}%
+%{--                                <th id="indexCol" width="80%"><a href="#index" class="fsort" data-sort="index" data-foffset="0"></a></th>--}%
+%{--                                <th style="border-right-style: none;text-align: right;"><a href="#count" class="fsort" data-sort="count" data-foffset="0" title="Sort by record count">Count</a></th>--}%
+%{--                            </tr>--}%
+%{--                            </thead>--}%
+%{--                            <tbody class="scrollContent">--}%
+%{--                            <tr class="hide">--}%
+%{--                                <td><input type="checkbox" name="fqs" class="fqs" value=""></td>--}%
+%{--                                <td><a href=""></a></td>--}%
+%{--                                <td style="text-align: right; border-right-style: none;"></td>--}%
+%{--                            </tr>--}%
+%{--                            <tr id="spinnerRow">--}%
+%{--                                <td colspan="3" style="text-align: center;">loading data... <img src="/assets/spinner-c7b3cbb3ec8249a7121b722cdd76b870.gif" id="spinner2" class="spinner" alt="spinner icon"/></td>--}%
+%{--                            </tr>--}%
+%{--                            </tbody>--}%
+%{--                        </table>--}%
+%{--                    </form>--}%
+                </div>
+            </div>
+            <div id='submitFacets' class="modal-footer" style="text-align: left;">
+                <button class="btn btn-default btn-small" data-dismiss="modal" aria-hidden="true" style="float:right;">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- paging -->
 <script>
     var self = this,
         $imageContainer = $('#imagesList'),

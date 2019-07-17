@@ -927,13 +927,34 @@ class ImageService {
      * @return
      */
     def exportCSV(outputStream){
-
-//        def base_image_url = grailsApplication.config.grails.serverURL  + '/image/proxyImageThumbnailLarge?imageId='
-//        def base_details_url = grailsApplication.config.grails.serverURL  + '/image/details/'
-        def exportFile = "/data/images/exports/images.csv"
-        new Sql(dataSource).call("{ call export_images() }")
-        new File(exportFile).withInputStream { stream ->
+        exportCSVToFile().withInputStream { stream ->
             outputStream << stream
         }
+    }
+
+    /**
+     * Export CSV. This uses a stored procedure that needs to be installed as part of the
+     * service installation.
+     *
+     * @param outputStream
+     * @return
+     */
+    File exportCSVToFile(){
+        def exportFile = grailsApplication.config.imageservice.exportDir + "/images.csv"
+        new Sql(dataSource).call("""{ call export_images() }""")
+        new File(exportFile)
+    }
+
+    /**
+     * Export CSV. This uses a stored procedure that needs to be installed as part of the
+     * service installation.
+     *
+     * @param outputStream
+     * @return
+     */
+    File exportIndexToFile(){
+        def exportFile = grailsApplication.config.imageservice.exportDir + "/images-index.csv"
+        new Sql(dataSource).call("""{ call export_index() }""")
+        new File(exportFile)
     }
 }

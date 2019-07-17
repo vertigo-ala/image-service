@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
+import org.apache.commons.lang.StringUtils
 import org.apache.http.HttpStatus
 import grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
@@ -554,6 +555,81 @@ class WebServiceController {
         renderResults([success:success])
     }
 
+    @ApiOperation(
+            value = "Search for images",
+            nickname = "search",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+    ])
+    def search(){
+        def ct = new CodeTimer("Image list")
+
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+
+        def query = params.q as String
+
+        QueryResults<Image> results = searchService.search(params)
+
+        def filterQueries = params.findAll { it.key == 'fq' && it.value}
+
+        ct.stop(true)
+        renderResults([
+         q: query,
+         totalImageCount: results.totalCount,
+         filters: filterQueries,
+         searchCriteria: searchService.getSearchCriteriaList(),
+         facets: results.aggregations,
+         images: results.list,
+        ])
+    }
+
+    @ApiOperation(
+            value = "Facet for images",
+            nickname = "facet",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "facet", paramType = "path", required = true, value = "Facet", dataType = "string"),
+            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+    ])
+    def facet(){
+
+        if(!params.facet){
+            response.sendError(400, "Facet parameter is required")
+            return
+        }
+
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+        def results = searchService.facet(params)
+        renderResults(results.aggregations)
+    }
+
     private getUserIdForRequest(HttpServletRequest request) {
 
         //check for API access
@@ -601,8 +677,8 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "getMetadataKeys",
-            nickname = "getMetadataKeys",
+            value = "Get list of metadata fields available for images. This will include any EXIF fields that have been extracted.",
+            nickname = "metadatakeys",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
@@ -651,6 +727,10 @@ class WebServiceController {
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "key", paramType = "query", required = true, value = "Image Id", dataType = "string"),
+            @ApiImplicitParam(name = "q", paramType = "query", required = true, value = "Query", dataType = "string")
+    ])
     def getImageLinksForMetaDataValues() {
 
         def key = params.key as String
@@ -682,7 +762,7 @@ class WebServiceController {
 
     @ApiOperation(
             value = "Get image image for a list of image IDs",
-            nickname = "getImageInfoForIdList",
+            nickname = "imageInfoForList",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
@@ -1212,8 +1292,8 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Get batch status",
-            nickname = "getBatchStatus",
+            value = "Get batch status for a batch upload of images",
+            nickname = "batchstatus",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",

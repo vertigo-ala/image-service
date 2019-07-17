@@ -32,16 +32,6 @@ class ScheduleLicenseReMatchAllBackgroundTask extends BackgroundTask {
 
     @Override
     void execute() {
-
-        def c = Image.createCriteria()
-        def imageIds = c.list {
-            projections {
-                property("id")
-            }
-        }
-
-        imageIds.each {
-            _imageService.scheduleLicenseUpdate(it)
-        }
+        _imageService.updateLicences()
     }
 }

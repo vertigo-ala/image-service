@@ -113,7 +113,7 @@ class ImageController {
     }
 
     @ApiOperation(
-            value = "Get image tile - for use with tile mapping service clients such as LeafletJS or Oepnlayers",
+            value = "Get image tile - for use with tile mapping service clients such as LeafletJS or Openlayers",
             nickname = "{id}/tms/{z}/{x}/{y}.png",
             produces = "image/jpeg",
             httpMethod = "GET"

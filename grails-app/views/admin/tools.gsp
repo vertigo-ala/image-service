@@ -105,10 +105,24 @@
             </td>
         </tr>
 
+        <tr>
+            <td>
+                <button id="btnMissingImagesCheck" class="btn btn-default">Missing images check</button>
+            </td>
+            <td>
+                Missing images report
+            </td>
+        </tr>
+
     </table>
 <script>
 
     $(document).ready(function() {
+
+        $("#btnMissingImagesCheck").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'checkForMissingImages')}";
+        });
 
         $("#btnRegenArtifacts").click(function(e) {
             e.preventDefault();

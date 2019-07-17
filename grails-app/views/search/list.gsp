@@ -17,7 +17,7 @@
 
         <div class="row">
             <div class="col-md-3">
-                <h1><g:formatNumber number="${totalImageCount}" format="###,###,###" /> Images</h1>
+                <h1 style="margin-top:0;"><g:formatNumber number="${totalImageCount}" format="###,###,###" /> Images</h1>
             </div>
             <!-- search box -->
             <div class="search col-md-7" style="margin-bottom:20px;">
@@ -75,7 +75,6 @@
                                           optionValue="name" optionKey="id" noSelection="${[0:"<Select Criteria>"]}" />
                             </div>
                             <div id="criteriaDetail" style="margin-top:10px;">
-
                             </div>
                         </form>
                     </div>
