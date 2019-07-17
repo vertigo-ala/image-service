@@ -49,7 +49,7 @@
                 </li>
             </g:each>
 
-            <g:if test="${true || facet.value.size() >= 10}">
+            <g:if test="${facet.value.size() >= 10}">
             <a href="#multipleFacets" class="multipleFacetsLink" id="multi-${facet.key}"
                role="button" data-toggle="modal" data-target="#multipleFacets" data-facet="${facet.key}">
                 <span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span> choose more...
