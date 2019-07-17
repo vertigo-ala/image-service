@@ -2,7 +2,7 @@
 # image-service is based on tomcat7 official image
 # 
 #
-FROM tomcat:7-jre8-alpine
+FROM tomcat:8-jre8-alpine
 
 RUN mkdir -p /data \
 	/data/images \
@@ -12,7 +12,8 @@ RUN mkdir -p /data \
     /data/images/incoming \
     /data/images/bin/imgcnv
 
-ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/ala-images/0.9.2/ala-images-0.9.2.war
+#ARG ARTIFACT_URL=http://192.168.0.19/web/image-service-1.0.1.war
+ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/image-service/1.0.1/image-service-1.0.1.war
 ARG WAR_NAME=images
 ENV IMAGE_SERVICE_BASE_URL http://localhost:8080/images
 
@@ -35,7 +36,11 @@ RUN wget $ARTIFACT_URL -q -O /tmp/$WAR_NAME && \
 #    zip -u $CATALINA_HOME/webapps/$WAR_NAME plugins/images-client-plugin-0.8/js/ala-image-viewer.js
 
 # default DB is "jdbc:postgresql://pgdbimage/images"
-COPY ./data/images/config/images-config.properties /data/images/config/
+# 0.9.x
+#COPY ./data/images/config/images-config.properties /data/images/config/
+# 1.x
+COPY ./data/images/config/images-config.properties /data/image-service/config/image-service-config.properties
+
 
 # Tomcat configs
 #COPY ./tomcat-conf/* /usr/local/tomcat/conf/	
