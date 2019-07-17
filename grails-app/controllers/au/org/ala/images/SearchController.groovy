@@ -111,7 +111,17 @@ class SearchController {
         params.sort = params.sort ?: 'dateUploaded'
         params.order = params.order ?: 'desc'
         def results = searchService.facet(params)
-        render(view: 'facetFragment', model:[facet:params.facet, facetValues:results.aggregations.get(params.facet)])
+
+        def fq = params.findAll { it.key == 'fq' && it.value}
+        def filterQueries = ""
+        if(fq){
+            fq.each {
+                if(it)
+                    filterQueries += ("&" + it)
+            }
+        }
+
+        render(view: 'facetFragment', model:[facet:params.facet, filterQueries: filterQueries, facetValues:results.aggregations.get(params.facet)])
     }
 
     def removeCriterion(){

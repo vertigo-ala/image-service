@@ -6,14 +6,14 @@
         <ul class="facets list-unstyled">
             <g:each in="${filters}" var="filter">
                 <li>
-                    <a href="${facet.selectedFacetLink([filter:filter.value])}"  title="Click to remove this filter">
+                    <a href="${raw(facet.selectedFacetLink([filter:filter.value]))}"  title="Click to remove this filter">
                      <span class="fa fa-check-square-o">&nbsp;</span> ${filter.key}
                     </a>
                 </li>
             </g:each>
             <g:each in="${searchCriteria}" var="criteria">
                 <li searchCriteriaId="${criteria.id}" >
-                    <a href="${facet.selectedCriterionLink(criteriaId:  criteria.id)}" title="Click to remove this filter">
+                    <a href="${raw(facet.selectedCriterionLink(criteriaId:  criteria.id))}" title="Click to remove this filter">
                         <span class="fa fa-check-square-o">&nbsp;</span>
                         <img:searchCriteriaDescription criteria="${criteria}"/>
                     </a>
@@ -29,7 +29,7 @@
         <ul class="facets list-unstyled">
             <g:each in="${facet.value}" var="facetCount">
                 <li>
-                    <a href="${request.getRequestURL().toString()}${request.getQueryString() ? '?' + request.getQueryString() : ''}${request.getQueryString() ? '&' : '?' }fq=${facet.key}:${facetCount.key}">
+                    <a href="${request.getRequestURL().toString()}${raw(request.getQueryString() ? '?' + request.getQueryString() : '')}${raw(request.getQueryString() ? '&' : '?' )}fq=${facet.key}:${facetCount.key}">
                         <span class="fa fa-square-o">&nbsp;</span>
                         <span class="facet-item">
                         <g:if test="${facet.key == 'dataResourceUid'}">
@@ -126,7 +126,7 @@
     $("#multipleFacets").on('show.bs.modal', function(e){
         $("#facetContent").html("");
         var facet = $(e.relatedTarget).data('facet');
-        $.ajax("${createLink(controller:'search',action: "facet")}?q=${params.q}&fq=${params.fq}&facet=" + facet).done(function(content) {
+        $.ajax("${createLink(controller:'search',action: "facet")}?${raw(request.getQueryString())}${raw(request.getQueryString() ? '&' : '')}facet=" + facet).done(function(content) {
             $("#addButtonDiv").css("display", "block");
             $("#facetContent").html(content);
         });

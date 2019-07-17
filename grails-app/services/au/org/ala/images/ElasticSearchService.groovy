@@ -504,7 +504,6 @@ class ElasticSearchService {
         //add search criteria
         boolQueryBuilder = createQueryFromCriteria(boolQueryBuilder, criteriaList)
 
-
         // set pagination stuff
         SearchSourceBuilder source = pagenateQuery(params).query(boolQueryBuilder)
 

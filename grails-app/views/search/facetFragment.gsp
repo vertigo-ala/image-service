@@ -10,7 +10,7 @@
 <g:each in="${facetValues}" var="facetField">
 <tr class="normalRow">
     <td class="multiple-facet-value">
-        <a href="${g.createLink(controller:'search', action:'list')}?q=${params.q}&fq=${params.fq}&fq=${facet}:${facetField.key}">
+        <a href="${g.createLink(controller:'search', action:'list')}?q=${params.q}${filterQueries}&fq=${facet}:${facetField.key}">
             <g:if test="${facet =='dataResourceUid'}">
                 <img:facetDataResourceResult dataResourceUid="${facetField.key}"/>
             </g:if>
