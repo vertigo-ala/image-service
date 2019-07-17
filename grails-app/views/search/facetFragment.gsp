@@ -1,5 +1,10 @@
 
 <table class="table table-bordered table-condensed table-striped scrollTable" id="fullFacets">
+<thead>
+<th><g:message code="facet.${facet}" default="${facet}"/></th>
+<th>Count</th>
+</thead>
+
 <tbody class="scrollContent">
 
 <g:each in="${facetValues}" var="facetField">
