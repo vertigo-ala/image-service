@@ -1,0 +1,32 @@
+#
+# ALA Image Service
+#
+version: '3'
+
+services:
+
+  pgdbimage: 
+    image: postgres:9.3
+    env_file: ./env/.envimage
+    container_name: pgdbimage
+    volumes:
+      - db_data_imageservice:/var/lib/postgresql/data
+
+  images:
+    build:
+      context: .
+    image: vertigo-ala/ala-images
+    container_name: images
+    ports:
+      - 8080:8080
+    depends_on:
+      - pgdbimage
+    env_file: ./env/.envimage
+    volumes:
+      - data_images:/data/images/store
+      - data_elastic:/data/images/elasticsearch
+
+volumes:
+  db_data_imageservice:
+  data_images:
+  data_elastic:
