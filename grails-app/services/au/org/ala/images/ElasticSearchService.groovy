@@ -224,17 +224,17 @@ class ElasticSearchService {
             def imageSize = data.height.toInteger() * data.width.toInteger()
 
             if (imageSize < 100){
-                data.imageSize = "less than 1000"
+                data.imageSize = "less than 100"
             } else if (imageSize < 1000){
-                data.imageSize = "less than 10000"
+                data.imageSize = "less than 1k"
             } else if (imageSize < 10000){
-                data.imageSize = "less than 10000"
+                data.imageSize = "less than 10k"
             } else if (imageSize < 100000){
-                data.imageSize = "less than 10000"
+                data.imageSize = "less than 100k"
             } else if (imageSize < 1000000){
-                data.imageSize = "less than 10000"
+                data.imageSize = "less than 1m"
             } else {
-                data.imageSize = (imageSize / 1000000).intValue() * 1000000
+                data.imageSize = (imageSize / 1000000).intValue() +"m"
             }
 
             def json = (data as JSON).toString()
@@ -244,8 +244,6 @@ class ElasticSearchService {
         }
         bulkRequest.timeout(TimeValue.timeValueMinutes(5))
         BulkResponse indexResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT)
-        def status = indexResponse.status()
-        log.debug(status.status)
     }
 
     def deleteImage(Image image) {
@@ -439,7 +437,7 @@ class ElasticSearchService {
 
         // request aggregations (facets)
         grailsApplication.config.facets.each { facet ->
-            source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(15))
+            source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(10))
         }
 
         //ask for the total
@@ -560,7 +558,16 @@ class ElasticSearchService {
                                     },    
                                     "imageSize":{
                                        "type": "keyword"
-                                    },                                 
+                                    },
+                                    "dateUploadedYearMonth":{
+                                       "type": "keyword"
+                                    }, 
+                                    "format":{
+                                       "type": "keyword"
+                                    },                                                                         
+                                    "createdYear":{
+                                       "type": "keyword"
+                                    },                                                                     
                                     "creator": {
                                       "type": "keyword"
                                     }                                                                                             
