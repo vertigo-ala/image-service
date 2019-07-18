@@ -26,7 +26,7 @@ services:
   images:
     build:
       context: .
-    image: vertigoala/ala-images
+    image: vertigoala/image-service
     container_name: images
     ports:
       - 8080:8080
