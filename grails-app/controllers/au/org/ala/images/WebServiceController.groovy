@@ -94,6 +94,24 @@ class WebServiceController {
     }
 
     @RequireApiKey
+    @ApiOperation(
+            value = "Schedule thumbnail generation",
+            nickname = "scheduleThumbnailGeneration/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def scheduleThumbnailGeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
         def userId = getUserIdForRequest(request)
@@ -118,6 +136,24 @@ class WebServiceController {
     }
 
     @RequireApiKey
+    @ApiOperation(
+            value = "Schedule artifact generation",
+            nickname = "scheduleArtifactGeneration/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def scheduleArtifactGeneration() {
 
         def imageInstance = Image.findByImageIdentifier(params.id as String)
@@ -142,6 +178,24 @@ class WebServiceController {
     }
 
     @RequireApiKey
+    @ApiOperation(
+            value = "Schedule keyword generation",
+            nickname = "scheduleKeywordRegeneration/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def scheduleKeywordRegeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
         def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
@@ -393,11 +447,11 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Find images by tag",
-            nickname = "tag/{tagID}/images",
+            value = "Find images by keyword (a keyword is just the raw string of a tag)",
+            nickname = "images/keyword/{keyword}",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "PUT",
+            httpMethod = "GET",
             response = Map.class,
             tags = ["Tag services"]
     )
@@ -407,23 +461,46 @@ class WebServiceController {
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
     @ApiImplicitParams([
-            @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string")
+            @ApiImplicitParam(name = "keyword", paramType = "path", required = true, value = "Keyword", dataType = "string"),
+            @ApiImplicitParam(name = "max", paramType = "query", required = true, value = "max results to return", defaultValue = "100", dataType = "string"),
+            @ApiImplicitParam(name = "offset", paramType = "query", required = true, value = "offset for paging", defaultValue = "0", dataType = "string")
+
+    ])
+    def getImagesForKeyword(){
+        QueryResults<Image> results = searchService.findImagesByKeyword(params.keyword, params)
+        renderResults([
+            keyword: params.keyword,
+            totalImageCount: results.totalCount,
+            images: results.list,
+        ])
+    }
+
+    @ApiOperation(
+            value = "Find images by keyword (a keyword is just the raw string of a tag)",
+            nickname = "images/tag/{tagID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string"),
+            @ApiImplicitParam(name = "max", paramType = "query", required = true, value = "max results to return", defaultValue = "100", dataType = "string"),
+            @ApiImplicitParam(name = "offset", paramType = "query", required = true, value = "offset for paging", defaultValue = "0", dataType = "string")
     ])
     def getImagesForTag(){
-
-        if(!params.tagID){
-            response.sendError(400, "Please include a tagID")
-        }
-
-        def success = false
-        imageService.find
-
-//        def image = Image.findByImageIdentifier(params.imageId as String)
-//        def tag = Tag.get(params.int("tagId"))
-//        if (image && tag) {
-//            success = tagService.attachTagToImage(image, tag, AuthenticationUtils.getUserId(request))
-//        }
-        renderResults([success: success])
+        QueryResults<Image> results = searchService.findImagesByTagID(params.tagID, params)
+        renderResults([
+                tagID: params.tagID,
+                totalImageCount: results.totalCount,
+                images: results.list,
+        ])
     }
 
     @RequireApiKey

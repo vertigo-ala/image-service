@@ -42,6 +42,7 @@ import org.elasticsearch.search.sort.SortOrder
 import org.springframework.context.MessageSource
 
 import javax.annotation.PreDestroy
+import java.sql.Timestamp
 import java.util.regex.Pattern
 import javax.annotation.PostConstruct
 import java.util.zip.ZipEntry
@@ -180,11 +181,11 @@ class ElasticSearchService {
             recognisedLicence,
             occurrenceID
     ){
-        def json = ([
+        def data = [
                 imageIdentifier: imageIdentifier,
                 contentMD5Hash: contentMD5Hash,
                 contentSHA1Hash: contentSHA1Hash,
-                mimeType: mimeType,
+                format: mimeType,
                 originalFilename: originalFilename,
                 extension: extension,
                 dateUploaded: dateUploaded,
@@ -193,8 +194,8 @@ class ElasticSearchService {
                 height: height,
                 width: width,
                 zoomLevels: zoomLevels,
-                dataResourceUid: dataResourceUid ?: "no_dataresource",
-                creator: creator ? creator.replaceAll("[\"|'&]", "") : "not_supplied",
+                dataResourceUid: dataResourceUid,
+                creator: creator,
                 title: title,
                 description:description,
                 rights:rights,
@@ -203,10 +204,13 @@ class ElasticSearchService {
                 thumbHeight:thumbHeight,
                 thumbWidth:thumbWidth,
                 harvestable:harvestable,
-                recognisedLicence: recognisedLicence ?: "unrecognised_licence",
+                recognisedLicence: recognisedLicence,
                 occurrenceID: occurrenceID
-        ] as JSON).toString()
+        ]
 
+        addAdditionalIndexFields(data)
+
+        def json = (data as JSON).toString()
         IndexRequest request = new IndexRequest(grailsApplication.config.elasticsearch.indexName)
         request.id(imageIdentifier)
         request.source(json, XContentType.JSON)
@@ -217,27 +221,7 @@ class ElasticSearchService {
         BulkRequest bulkRequest = new BulkRequest(grailsApplication.config.elasticsearch.indexName)
         list.each { data ->
             def indexRequest = new IndexRequest()
-
-            data.recognisedLicence  = data.recognisedLicence ?: "unrecognised_licence"
-            data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : "not_supplied"
-            data.dataResourceUid = data.dataResourceUid ?: "no_dataresource"
-
-            def imageSize = data.height.toInteger() * data.width.toInteger()
-
-            if (imageSize < 100){
-                data.imageSize = "less than 100"
-            } else if (imageSize < 1000){
-                data.imageSize = "less than 1k"
-            } else if (imageSize < 10000){
-                data.imageSize = "less than 10k"
-            } else if (imageSize < 100000){
-                data.imageSize = "less than 100k"
-            } else if (imageSize < 1000000){
-                data.imageSize = "less than 1m"
-            } else {
-                data.imageSize = (imageSize / 1000000).intValue() +"m"
-            }
-
+            addAdditionalIndexFields(data)
             def json = (data as JSON).toString()
             indexRequest.id(data.imageIdentifier)
             indexRequest.source(json, XContentType.JSON)
@@ -245,6 +229,40 @@ class ElasticSearchService {
         }
         bulkRequest.timeout(TimeValue.timeValueMinutes(5))
         BulkResponse indexResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT)
+    }
+
+    private def addAdditionalIndexFields(data){
+
+        if(data.dateUploaded){
+
+            if(data.dateUploaded instanceof java.util.Date){
+                data.dateUploadedYearMonth = data.dateUploaded.format("yyyy-MM")
+            } else {
+                def newDate = Date.parseToStringDate(data.dateUploaded)
+                if(newDate){
+                    data.dateUploadedYearMonth =newDate.format("yyyy-MM")
+                }
+            }
+        }
+
+        data.recognisedLicence  = data.recognisedLicence ?: "unrecognised_licence"
+        data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : "not_supplied"
+        data.dataResourceUid = data.dataResourceUid ?: "no_dataresource"
+        def imageSize = data.height.toInteger() * data.width.toInteger()
+        if (imageSize < 100){
+            data.imageSize = "less than 100"
+        } else if (imageSize < 1000){
+            data.imageSize = "less than 1k"
+        } else if (imageSize < 10000){
+            data.imageSize = "less than 10k"
+        } else if (imageSize < 100000){
+            data.imageSize = "less than 100k"
+        } else if (imageSize < 1000000){
+            data.imageSize = "less than 1m"
+        } else {
+            data.imageSize = (imageSize / 1000000).intValue() +"m"
+        }
+        data
     }
 
     def deleteImage(Image image) {
@@ -262,9 +280,11 @@ class ElasticSearchService {
         if (searchResponse.hits) {
             searchResponse.hits.each { hit ->
                def image =  Image.findByImageIdentifier(hit.id)
-               image.metadata = null
-               image.recognisedLicense = null
-               imageList << image
+               if(image) {
+                   image.metadata = null
+                   image.recognisedLicense = null
+                   imageList << image
+               }
             }
         }
         QueryResults<Image> qr = new QueryResults<Image>()

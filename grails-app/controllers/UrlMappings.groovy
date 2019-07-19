@@ -61,6 +61,10 @@ class UrlMappings {
 
         "/ws/tag/$tagId/rename"(controller: "webService", action: "renameTag")
         "/ws/tag/$tagId/move"(controller: "webService", action: "moveTag")
+        "/ws/tag/$tagId/images"(controller: "webService", action: "getImagesForTag")
+
+        "/ws/images/keyword/$keyword"(controller: "webService", action: "getImagesForKeyword")
+        "/ws/images/tag/$tagID"(controller: "webService", action: "getImagesForTag")
 
         "/ws/tag/$tagId/image/$imageId"(controller: "webService"){
            action = [GET: 'attachTagToImage', PUT: 'attachTagToImage', DELETE: 'detachTagToImage']

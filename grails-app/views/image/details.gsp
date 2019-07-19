@@ -256,7 +256,7 @@
                                 <div class="metadataSource-container"></div>
                             </div>
                             <div class="tab-pane" id="tabThumbnails">
-                                <ul class="list-unstyled">
+                                <ul class="list-unstyled list-inline">
                                     <g:each in="${squareThumbs}" var="thumbUrl">
                                         <li>
                                             <a href="${thumbUrl}" target="thumbnail">

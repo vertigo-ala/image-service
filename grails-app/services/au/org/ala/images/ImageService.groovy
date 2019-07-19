@@ -119,7 +119,6 @@ class ImageService {
         return _tilingQueue.clear();
     }
 
-
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
                           String uploaderId, Map metadata = [:]) {
 
@@ -159,7 +158,6 @@ class ImageService {
                 }
             }
         }
-
 
         image.save(flush:true, failOnError: true)
 
@@ -358,11 +356,11 @@ class ImageService {
     }
 
     boolean isImageType(Image image) {
-        return image.mimeType?.toLowerCase()?.startsWith("image/");
+        return image.mimeType?.toLowerCase()?.startsWith("image/")
     }
 
     boolean isAudioType(Image image) {
-        return image.mimeType?.toLowerCase()?.startsWith("audio/");
+        return image.mimeType?.toLowerCase()?.startsWith("audio/")
     }
 
     List<ThumbnailingResult> generateImageThumbnails(Image image) {
@@ -449,12 +447,9 @@ class ImageService {
             // Delete from the index...
             elasticSearchService.deleteImage(image)
 
+            //soft deletes
             image.dateDeleted = new Date()
             image.save(flush: true, failonerror: true)
-
-            // Finally need to delete images on disk.
-            // This might fail (if the file is held open somewhere), but that's ok, we can clean up later.
-//            imageStoreService.deleteImage(image?.imageIdentifier)
 
             auditService.log(image?.imageIdentifier, "Image deleted", userId)
 
@@ -549,7 +544,6 @@ class ImageService {
     }
 
     def updateImageMetadata(Image image, Map metadata){
-//        imageService.setMetaDataItems(image, MetaDataSourceType.SystemDefined, metadata, "<unknown>")
 
         def imageUpdated = false
         metadata.each { kvp ->

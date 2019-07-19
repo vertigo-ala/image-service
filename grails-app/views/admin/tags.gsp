@@ -78,11 +78,10 @@
 
             $("#btnUploadTags").click(function(e) {
                 e.preventDefault();
-                var options = {
-                    title:"Select a file to upload",
-                    url: "${createLink(action:'uploadTagsFragment')}"
-                };
-
+                $.ajax("${createLink(action:'uploadTagsFragment')}").done(function(content) {
+                    $("#tagModal .modal-title").html("Upload tags - select a file to upload");
+                    $("#tagModal .modal-body").html(content);
+                });
                 $('#tagModal').modal('show');
             });
 

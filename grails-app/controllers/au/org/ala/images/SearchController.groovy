@@ -40,7 +40,7 @@ class SearchController {
         def userId = AuthenticationUtils.getUserId(request)
 
         def isLoggedIn = StringUtils.isNotEmpty(userId)
-        def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
+        def selectedImageMap = [:] // selectionService.getSelectedImageIdsAsMap(userId)
 
         def isAdmin = false
         def userEmail = AuthenticationUtils.getEmailAddress(request)
