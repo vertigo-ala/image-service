@@ -126,7 +126,13 @@ class ImagesTagLib {
 
     def facetDataResourceResult = { attrs, body ->
         def metadata = collectoryService.getResourceLevelMetadata(attrs.dataResourceUid)
-        out <<  "<span class='resource-name'>${metadata.name}</span>"
+        def valueToRender = ""
+        if (metadata &&  metadata.name){
+            valueToRender = metadata.name
+        } else {
+            valueToRender = message(code: attrs.dataResourceUid, default: attrs.dataResourceUid)
+        }
+        out <<  "<span class='resource-name'>${valueToRender}</span>"
     }
 
     def imageSquareThumbUrl = { attrs, body ->
@@ -134,7 +140,6 @@ class ImagesTagLib {
             out << imageService.getImageSquareThumbUrl(attrs.imageId as String, attrs.backgroundColor ?: '')
         }
     }
-
 
     def imageTileBaseUrl = { attrs, body ->
         if (attrs.imageId) {

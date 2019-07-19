@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartRequest
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
 
-@Api(value = "/ws", tags = ["Image Services"], description = "Image Web Services")
+@Api(value = "/ws", description = "Image Web Services")
 class WebServiceController {
 
     static namespace = 'ws'
@@ -43,7 +43,8 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "DELETE",
             response = Map.class,
-            authorizations = @Authorization(value="apiKey")
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -93,6 +94,24 @@ class WebServiceController {
     }
 
     @RequireApiKey
+    @ApiOperation(
+            value = "Schedule thumbnail generation",
+            nickname = "scheduleThumbnailGeneration/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def scheduleThumbnailGeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
         def userId = getUserIdForRequest(request)
@@ -117,6 +136,24 @@ class WebServiceController {
     }
 
     @RequireApiKey
+    @ApiOperation(
+            value = "Schedule artifact generation",
+            nickname = "scheduleArtifactGeneration/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def scheduleArtifactGeneration() {
 
         def imageInstance = Image.findByImageIdentifier(params.id as String)
@@ -141,6 +178,24 @@ class WebServiceController {
     }
 
     @RequireApiKey
+    @ApiOperation(
+            value = "Schedule keyword generation",
+            nickname = "scheduleKeywordRegeneration/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+    ])
     def scheduleKeywordRegeneration() {
         def imageInstance = Image.findByImageIdentifier(params.id as String)
         def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
@@ -165,6 +220,7 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @RequireApiKey
     def scheduleInboxPoll() {
         def results = [success:true]
         def userId =  AuthenticationUtils.getUserId(request) ?: params.userId
@@ -172,6 +228,21 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Get tag model",
+            nickname = "tags",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
     def getTagModel() {
 
         def newNode = { Tag tag, String label, boolean disabled = false ->
@@ -219,14 +290,31 @@ class WebServiceController {
         renderResults(rootNode.children)
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Create tag by path",
+            nickname = "tag",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "PUT",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only PUT is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "tagPath", paramType = "query", required = true, value = "Tag path. Paths separated by '/'. e.g. 'Birds/Colour/Red'", dataType = "string")
+    ])
     def createTagByPath() {
         def success = false
         def tagPath = params.tagPath as String
         def tagId = 0
         if (tagPath) {
-
             def parent = Tag.get(params.int("parentTagId"))
-
             def tag = tagService.createTagByPath(tagPath, parent)
             success = tag != null
             tagId = tag.id
@@ -234,6 +322,26 @@ class WebServiceController {
         renderResults([success: success, tagId: tagId])
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Move tag",
+            nickname = "tag/move",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "PUT",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only PUT is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "targetTagID", paramType = "query", required = true, value = "Target Tag ID to move", dataType = "string"),
+            @ApiImplicitParam(name = "newParentTagID", paramType = "query", required = true, value = "New target parent tag ID", dataType = "string")
+    ])
     def moveTag() {
         def success = false
 
@@ -243,19 +351,57 @@ class WebServiceController {
         if (target) {
             tagService.moveTag(target, newParent)
         }
-
         renderResults([success: success])
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Rename tag",
+            nickname = "tag/rename",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "PUT",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "tagID", paramType = "query", required = true, value = "Tag ID", dataType = "string"),
+            @ApiImplicitParam(name = "name", paramType = "query", required = true, value = "New name", dataType = "string")
+    ])
     def renameTag() {
         def success = false
-        def tag = Tag.get(params.int("tagId"))
+        def tag = Tag.get(params.int("tagID"))
         if (tag && params.name) {
             tagService.renameTag(tag, params.name)
         }
         renderResults([success: success])
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Delete tag",
+            nickname = "tag/{tagID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "DELETE",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string")
+    ])
     def deleteTag() {
         def success = false
         def tag = Tag.get(params.int("tagId"))
@@ -265,16 +411,118 @@ class WebServiceController {
         renderResults([success: success])
     }
 
+    @RequireApiKey
+    @ApiOperation(
+            value = "Tag an image",
+            nickname = "tag/{tagID}/image/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "PUT",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
+            @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string")
+    ])
     def attachTagToImage() {
         def success = false
-        def image = Image.findByImageIdentifier(params.id as String)
+        def message = ""
+        def image = Image.findByImageIdentifier(params.imageId as String)
         def tag = Tag.get(params.int("tagId"))
-        if (image && tag) {
+        if (!image){
+            message =  "Unrecognised image ID"
+        } else if(!tag) {
+            message = "Unrecognised tag ID"
+        } else if (image && tag) {
             success = tagService.attachTagToImage(image, tag, AuthenticationUtils.getUserId(request))
         }
-        renderResults([success: success])
+        renderResults([success: success, message: message])
     }
 
+    @ApiOperation(
+            value = "Find images by keyword (a keyword is just the raw string of a tag)",
+            nickname = "images/keyword/{keyword}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "keyword", paramType = "path", required = true, value = "Keyword", dataType = "string"),
+            @ApiImplicitParam(name = "max", paramType = "query", required = true, value = "max results to return", defaultValue = "100", dataType = "string"),
+            @ApiImplicitParam(name = "offset", paramType = "query", required = true, value = "offset for paging", defaultValue = "0", dataType = "string")
+
+    ])
+    def getImagesForKeyword(){
+        QueryResults<Image> results = searchService.findImagesByKeyword(params.keyword, params)
+        renderResults([
+            keyword: params.keyword,
+            totalImageCount: results.totalCount,
+            images: results.list,
+        ])
+    }
+
+    @ApiOperation(
+            value = "Find images by keyword (a keyword is just the raw string of a tag)",
+            nickname = "images/tag/{tagID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string"),
+            @ApiImplicitParam(name = "max", paramType = "query", required = true, value = "max results to return", defaultValue = "100", dataType = "string"),
+            @ApiImplicitParam(name = "offset", paramType = "query", required = true, value = "offset for paging", defaultValue = "0", dataType = "string")
+    ])
+    def getImagesForTag(){
+        QueryResults<Image> results = searchService.findImagesByTagID(params.tagID, params)
+        renderResults([
+                tagID: params.tagID,
+                totalImageCount: results.totalCount,
+                images: results.list,
+        ])
+    }
+
+    @RequireApiKey
+    @ApiOperation(
+            value = "Remove a tag from an image",
+            nickname = "tag/{tagID}/image/{imageID}",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "DELETE",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["Tag services"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
+            @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string")
+    ])
     def detachTagFromImage() {
         def success = false
         def image = Image.findByImageIdentifier(params.id as String)
@@ -328,12 +576,14 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Get Image Details",
+            value = "Get Image Details - optionally include tags and other metadata (e.g. EXIF)",
             nickname = "image/{imageID}",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
+
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -341,7 +591,9 @@ class WebServiceController {
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
     @ApiImplicitParams([
-            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
+            @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
+            @ApiImplicitParam(name = "includeTags", paramType = "query", required = false, value = "Include tags", dataType = "string"),
+            @ApiImplicitParam(name = "includeMetadata", paramType = "query", required = false, value = "Include metadata", dataType = "string")
     ])
     def getImageInfo() {
         def results = [success:false]
@@ -359,7 +611,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -410,7 +663,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -430,7 +684,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -448,7 +703,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -469,7 +725,8 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "GET",
             response = Map.class,
-            authorizations = @Authorization(value="apiKey")
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -554,6 +811,83 @@ class WebServiceController {
         renderResults([success:success])
     }
 
+    @ApiOperation(
+            value = "Search for images",
+            nickname = "search",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            tags = ["Search"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+    ])
+    def search(){
+        def ct = new CodeTimer("Image list")
+
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+
+        def query = params.q as String
+
+        QueryResults<Image> results = searchService.search(params)
+
+        def filterQueries = params.findAll { it.key == 'fq' && it.value}
+
+        ct.stop(true)
+        renderResults([
+         q: query,
+         totalImageCount: results.totalCount,
+         filters: filterQueries,
+         searchCriteria: searchService.getSearchCriteriaList(),
+         facets: results.aggregations,
+         images: results.list,
+        ])
+    }
+
+    @ApiOperation(
+            value = "Facet for images",
+            nickname = "facet",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "GET",
+            response = Map.class,
+            tags = ["Search"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "facet", paramType = "path", required = true, value = "Facet", dataType = "string"),
+            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+    ])
+    def facet(){
+
+        if(!params.facet){
+            response.sendError(400, "Facet parameter is required")
+            return
+        }
+
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+        def results = searchService.facet(params)
+        renderResults(results.aggregations)
+    }
+
     private getUserIdForRequest(HttpServletRequest request) {
 
         //check for API access
@@ -601,12 +935,13 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "getMetadataKeys",
-            nickname = "getMetadataKeys",
+            value = "Get list of metadata fields available for images. This will include any EXIF fields that have been extracted.",
+            nickname = "metadatakeys",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -644,13 +979,18 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
+    @ApiImplicitParams([
+            @ApiImplicitParam(name = "key", paramType = "query", required = true, value = "Image Id", dataType = "string"),
+            @ApiImplicitParam(name = "q", paramType = "query", required = true, value = "Query", dataType = "string")
+    ])
     def getImageLinksForMetaDataValues() {
 
         def key = params.key as String
@@ -681,12 +1021,13 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Get image image for a list of image IDs",
-            nickname = "getImageInfoForIdList",
+            value = "Get images for a list of image IDs",
+            nickname = "imageInfoForList",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -719,7 +1060,6 @@ class WebServiceController {
                 } else {
                     errors << imageId
                 }
-
             }
 
             renderResults([success: true, results: results, invalidImageIds: errors])
@@ -734,7 +1074,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["Licences"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -752,7 +1093,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["Licences"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -770,7 +1112,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -819,7 +1162,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
-            response = Map.class
+            response = Map.class,
+            tags = ["Search"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -950,6 +1294,7 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "POST",
             response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"],
             authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
@@ -998,6 +1343,7 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "POST",
             response = Map.class,
+            tags = ["Upload"],
             authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
@@ -1085,6 +1431,7 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "POST",
             response = Map.class,
+            tags = ["Upload"],
             authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
@@ -1174,6 +1521,7 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "GET",
             response = Map.class,
+            tags = ["Upload"],
             authorizations = @Authorization(value="apiKey")
     )
     @ApiResponses([
@@ -1212,12 +1560,13 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Get batch status",
-            nickname = "getBatchStatus",
+            value = "Get batch status for a batch upload of images",
+            nickname = "batchstatus",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["Upload"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -1239,7 +1588,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["JSON services for accessing and updating metadata"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -1295,7 +1645,8 @@ class WebServiceController {
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "GET",
-            response = Map.class
+            response = Map.class,
+            tags = ["Export"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),

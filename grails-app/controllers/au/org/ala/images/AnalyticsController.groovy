@@ -29,7 +29,7 @@ import io.swagger.annotations.ApiResponses
  *   "client_x509_cert_url": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
  * }
  */
-@Api(value = "/ws", tags = ["Image Services"], description = "Image Web Services")
+@Api(value = "/ws", tags = ["Analytics services - image usage tracking"], description = "Image Web Services")
 class AnalyticsController {
 
     def analyticsService

@@ -1,6 +1,5 @@
 package au.org.ala.images
 
-import au.ala.org.ws.security.RequireApiKey
 import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
@@ -22,7 +21,7 @@ import javax.servlet.http.HttpServletResponse
 import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.Method.POST
 
-@Api(value = "/image", tags = ["Image Services"], description = "Image Web Services")
+@Api(value = "/image", tags = ["Access to image derivatives (e.g. thumbnails, tiles and originals)"], description = "Image Web Services")
 class ImageController {
 
     def imageService
@@ -113,7 +112,7 @@ class ImageController {
     }
 
     @ApiOperation(
-            value = "Get image tile - for use with tile mapping service clients such as LeafletJS or Oepnlayers",
+            value = "Get image tile - for use with tile mapping service clients such as LeafletJS or Openlayers",
             nickname = "{id}/tms/{z}/{x}/{y}.png",
             produces = "image/jpeg",
             httpMethod = "GET"
@@ -379,18 +378,15 @@ class ImageController {
 
     def imageTagsTooltipFragment() {
         def imageInstance = imageService.getImageFromParams(params)
-
         def imageTags = ImageTag.findAllByImage(imageInstance)
         def tags = imageTags?.collect { it.tag }
         def leafTags = TagUtils.getLeafTags(tags)
-
         [imageInstance: imageInstance, tags: leafTags]
     }
 
     def createSubimageFragment() {
         def imageInstance = imageService.getImageFromParams(params)
         def metadata = ImageMetaDataItem.findAllByImage(imageInstance)
-
         [imageInstance: imageInstance, x: params.x, y: params.y, width: params.width, height: params.height, metadata: metadata]
     }
 

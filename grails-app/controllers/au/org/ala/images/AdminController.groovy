@@ -30,6 +30,8 @@ class AdminController {
         redirect(action:'dashboard')
     }
 
+
+
     def image() {
         def image = imageService.getImageFromParams(params)
         if (!image) {
@@ -63,7 +65,6 @@ class AdminController {
              squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId, isAdminView:true])
         }
     }
-
 
     def upload() { }
     def analytics() {
@@ -276,7 +277,7 @@ class AdminController {
 
     def reindexImages() {
         flash.message = "Reindexing scheduled. Monitor progress using the dashboard."
-        imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService))
+        imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService, elasticSearchService))
         redirect(action:'tools')
     }
 
@@ -387,6 +388,7 @@ class AdminController {
     def clearQueues(){
         imageService.clearImageTaskQueue()
         imageService.clearTilingTaskQueueLength()
+        flash.message = 'Queue cleared'
         redirect(action:'tools', message: 'Queue cleared')
     }
 
@@ -408,7 +410,14 @@ class AdminController {
 
     def rematchLicenses(){
         imageService.scheduleBackgroundTask(new ScheduleLicenseReMatchAllBackgroundTask(imageService))
-        redirect(action:'tools', message: "Rematching licenses scheduled. Monitor progress using the dashboard.")
+        flash.message = "Rematching licenses scheduled. Monitor progress using the dashboard.";
+        redirect(action:'tools', message: flash.message)
+    }
+
+    def checkForMissingImages(){
+        imageService.scheduleBackgroundTask(new ScheduleMissingImagesBackgroundTask(imageStoreService, grailsApplication.config.imageservice.exportDir))
+        flash.message = "Check for missing images started......Output: " + grailsApplication.config.imageservice.exportDir + "/missing-images.csv";
+        redirect(action:'tools', message: flash.message)
     }
 
     def indexSearch() {
@@ -432,6 +441,7 @@ class AdminController {
 
     def clearCollectoryCache(){
         collectoryService.clearCache()
+        flash.message = 'Collectory cache cleared'
         redirect(action:'tools', message: 'Cache is cleared')
     }
 }

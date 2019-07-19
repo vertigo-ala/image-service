@@ -41,7 +41,7 @@ class TagService {
             }
         }
 
-        return tag
+        tag
     }
 
     def moveTag(Tag target, Tag newParent) {
@@ -132,7 +132,6 @@ class TagService {
             imageTags.each { imageTag ->
                 imageTag.delete()
             }
-
             t.delete()
         }
     }
@@ -239,7 +238,6 @@ class TagService {
         imageKeywords.each { keyword ->
             image.addToKeywords(new ImageKeyword(image: image, keyword: keyword))
         }
-
     }
 
     def loadTagsFromFile(MultipartFile file) {

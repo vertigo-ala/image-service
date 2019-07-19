@@ -40,7 +40,7 @@ class SearchController {
         def userId = AuthenticationUtils.getUserId(request)
 
         def isLoggedIn = StringUtils.isNotEmpty(userId)
-        def selectedImageMap = selectionService.getSelectedImageIdsAsMap(userId)
+        def selectedImageMap = [:] // selectionService.getSelectedImageIdsAsMap(userId)
 
         def isAdmin = false
         def userEmail = AuthenticationUtils.getEmailAddress(request)
@@ -60,9 +60,13 @@ class SearchController {
                     if(filter) {
                         def kv = filter.split(":")
                         if (kv[0] == "dataResourceUid") {
-                            filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = filter
+                            def name = collectoryService.getNameForUID(kv[1])
+                            if(!name){
+                                name = message(code:"no_dataresource")
+                            }
+                            filters["Data resource: ${name}"] = filter
                         } else {
-                            filters["${kv[0]}: ${kv[1]}"] = filter
+                            filters["""${message(code:kv[0])}: ${message(code:kv[1], default:kv[1])}"""] = filter
                         }
                     }
                 }
@@ -70,9 +74,13 @@ class SearchController {
                 if(it.value) {
                     def kv = it.value.split(":")
                     if (kv[0] == "dataResourceUid") {
-                        filters["Data resource: ${collectoryService.getNameForUID(kv[1])}"] = it.value
+                        def name = collectoryService.getNameForUID(kv[1])
+                        if(!name){
+                            name = message(code:"no_dataresource")
+                        }
+                        filters["Data resource: ${name}"] =  it.value
                     } else {
-                        filters["${kv[0]}: ${kv[1]}"] = it.value
+                        filters["""${message(code:kv[0])}: ${message(code:kv[1], default:kv[1])}"""] = it.value
                     }
                 }
             }
@@ -91,6 +99,29 @@ class SearchController {
          criteriaDefinitions: searchCriteriaService.getCriteriaDefinitionList(),
          isAdmin: isAdmin
         ]
+    }
+
+    def facet(){
+        if(!params.facet){
+            response.sendError(400, "Missing facet param")
+            return
+        }
+        params.offset = params.offset ?: 0
+        params.max = params.max ?: 50
+        params.sort = params.sort ?: 'dateUploaded'
+        params.order = params.order ?: 'desc'
+        def results = searchService.facet(params)
+
+        def fq = params.findAll { it.key == 'fq' && it.value}
+        def filterQueries = ""
+        if(fq){
+            fq.each {
+                if(it)
+                    filterQueries += ("&" + it)
+            }
+        }
+
+        render(view: 'facetFragment', model:[facet:params.facet, filterQueries: filterQueries, facetValues:results.aggregations.get(params.facet)])
     }
 
     def removeCriterion(){

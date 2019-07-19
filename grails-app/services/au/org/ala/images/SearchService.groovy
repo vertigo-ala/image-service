@@ -17,12 +17,43 @@ class SearchService {
         return elasticSearchService.simpleImageSearch(getSearchCriteriaList(), params)
     }
 
+    def facet(GrailsParameterMap params) {
+        return elasticSearchService.simpleFacetSearch(getSearchCriteriaList(), params)
+    }
+
     QueryResults<Image> download(GrailsParameterMap params, OutputStream output) {
         return elasticSearchService.simpleImageDownload(getSearchCriteriaList(), params, output)
     }
 
     QueryResults<Image> findImagesByMetadata(String metaDataKey, List values, GrailsParameterMap params) {
         return elasticSearchService.searchByMetadata(metaDataKey, values, params)
+    }
+
+    QueryResults<Image> findImagesByKeyword(String keyword, GrailsParameterMap params) {
+        def imageKeywords = ImageKeyword.findAllByKeyword(keyword, [max: params.max?:100,  offset: params.offset?:0])
+        def queryResults = new QueryResults<Image>()
+        queryResults.list = []
+        if (imageKeywords){
+            imageKeywords.each { imageKeyWord ->
+                queryResults.list << imageKeyWord.image
+            }
+        }
+        queryResults.totalCount = queryResults.list.size()
+        queryResults
+    }
+
+    QueryResults<Image> findImagesByTagID(String tagID, GrailsParameterMap params) {
+        def tag = Tag.findById(tagID)
+        def queryResults = new QueryResults<Image>()
+        queryResults.list = []
+        if (tag){
+            def imagetags = ImageTag.findAllByTag(tag, [max: params.max?:100,  offset: params.offset?:0])
+            imagetags.each { imagetag ->
+                queryResults.list << imagetag.image
+            }
+        }
+        queryResults.totalCount = queryResults.list.size()
+        queryResults
     }
 
     def findImagesByOriginalFilename(String filename, GrailsParameterMap params) {
