@@ -66,7 +66,6 @@ class AdminController {
         }
     }
 
-
     def upload() { }
     def analytics() {
         render(view: 'analytics', model:[results:analyticsService.byAll()])

@@ -46,16 +46,13 @@
                                 <a href="#tabExif" data-toggle="tab">Embedded</a>
                             </li>
                             <li>
-                                <a href="#tabUserDefined" data-toggle="tab">User Metadata</a>
-                            </li>
-                            <li>
                                 <a href="#tabSystem" data-toggle="tab">System</a>
                             </li>
-%{--                            <g:if test="${isImage}">--}%
-%{--                                <li>--}%
-%{--                                    <a href="#tabThumbnails" data-toggle="tab">Thumbnails</a>--}%
-%{--                                </li>--}%
-%{--                            </g:if>--}%
+                            <g:if test="${isImage}">
+                                <li>
+                                    <a href="#tabThumbnails" data-toggle="tab">Thumbnails</a>
+                                </li>
+                            </g:if>
                             <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">
                                 <li>
                                     <a href="#tabAuditMessages" data-toggle="tab">Audit</a>
@@ -208,11 +205,9 @@
                                         </td>
                                     </tr>
                                 </table>
+                                <div id="tagsSection"></div>
                             </div>
                             <div class="tab-pane" id="tabExif" metadataSource="${au.org.ala.images.MetaDataSourceType.Embedded}">
-                                <div class="metadataSource-container"></div>
-                            </div>
-                            <div class="tab-pane" id="tabUserDefined" metadataSource="${au.org.ala.images.MetaDataSourceType.UserDefined}">
                                 <div class="metadataSource-container"></div>
                             </div>
                             <div class="tab-pane" id="tabSystem" metadataSource="${au.org.ala.images.MetaDataSourceType.SystemDefined}" >
@@ -265,7 +260,7 @@
                                     <g:each in="${squareThumbs}" var="thumbUrl">
                                         <li>
                                             <a href="${thumbUrl}" target="thumbnail">
-                                                <img class="thumbnail" src="${thumbUrl}" style="width:75px;" title="${thumbUrl}" style="margin: 5px"/>
+                                                <img class="thumbnail" src="${thumbUrl}" style="width:100px;" title="${thumbUrl}" style="margin: 5px"/>
                                             </a>
                                         </li>
                                     </g:each>

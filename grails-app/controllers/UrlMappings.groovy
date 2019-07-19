@@ -36,6 +36,8 @@ class UrlMappings {
         "/image/proxyImageTile"(controller: "image", action: "proxyImageTile")
         "/image/proxyImage"(controller: "image", action: "proxyImage")
         "/image/viewer"(controller:"image", action: "viewer")
+        "/image/view/$id"(controller:"image", action: "viewer")
+        "/image/viewer/$id"(controller:"image", action: "viewer")
 
         // homogeneous URLs
         "/image/$id/thumbnail"(controller: "image", action: "proxyImageThumbnail")
@@ -52,6 +54,18 @@ class UrlMappings {
         "/ws/analytics/dataResource/$dataResourceUID"(controller: "analytics", action: "byDataResource")
 
         name image_url: "/image/$imageId"(controller: "image", action: "details")
+
+        //tags
+        "/ws/tags"(controller: "webService", action: "getTagModel")
+        "/ws/tag"(controller: "webService", action: "createTagByPath")
+
+        "/ws/tag/$tagId/rename"(controller: "webService", action: "renameTag")
+        "/ws/tag/$tagId/move"(controller: "webService", action: "moveTag")
+
+        "/ws/tag/$tagId/image/$imageId"(controller: "webService"){
+           action = [GET: 'attachTagToImage', PUT: 'attachTagToImage', DELETE: 'detachTagToImage']
+        }
+        "/ws/tag/$tagId/images"(controller: "webService", action:"getImagesForTag")
 
         "/"(controller:'search', action:'list')
         "500"(view:'/error')

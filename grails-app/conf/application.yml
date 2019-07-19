@@ -192,7 +192,7 @@ placeholder:
 swagger:
     info:
         description: "API Documentation for Image Services"
-        version: "image-service-1.0.0"
+        version: "2.0"
         title: "Image Service API"
         termsOfServices: "https://www.ala.org.au/who-we-are/terms-of-use/"
         contact:

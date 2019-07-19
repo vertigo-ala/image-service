@@ -26,7 +26,7 @@
         <div id="imageViewerContainer" class="container-fluid">
             <div id="imageViewer"> </div>
         </div>
-        <asset:javascript src="jquery-1.12.4.js"/>
+        <asset:javascript src="head.js"/>
         <asset:javascript src="ala/images-client.js"/>
         <script>
             $(document).ready(function() {
