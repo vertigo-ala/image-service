@@ -30,8 +30,6 @@ class AdminController {
         redirect(action:'dashboard')
     }
 
-
-
     def image() {
         def image = imageService.getImageFromParams(params)
         if (!image) {

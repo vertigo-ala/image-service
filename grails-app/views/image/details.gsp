@@ -13,9 +13,7 @@
             .audiojs { width: 100%; }
             .tab-pane { padding-top: 20px !important; }
             .tabbable { font-size: 9pt; margin-top:10px; }
-            /*#imageTabs .nav { margin-top:5px; }*/
             div#main { padding-top: 0px; }
-            /*.leaflet-container { background: #E7E7E7;}*/
         </style>
     </head>
     <body>
@@ -170,19 +168,6 @@
                                             </td>
                                         </tr>
                                     </g:if>
-
-%{--                                    <tr>--}%
-%{--                                        <td class="property-name">Harvested as occurrence record?</td>--}%
-%{--                                        <auth:ifAnyGranted roles="${CASRoles.ROLE_ADMIN}">--}%
-%{--                                            <td>--}%
-%{--                                                <g:checkBox name="chkIsHarvestable" data-size="small" data-on-text="Yes" data-off-text="No" checked="${imageInstance.harvestable}" />--}%
-%{--                                            </td>--}%
-%{--                                        </auth:ifAnyGranted>--}%
-%{--                                        <auth:ifNotGranted roles="${CASRoles.ROLE_ADMIN}">--}%
-%{--                                            <td class="property-value">${imageInstance.harvestable ? "Yes" : "No"}</td>--}%
-%{--                                        </auth:ifNotGranted>--}%
-%{--                                    </tr>--}%
-
                                     <tr>
                                         <td colspan="2">
                                             <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier]" title="View JSON metadata" class="btn btn-default">
@@ -410,7 +395,6 @@
                 $("#tagsSection").html(html);
             });
         }
-
     </script>
     </body>
 </html>

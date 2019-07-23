@@ -138,6 +138,7 @@ security:
 imageservice:
     imagestore:
         root: '/data/image-service/store'
+        inbox: '/data/image-service/incoming'
     apache:
         root: 'http://localhost:8880/store/'
         # space separated list
@@ -160,7 +161,6 @@ quartz:
     props:
         scheduler:
             skipUpdateCheck: true
-
 
 ---
 info:
@@ -217,6 +217,7 @@ swagger:
 facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize", "format", "dateUploadedYearMonth"]
 
 analytics:
+    credentialsJson: "/data/image-service/config/google-analytics.json"
     URL: "https://www.google-analytics.com"
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"

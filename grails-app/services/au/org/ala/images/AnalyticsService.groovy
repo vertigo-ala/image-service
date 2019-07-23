@@ -73,7 +73,7 @@ class AnalyticsService {
 
     String getAccessToken(){
         GoogleCredential credential = GoogleCredential
-                .fromStream(new FileInputStream("/data/image-service/config/google-analytics.json"))
+                .fromStream(new FileInputStream(grailsApplication.config.analytics.credentialsJson))
                 .createScoped(Collections.singleton(AnalyticsScopes.ANALYTICS_READONLY));
         credential.refreshToken()
         credential.getAccessToken()
