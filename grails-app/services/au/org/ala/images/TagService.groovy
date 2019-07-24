@@ -185,7 +185,7 @@ class TagService {
         // kill this tag explicitly...
         def taggedImage = ImageTag.findByImageAndTag(image, tag)
         if (taggedImage) {
-            taggedImage.delete(flush:true)
+            taggedImage.delete()
             allTags.remove taggedImage.tag.path
         }
 
@@ -200,7 +200,7 @@ class TagService {
             // otherwise delete the parent too
             taggedImage = ImageTag.findByImageAndTag(image, t)
             if (taggedImage) {
-                taggedImage.delete(flush:true)
+                taggedImage.delete()
                 detachedAtLeastOneTag = true
                 allTags.remove(taggedImage.tag.path)
             }

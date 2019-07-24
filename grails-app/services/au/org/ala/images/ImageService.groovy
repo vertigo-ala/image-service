@@ -932,6 +932,7 @@ class ImageService {
      * @return
      */
     File exportCSVToFile(){
+        FileUtils.forceMkdir(new File(grailsApplication.config.imageservice.exportDir))
         def exportFile = grailsApplication.config.imageservice.exportDir + "/images.csv"
         new Sql(dataSource).call("""{ call export_images() }""")
         new File(exportFile)
@@ -945,6 +946,7 @@ class ImageService {
      * @return
      */
     File exportIndexToFile(){
+        FileUtils.forceMkdir(new File(grailsApplication.config.imageservice.exportDir))
         def exportFile = grailsApplication.config.imageservice.exportDir + "/images-index.csv"
         new Sql(dataSource).call("""{ call export_index() }""")
         new File(exportFile)

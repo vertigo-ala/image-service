@@ -44,7 +44,14 @@ class WebServiceController {
     @Value("classpath*:**/webjars/swagger-ui/**/index.html")
     Resource[] swaggerUiResources
 
-    def swagger() {}
+    def swagger() {
+        if(params.json){
+            String swaggerJson = swaggerService.generateSwaggerDocument()
+            render (contentType: MediaType.APPLICATION_JSON_UTF8_VALUE, text: swaggerJson)
+        } else {
+            render(view: 'swagger')
+        }
+    }
 
     @RequireApiKey
     @ApiOperation(
