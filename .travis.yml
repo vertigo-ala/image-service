@@ -19,7 +19,7 @@ before_install:
   - docker-compose -f elastic.yml up -d
 
 after_success:
-  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish --stacktrace --info'
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish --stacktrace --debug'
 
 after_script:
   - docker-compose -f elastic.yml kill
