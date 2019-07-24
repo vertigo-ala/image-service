@@ -19,6 +19,7 @@ before_install:
   - docker-compose -f elastic.yml up -d
 
 after_success:
+  - 'export GRADLE_OPTS="-Dgrails.env=travis"'
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish --stacktrace --debug'
 
 after_script:

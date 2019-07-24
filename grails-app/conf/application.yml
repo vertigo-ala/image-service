@@ -1,4 +1,7 @@
 ---
+info:
+    app:
+        name: 'image-service'
 grails:
     serverURL: 'http://dev.ala.org.au:8080'
     profile: web
@@ -106,6 +109,29 @@ environments:
             password: 'images'
             dbCreate: update
             url: jdbc:h2:mem:images;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+        imageservice:
+            imagestore:
+                root: '/tmp/image-service/store'
+                inbox: '/tmp/image-service/incoming'
+            exportDir: '/tmp/image-service/exports'
+    travis:
+        hibernate:
+            dialect: org.hibernate.dialect.H2Dialect
+        dataSource:
+            pooled: true
+            jmxExport: true
+            driverClassName: org.h2.Driver
+            username: 'images'
+            password: 'images'
+            dbCreate: update
+            url: jdbc:h2:mem:images;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+        imageservice:
+            imagestore:
+                root: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-store'
+                inbox: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-incoming'
+            exportDir: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-exports'
+
+
     production:
         hibernate:
             dialect: org.hibernate.dialect.PostgreSQLDialect
