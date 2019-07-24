@@ -127,6 +127,9 @@ class ImageUploadSpec extends Specification {
         }
         def jsonResponse = new JsonSlurper().parseText(resp.body)
 
+        println("Response status: " + resp.status)
+        println(resp.body)
+
         then:
         resp.status == 200
         jsonResponse.imageId != null

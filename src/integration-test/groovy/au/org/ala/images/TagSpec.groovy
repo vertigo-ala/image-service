@@ -60,16 +60,23 @@ class TagSpec extends Specification {
         def jsonResponse = new JsonSlurper().parseText(resp.body)
         def imageId = jsonResponse.imageId
 
+        println("Created image: " + imageId)
+
         //create a tag
         RestResponse createTag = rest.put("http://localhost:${serverPort}/ws/tag?tagPath=Birds/Colour/Blue")
         def tagId = new JsonSlurper().parseText(createTag.body).tagId
 
         //remove existing tags if present
         RestResponse tagRemoveResp = rest.delete("http://localhost:${serverPort}/ws/tag/${tagId}/image/${imageId}")
+        println("Delete response status: " + tagRemoveResp.body)
 
         //tag the image
         RestResponse tagResp = rest.put("http://localhost:${serverPort}/ws/tag/${tagId}/image/${imageId}")
         def taggedJson = new JsonSlurper().parseText(tagResp.body)
+
+        println("Create Response status: " + resp.status)
+        println(resp.body)
+
 
         then:
         tagResp.status == 200
