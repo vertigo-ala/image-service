@@ -2,10 +2,7 @@ language: groovy
 jdk:
   - openjdk8
 sudo: false
-branches:
-  only:
-    - master
-    - grails2
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 

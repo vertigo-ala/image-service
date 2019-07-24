@@ -15,7 +15,6 @@ import io.swagger.annotations.Authorization
 import org.apache.http.HttpStatus
 import grails.plugins.csv.CSVWriter
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.multipart.MultipartRequest
 
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
@@ -1337,7 +1336,7 @@ class WebServiceController {
      * @return
      */
     @ApiOperation(
-            value = "Upload a single image, with by URL or multipart HTTP file upload",
+            value = "Upload a single image, with by URL or multipart HTTP file upload. For multipart the image must be posted in a 'image' property",
             nickname = "uploadImage",
             produces = "application/json",
             consumes = "application/json",
@@ -1377,9 +1376,9 @@ class WebServiceController {
                 }
             } else {
                 // it should contain a file parameter
-                MultipartRequest req = request as MultipartRequest
-                if (req) {
-                    MultipartFile file = req.getFile('image')
+//                MultipartRequest req = request as MultipartRequest
+                if (request.metaClass.respondsTo(request, 'getFile', String)) {
+                    MultipartFile file = request.getFile('image')
                     if (!file) {
                         renderResults([success: false, message: 'image parameter not found. Please supply an image file.'])
                         return
@@ -1455,6 +1454,24 @@ class WebServiceController {
                          message:'You must supply a list of objects called "images", each of which' +
                                  ' must contain a "sourceUrl" key, along with optional meta data items!'],
                         HttpStatus.SC_BAD_REQUEST
+                )
+                return
+            }
+
+            //validate post
+            def invalidCount = 0
+            imageList.each { srcImage ->
+                if(!srcImage.sourceUrl &&  !srcImage.imageUrl){
+                    invalidCount += 1
+                }
+            }
+
+            if (invalidCount) {
+                renderResults(
+                    [success:false,
+                     message: 'You must supply a list of objects called "images", each of which' +
+                             ' must contain a "sourceUrl" key, along with optional meta data items. Invalid submissions:' + invalidCount],
+                    HttpStatus.SC_BAD_REQUEST
                 )
                 return
             }
