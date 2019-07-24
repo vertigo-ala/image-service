@@ -3,7 +3,6 @@ package au.org.ala.images
 import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
-import grails.transaction.Transactional
 import groovy.sql.Sql
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
@@ -22,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile
 import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentLinkedQueue
 
-@Transactional
 class ImageService {
 
     def dataSource
@@ -934,6 +932,7 @@ class ImageService {
      * @return
      */
     File exportCSVToFile(){
+        FileUtils.forceMkdir(new File(grailsApplication.config.imageservice.exportDir))
         def exportFile = grailsApplication.config.imageservice.exportDir + "/images.csv"
         new Sql(dataSource).call("""{ call export_images() }""")
         new File(exportFile)
@@ -947,6 +946,7 @@ class ImageService {
      * @return
      */
     File exportIndexToFile(){
+        FileUtils.forceMkdir(new File(grailsApplication.config.imageservice.exportDir))
         def exportFile = grailsApplication.config.imageservice.exportDir + "/images-index.csv"
         new Sql(dataSource).call("""{ call export_index() }""")
         new File(exportFile)

@@ -235,13 +235,8 @@ class ElasticSearchService {
 
         if(data.dateUploaded){
 
-            if(data.dateUploaded instanceof java.util.Date){
+            if(!data.dateUploadedYearMonth && data.dateUploaded instanceof java.util.Date){
                 data.dateUploadedYearMonth = data.dateUploaded.format("yyyy-MM")
-            } else {
-                def newDate = Date.parseToStringDate(data.dateUploaded)
-                if(newDate){
-                    data.dateUploadedYearMonth =newDate.format("yyyy-MM")
-                }
             }
         }
 

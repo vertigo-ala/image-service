@@ -152,7 +152,7 @@ class TagService {
         }
 
         boolean addedAtLeastOneTag = false
-
+        def alreadyTagged = false
         def allTags = [tag]
         def parents = findParentTagsByPath(tag.path)
         allTags.addAll(parents)
@@ -169,7 +169,7 @@ class TagService {
         }
         rebuildKeywords(image)
         auditService.log(image, "Tag attached to image: ${tag.path}", userId)
-        return addedAtLeastOneTag
+        addedAtLeastOneTag
     }
 
     def detachTagFromImage(Image image, Tag tag) {

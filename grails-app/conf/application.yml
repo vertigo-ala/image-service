@@ -1,4 +1,7 @@
 ---
+info:
+    app:
+        name: 'image-service'
 grails:
     serverURL: 'http://dev.ala.org.au:8080'
     profile: web
@@ -70,6 +73,9 @@ grails:
                 taglib: none
                 staticparts: none
 
+server:
+    contextPath: ''
+
 ---
 hibernate:
     cache:
@@ -103,6 +109,29 @@ environments:
             password: 'images'
             dbCreate: update
             url: jdbc:h2:mem:images;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+        imageservice:
+            imagestore:
+                root: '/tmp/image-service/store'
+                inbox: '/tmp/image-service/incoming'
+            exportDir: '/tmp/image-service/exports'
+    travis:
+        hibernate:
+            dialect: org.hibernate.dialect.H2Dialect
+        dataSource:
+            pooled: true
+            jmxExport: true
+            driverClassName: org.h2.Driver
+            username: 'images'
+            password: 'images'
+            dbCreate: update
+            url: jdbc:h2:mem:images;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+        imageservice:
+            imagestore:
+                root: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-store'
+                inbox: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-incoming'
+            exportDir: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-exports'
+
+
     production:
         hibernate:
             dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -138,6 +167,7 @@ security:
 imageservice:
     imagestore:
         root: '/data/image-service/store'
+        inbox: '/data/image-service/incoming'
     apache:
         root: 'http://localhost:8880/store/'
         # space separated list
@@ -160,7 +190,6 @@ quartz:
     props:
         scheduler:
             skipUpdateCheck: true
-
 
 ---
 info:
@@ -217,6 +246,7 @@ swagger:
 facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize", "format", "dateUploadedYearMonth"]
 
 analytics:
+    credentialsJson: "/data/image-service/config/google-analytics.json"
     URL: "https://www.google-analytics.com"
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
