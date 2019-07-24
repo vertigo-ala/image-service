@@ -64,6 +64,9 @@ class TagSpec extends Specification {
         RestResponse createTag = rest.put("http://localhost:${serverPort}/ws/tag?tagPath=Birds/Colour/Blue")
         def tagId = new JsonSlurper().parseText(createTag.body).tagId
 
+        //remove existing tags if present
+        RestResponse tagRemoveResp = rest.delete("http://localhost:${serverPort}/ws/tag/${tagId}/image/${imageId}")
+
         //tag the image
         RestResponse tagResp = rest.put("http://localhost:${serverPort}/ws/tag/${tagId}/image/${imageId}")
         def taggedJson = new JsonSlurper().parseText(tagResp.body)

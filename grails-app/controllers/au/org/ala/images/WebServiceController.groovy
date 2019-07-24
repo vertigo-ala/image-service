@@ -536,7 +536,7 @@ class WebServiceController {
     ])
     def detachTagFromImage() {
         def success = false
-        def image = Image.findByImageIdentifier(params.id as String)
+        def image = Image.findByImageIdentifier(params.imageId as String)
         def tag = Tag.get(params.int("tagId"))
         if (image && tag) {
             success = tagService.detachTagFromImage(image, tag)

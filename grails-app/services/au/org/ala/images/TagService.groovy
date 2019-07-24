@@ -152,7 +152,7 @@ class TagService {
         }
 
         boolean addedAtLeastOneTag = false
-
+        def alreadyTagged = false
         def allTags = [tag]
         def parents = findParentTagsByPath(tag.path)
         allTags.addAll(parents)
@@ -169,7 +169,7 @@ class TagService {
         }
         rebuildKeywords(image)
         auditService.log(image, "Tag attached to image: ${tag.path}", userId)
-        return addedAtLeastOneTag
+        addedAtLeastOneTag
     }
 
     def detachTagFromImage(Image image, Tag tag) {
@@ -185,7 +185,7 @@ class TagService {
         // kill this tag explicitly...
         def taggedImage = ImageTag.findByImageAndTag(image, tag)
         if (taggedImage) {
-            taggedImage.delete()
+            taggedImage.delete(flush:true)
             allTags.remove taggedImage.tag.path
         }
 
@@ -200,7 +200,7 @@ class TagService {
             // otherwise delete the parent too
             taggedImage = ImageTag.findByImageAndTag(image, t)
             if (taggedImage) {
-                taggedImage.delete()
+                taggedImage.delete(flush:true)
                 detachedAtLeastOneTag = true
                 allTags.remove(taggedImage.tag.path)
             }
