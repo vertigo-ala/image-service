@@ -70,6 +70,9 @@ grails:
                 taglib: none
                 staticparts: none
 
+server:
+    contextPath: ''
+
 ---
 hibernate:
     cache:

@@ -5,6 +5,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.ws.security.ApiKeyInterceptor
 import grails.converters.JSON
 import grails.converters.XML
+import groovyx.net.http.HTTPBuilder
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
@@ -14,7 +15,11 @@ import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
 import org.apache.http.HttpStatus
 import grails.plugins.csv.CSVWriter
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.Resource
+import org.springframework.http.MediaType
 import org.springframework.web.multipart.MultipartFile
+import swagger.SwaggerService
 
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
@@ -33,6 +38,13 @@ class WebServiceController {
     def batchService
     def elasticSearchService
     def collectoryService
+
+    SwaggerService swaggerService
+
+    @Value("classpath*:**/webjars/swagger-ui/**/index.html")
+    Resource[] swaggerUiResources
+
+    def swagger() {}
 
     @RequireApiKey
     @ApiOperation(

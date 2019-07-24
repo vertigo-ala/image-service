@@ -290,8 +290,8 @@
 
             var options = {
                 auxDataUrl : "${auxDataUrl ? auxDataUrl : ''}",
-                imageServiceBaseUrl : "${grailsApplication.config.grails.serverURL}${grailsApplication.config.contextPath}",
-                imageClientBaseUrl : "${grailsApplication.config.grails.serverURL}${grailsApplication.config.contextPath}",
+                imageServiceBaseUrl : "${grailsApplication.config.grails.serverURL}${grailsApplication.config.server.contextPath}",
+                imageClientBaseUrl : "${grailsApplication.config.grails.serverURL}${grailsApplication.config.server.contextPath}",
                 zoomFudgeFactor: 0.65
             };
 
