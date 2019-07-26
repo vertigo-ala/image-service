@@ -29,7 +29,6 @@ apply plugin:"org.grails.grails-gsp"
 
 apply from: 'https://raw.githubusercontent.com/AtlasOfLivingAustralia/travis-build-configuration/master/travis_grails_publish.gradle'
 
-
 repositories {
     mavenLocal()
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
@@ -50,11 +49,10 @@ dependencies {
     compile 'org.grails.plugins:csv:1.0.1'
     
     // ALA plugins
-    compile group: 'org.grails.plugins', name: 'ala-auth', version: '3.1.0', changing: true
     compile group: 'org.grails.plugins', name: 'ala-ws-plugin', version: '2.0', changing: true
     compile group: 'org.grails.plugins', name: 'ala-bootstrap3', version: '3.2.1', changing: true
     compile group: 'org.grails.plugins', name: 'ala-admin-plugin', version: '2.1', changing: true
-    compile group: 'org.grails.plugins', name: 'ala-auth', version: '3.1.0', changing: true
+    compile group: 'org.grails.plugins', name: 'ala-auth', version: '3.2.2', changing: true
     compile group: 'au.org.ala.plugins.grails', name:'images-client-plugin', version: '1.0.1-SNAPSHOT', changing: true
 
     // Added dependencies
@@ -73,7 +71,6 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     }
     compile 'org.grails.plugins:ala-ws-security-plugin:2.0'
-    compile 'org.grails.plugins:ala-admin-plugin:2.1'
     
     // Swagger
     compile 'org.grails.plugins:swagger:1.0.1'
