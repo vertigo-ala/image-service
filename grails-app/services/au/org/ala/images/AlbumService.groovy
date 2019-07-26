@@ -3,7 +3,6 @@ package au.org.ala.images
 import grails.transaction.Transactional
 import grails.web.servlet.mvc.GrailsParameterMap
 
-@Transactional
 class AlbumService {
 
     def selectionService

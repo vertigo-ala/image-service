@@ -117,7 +117,7 @@ class WebServiceController {
             nickname = "scheduleThumbnailGeneration/{imageID}",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "POST",
             response = Map.class,
             authorizations = @Authorization(value="apiKey"),
             tags = ["JSON services for accessing and updating metadata"]
@@ -159,7 +159,7 @@ class WebServiceController {
             nickname = "scheduleArtifactGeneration/{imageID}",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "POST",
             response = Map.class,
             authorizations = @Authorization(value="apiKey"),
             tags = ["JSON services for accessing and updating metadata"]
@@ -741,7 +741,7 @@ class WebServiceController {
             nickname = "createSubimage",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "PUT",
             response = Map.class,
             authorizations = @Authorization(value="apiKey"),
             tags = ["JSON services for accessing and updating metadata"]
@@ -1395,7 +1395,6 @@ class WebServiceController {
                 }
             } else {
                 // it should contain a file parameter
-//                MultipartRequest req = request as MultipartRequest
                 if (request.metaClass.respondsTo(request, 'getFile', String)) {
                     MultipartFile file = request.getFile('image')
                     if (!file) {
@@ -1420,19 +1419,14 @@ class WebServiceController {
 
                 CodeTimer ct = new CodeTimer("Setting Image metadata ${params.imageIdentifier}")
 
-                //store any other property
-                metadata.each { kvp ->
-                    if (!storeResult.image.hasProperty(kvp.key)) {
-                        imageService.setMetaDataItem(storeResult.image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
-                    }
-                }
-
                 tagService.updateTags(storeResult.image, params.tags, userId)
-                imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
+                if(!storeResult.alreadyStored) {
+                    imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
+                }
 
                 ct.stop(true)
 
-                renderResults([success: true, imageId: storeResult.image?.imageIdentifier])
+                renderResults([success: true, imageId: storeResult.image?.imageIdentifier, alreadyStored: storeResult.alreadyStored])
             } else {
                 renderResults([success: false, message: "Failed to store image!"])
             }
@@ -1555,7 +1549,7 @@ class WebServiceController {
             nickname = "scheduleUploadFromUrls",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "POST",
             response = Map.class,
             tags = ["Upload"],
             authorizations = @Authorization(value="apiKey")

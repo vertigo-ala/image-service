@@ -54,6 +54,15 @@ class ImageService {
     ImageStoreResult storeImageFromUrl(String imageUrl, String uploader, Map metadata = [:]) {
         if (imageUrl) {
             try {
+                def image = Image.findByOriginalFilename(imageUrl)
+                if (image){
+                    //check file exists
+                    def file = imageStoreService.getOriginalImageFile(image.imageIdentifier)
+                    if (file.exists() && file.size() > 0){
+                        updateMetadata(image, metadata)
+                        return new ImageStoreResult(image, true)
+                    }
+                }
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
                 def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
@@ -115,6 +124,18 @@ class ImageService {
 
     def clearTilingTaskQueueLength() {
         return _tilingQueue.clear();
+    }
+
+    void updateMetadata(Image image, Map metadata = [:]) {
+        //update metadata
+        metadata.each { kvp ->
+            if(image.hasProperty(kvp.key) && kvp.value){
+                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
+                    image[kvp.key] = kvp.value
+                }
+            }
+        }
+        image.save(flush:true, failOnError: true)
     }
 
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,

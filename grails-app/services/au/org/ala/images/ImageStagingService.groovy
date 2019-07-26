@@ -1,6 +1,5 @@
 package au.org.ala.images
 
-import grails.transaction.Transactional
 import org.apache.commons.io.ByteOrderMark
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.input.BOMInputStream
@@ -10,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile
 
 import java.util.regex.Pattern
 
-@Transactional
 class ImageStagingService {
 
     def grailsApplication
