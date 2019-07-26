@@ -5,7 +5,7 @@ sudo: false
 branches:
   only:
     - master
-    - code-review-changes-61
+    - develop
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 
