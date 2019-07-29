@@ -1,12 +1,10 @@
 package au.org.ala.images
 
-import grails.transaction.Transactional
 import groovy.json.JsonSlurper
 
 /**
  * Services to retrieve resource level metadata.
  */
-@Transactional
 class CollectoryService {
 
     def grailsApplication
@@ -58,7 +56,7 @@ class CollectoryService {
 
         def metadata = [:]
 
-        if(!dataResourceUid){
+        if (!dataResourceUid){
             return metadata
         }
 

@@ -1,13 +1,11 @@
 package au.org.ala.images
 
-import grails.transaction.Transactional
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.hibernate.FlushMode
 
 /**
  * Each user has an implicit hidden album called _userSelection which holds the users transient selected images...
  */
-@Transactional
 class SelectionService {
 
     public static final String SELECTION_ALBUM_NAME = "_userSelection"

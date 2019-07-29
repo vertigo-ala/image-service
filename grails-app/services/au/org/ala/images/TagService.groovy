@@ -1,10 +1,7 @@
 package au.org.ala.images
 
-import au.org.ala.cas.util.AuthenticationUtils
-import grails.transaction.Transactional
 import org.springframework.web.multipart.MultipartFile
 
-@Transactional
 class TagService {
 
     def logService
@@ -137,7 +134,7 @@ class TagService {
     }
 
     def updateTags(Image image, List tags, String userId){
-        if(tags) {
+        if (tags && image) {
             tags.each { String tagPath ->
                 def tag = createTagByPath(tagPath)
                 attachTagToImage(image, tag, userId)
