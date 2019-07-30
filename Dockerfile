@@ -67,5 +67,7 @@ VOLUME /data/image-service-store /data/image-service/elasticsearch
 
 USER tomcat
 
+ENV CATALINA_OPTS '-Dgrails.env=production'
+
 ENTRYPOINT ["tini", "--"]
 CMD ["catalina.sh", "run"]
