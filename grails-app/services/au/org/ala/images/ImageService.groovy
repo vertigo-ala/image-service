@@ -490,8 +490,6 @@ class ImageService {
 
     Image importFileFromInbox(File file, String batchId, String userId) {
 
-        CodeTimer ct = new CodeTimer("Import file ${file?.absolutePath}")
-
         if (!file || !file.exists()) {
             throw new RuntimeException("Could not read file ${file?.absolutePath} - Does not exist")
         }
@@ -529,6 +527,8 @@ class ImageService {
             if (!FileUtils.deleteQuietly(file)) {
                 file.deleteOnExit()
             }
+            // schedule an index
+            scheduleImageIndex(image.id)
             // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
             scheduleTileGeneration(image.id, userId)
         }
@@ -542,7 +542,6 @@ class ImageService {
         inboxDirectory.eachFile { File file ->
             _backgroundQueue.add(new ImportFileBackgroundTask(file, this, batchId, userId))
         }
-
     }
 
     private static String sanitizeString(Object value) {

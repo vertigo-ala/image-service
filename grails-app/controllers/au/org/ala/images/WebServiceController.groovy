@@ -192,6 +192,7 @@ class WebServiceController {
                 results.message = "Image artifact generation scheduled for ${count} images."
             }
         }
+        flash.message  = results.message
         renderResults(results)
     }
 
@@ -235,6 +236,7 @@ class WebServiceController {
                 results.message = "Image keyword rebuild scheduled for ${count} images."
             }
         }
+        flash.message  = results.message
         renderResults(results)
     }
 
@@ -553,19 +555,21 @@ class WebServiceController {
 
     private addImageInfoToMap(Image image, Map results, Boolean includeTags, Boolean includeMetadata) {
 
-        results.height = image.height
-        results.width = image.width
-        results.tileZoomLevels = image.zoomLevels ?: 0
         results.mimeType = image.mimeType
         results.originalFileName = image.originalFilename
         results.sizeInBytes = image.fileSize
         results.rights = image.rights ?: ''
         results.rightsHolder = image.rightsHolder ?: ''
-        results.dateUploaded = formatDate(date: image.dateUploaded, format:"yyyy-MM-dd HH:mm:ss")
-        results.dateTaken = formatDate(date: image.dateTaken, format:"yyyy-MM-dd HH:mm:ss")
-        results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
-        results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
-        results.mmPerPixel = image.mmPerPixel ?: ''
+        results.dateUploaded = formatDate(date: image.dateUploaded, format: "yyyy-MM-dd HH:mm:ss")
+        results.dateTaken = formatDate(date: image.dateTaken, format: "yyyy-MM-dd HH:mm:ss")
+        if (results.mimeType && results.mimeType.startsWith('image')){
+            results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
+            results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
+            results.mmPerPixel = image.mmPerPixel ?: ''
+            results.height = image.height
+            results.width = image.width
+            results.tileZoomLevels = image.zoomLevels ?: 0
+        }
         results.description = image.description ?: ''
         results.title = image.title ?: ''
         results.creator = image.creator ?: ''
@@ -590,7 +594,6 @@ class WebServiceController {
                 results.metadata << [key: md.name, value: md.value, source: md.source]
             }
         }
-
     }
 
     @ApiOperation(

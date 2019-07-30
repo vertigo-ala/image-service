@@ -79,11 +79,11 @@ class AdminController {
             return
         }
 
-        def pattern = Pattern.compile('^image/(.*)$|^audio/(.*)$')
+        def pattern = Pattern.compile('^image/(.*)$|^audio/(.*)|^application/pdf$')
 
         def m = pattern.matcher(file.contentType)
         if (!m.matches()) {
-            flash.errorMessage = "Invalid file type for upload. Must be an image or audio file (content is ${file.contentType})"
+            flash.errorMessage = "Invalid file type for upload. Must be an image, audio  or PDF file (content is ${file.contentType})"
             redirect(action:'upload')
             return
         }
@@ -334,9 +334,11 @@ class AdminController {
     def deleteFieldDefinition() {
         def fieldDefinition = ImportFieldDefinition.findById(params.int("id"))
         if (fieldDefinition) {
-            fieldDefinition.delete()
+            fieldDefinition.delete(flush: true)
+            render([success:true] as JSON)
+        } else {
+            render([success:false] as JSON)
         }
-        render([success:true] as JSON)
     }
 
     def duplicates() {

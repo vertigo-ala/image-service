@@ -70,8 +70,11 @@
                     <g:if test="${image.mimeType.startsWith("image")}">
                         <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
                     </g:if>
+                    <g:elseif test="${image.mimeType.startsWith("audio")}">
+                      <img src="${grailsApplication.config.placeholder.sound.thumbnail}"/>
+                    </g:elseif>
                     <g:else>
-                        <img src="${grailsApplication.config.placeholder.sound.thumbnail}"/>
+                        <img src="${grailsApplication.config.placeholder.document.thumbnail}"/>
                     </g:else>
                 </a>
                 <g:if test="${footerTemplate}">
