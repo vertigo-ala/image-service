@@ -15,17 +15,20 @@ RUN mkdir -p /data \
 #    /data/images/bin/imgcnv
 
 #ARG ARTIFACT_URL=http://192.168.0.19/web/image-service-1.0.1.war
-ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/image-service/1.0.2/image-service-1.0.2.war
+ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/image-service/1.0.5/image-service-1.0.5.war
 ARG WAR_NAME=images
 ENV IMAGE_SERVICE_BASE_URL http://localhost:8080/images
 
 # Copia war para imagem
 # ADD https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/ala-images/0.9/ala-images-0.9.war $CATALINA_HOME/webapps/images.war
+# atencao para o fix de SLF4J
 RUN wget $ARTIFACT_URL -q -O /tmp/$WAR_NAME && \
     apk add --update tini && \
     mkdir -p $CATALINA_HOME/webapps/$WAR_NAME && \
     unzip /tmp/$WAR_NAME -d $CATALINA_HOME/webapps/$WAR_NAME && \
     rm /tmp/$WAR_NAME
+
+#    rm $CATALINA_HOME/webapps/images/WEB-INF/lib/slf4j-log4j12-*.jar && \
 
 #    mv $CATALINA_HOME/webapps/$WAR_NAME $CATALINA_HOME/webapps/images
 
