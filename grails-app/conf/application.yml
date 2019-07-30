@@ -243,7 +243,7 @@ swagger:
                 in: "header"
                 name: "Authorization"
 
-facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize", "format", "dateUploadedYearMonth"]
+facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize", "fileType", "format", "dateUploadedYearMonth"]
 
 analytics:
     credentialsJson: "/data/image-service/config/google-analytics.json"
@@ -258,3 +258,4 @@ elasticsearch:
   scheme: "http"
   port1: 9200
   port2: 9201
+  maxFacetSize: 10000

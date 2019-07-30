@@ -39,10 +39,8 @@ import org.elasticsearch.search.aggregations.BucketOrder
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
 import org.elasticsearch.search.sort.SortOrder
-import org.springframework.context.MessageSource
 
 import javax.annotation.PreDestroy
-import java.sql.Timestamp
 import java.util.regex.Pattern
 import javax.annotation.PostConstruct
 import java.util.zip.ZipEntry
@@ -53,8 +51,9 @@ class ElasticSearchService {
     def logService
     def grailsApplication
     def imageStoreService
-    def collectoryService
-    MessageSource messageSource
+
+    static String UNRECOGNISED_LICENCE =  "unrecognised_licence"
+    static String NOT_SUPPLIED = "not_supplied"
 
     private RestHighLevelClient client
 
@@ -123,7 +122,7 @@ class ElasticSearchService {
         if (image.recognisedLicense) {
             data.recognisedLicence = image.recognisedLicense.acronym
         } else {
-            data.recognisedLicence = "unrecognised_licence"
+            data.recognisedLicence = UNRECOGNISED_LICENCE
         }
 
         indexImageInES(
@@ -233,16 +232,27 @@ class ElasticSearchService {
 
     private def addAdditionalIndexFields(data){
 
-        if(data.dateUploaded){
-
+        if (data.dateUploaded){
             if(!data.dateUploadedYearMonth && data.dateUploaded instanceof java.util.Date){
                 data.dateUploadedYearMonth = data.dateUploaded.format("yyyy-MM")
             }
         }
 
-        data.recognisedLicence  = data.recognisedLicence ?: "unrecognised_licence"
-        data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : "not_supplied"
-        data.dataResourceUid = data.dataResourceUid ?: "no_dataresource"
+        if (data.format){
+            if (data.format.startsWith('image')){
+                data.fileType = 'image'
+            } else if (data.format.startsWith('audio')){
+                data.fileType = 'sound'
+            } else if (data.format.startsWith('video')){
+                data.fileType = 'video'
+            } else {
+                data.fileType = 'document'
+            }
+        }
+
+        data.recognisedLicence  = data.recognisedLicence ?: UNRECOGNISED_LICENCE
+        data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : NOT_SUPPLIED
+        data.dataResourceUid = data.dataResourceUid ?:  CollectoryService.NO_DATARESOURCE
         def imageSize = data.height.toInteger() * data.width.toInteger()
         if (imageSize < 100){
             data.imageSize = "less than 100"
@@ -523,7 +533,7 @@ class ElasticSearchService {
         SearchSourceBuilder source = pagenateQuery(params).query(boolQueryBuilder)
 
         // request aggregations (facets)
-        source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(10000).order(BucketOrder.key(true)))
+        source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(grailsApplication.config.elasticsearch.maxFacetSize.toInteger()).order(BucketOrder.key(true)))
 
         //ask for the total
         source.trackTotalHits(false)
@@ -579,7 +589,10 @@ class ElasticSearchService {
                                     }, 
                                     "format":{
                                        "type": "keyword"
-                                    },                                                                         
+                                    },    
+                                    "fileType":{
+                                       "type": "keyword"
+                                    },                                               
                                     "createdYear":{
                                        "type": "keyword"
                                     },                                                                     

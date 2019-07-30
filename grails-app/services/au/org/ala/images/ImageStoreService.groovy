@@ -77,12 +77,6 @@ class ImageStoreService {
     byte[] retrieveImage(String imageIdentifier) {
         if (imageIdentifier) {
             def imageFile = getOriginalImageFile(imageIdentifier)
-//            byte[] data = null
-//            imageFile.withInputStream { is ->
-//                data = IOUtils.toByteArray(is)
-//            }
-//
-
             return imageFile.getBytes()
         }
         return null

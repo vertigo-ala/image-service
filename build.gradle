@@ -30,6 +30,14 @@ apply plugin:"org.grails.grails-gsp"
 
 apply from: 'https://raw.githubusercontent.com/AtlasOfLivingAustralia/travis-build-configuration/master/travis_grails_publish.gradle'
 
+//grails {
+//    exploded = true
+//    plugins {
+//        compile project(':images-client-plugin')
+//    }
+//}
+
+
 repositories {
     mavenLocal()
     maven { url "https://nexus.ala.org.au/content/groups/public/" }

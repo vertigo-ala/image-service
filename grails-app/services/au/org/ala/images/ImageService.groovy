@@ -451,12 +451,6 @@ class ImageService {
                 subimage.delete()
             }
 
-            // and delete album images
-            def albumImages = AlbumImage.findAllByImage(image)
-            albumImages.each { albumImage ->
-                albumImage.delete()
-            }
-
             // thumbnail records...
             def thumbs = ImageThumbnail.findAllByImage(image)
             thumbs.each { thumb ->

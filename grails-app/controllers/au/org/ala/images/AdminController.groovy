@@ -50,8 +50,6 @@ class AdminController {
                     isAdmin = true
             }
 
-            def albums = []
-
             def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
 
             boolean isImage = imageService.isImageType(image)
@@ -59,7 +57,7 @@ class AdminController {
             //add additional metadata
             def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
 
-            render( view:"../image/details", model: [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
+            render( view:"../image/details", model: [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk,
              squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId, isAdminView:true])
         }
     }

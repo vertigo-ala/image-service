@@ -922,6 +922,7 @@ class WebServiceController {
         userId
     }
 
+    @RequireApiKey
     def bulkAddUserMetadataToImage(String id) {
         def image = Image.findByImageIdentifier(id)
         def userId = getUserIdForRequest(request)
@@ -937,6 +938,7 @@ class WebServiceController {
         renderResults([success:results != null])
     }
 
+    @RequireApiKey
     def removeUserMetadataFromImage() {
         def image = Image.findByImageIdentifier(params.id as String)
         if (!image) {
@@ -1237,6 +1239,7 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @RequireApiKey
     def cancelTileJob() {
 
         def userId = AuthenticationUtils.getUserId(request)

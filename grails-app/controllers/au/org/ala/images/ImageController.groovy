@@ -309,8 +309,6 @@ class ImageController {
                         isAdmin = true
                 }
 
-                def albums = []
-
                 def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
 
                 boolean isImage = imageService.isImageType(image)
@@ -320,7 +318,7 @@ class ImageController {
 
                 sendAnalytics(image, 'imagedetailedview')
 
-                [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk, albums: albums,
+                [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk,
                  squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId]
             }
         }

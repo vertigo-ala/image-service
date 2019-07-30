@@ -30,14 +30,6 @@ class SearchCriteriaService {
                 log.error(e.getMessage(), e)
             }
         }
-
-//        // add a criteria definition for meta data items...
-//        def existing = SearchCriteriaDefinition.findByType(CriteriaType.ImageMetadata)
-//        if (!existing) {
-//            existing = new SearchCriteriaDefinition(name: "Image metadata", type: CriteriaType.ImageMetadata, fieldName: "n/a", valueType: CriteriaValueType.StringDirectEntry, units:"")
-//            existing.save(flush: true, failOnError: false)
-//        }
-
         return criteriaDefinitionList
     }
 }
