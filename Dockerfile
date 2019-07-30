@@ -1,8 +1,9 @@
 #
-# image-service is based on tomcat7 official image
+# image-service is based on tomcat8 official image
 # 
 #
-FROM tomcat:8-jre8-alpine
+#FROM tomcat:8-jre8-alpine
+FROM tomcat:8.5-jre8-alpine
 
 RUN mkdir -p /data \
 	/data/image-service \
