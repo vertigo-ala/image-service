@@ -57,6 +57,8 @@ EXPOSE 8080
 # muda entrypoint, mantém cmd
 #ENTRYPOINT ["/opt/ala-entrypoint.sh","tini", "--"]
 
+COPY ./tomcat-conf/logback.groovy $CATALINA_HOME/webapps/$WAR_NAME/WEB-INF/classes/logback.groovy
+
 # NON-ROOT
 RUN addgroup -g 101 tomcat && \
     adduser -G tomcat -u 101 -S tomcat && \
