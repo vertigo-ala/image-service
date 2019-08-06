@@ -4,7 +4,6 @@ import grails.converters.JSON
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
 
-@Transactional
 class UserPreferencesService {
 
     public UserPreferences getUserPreferences(String userId) {

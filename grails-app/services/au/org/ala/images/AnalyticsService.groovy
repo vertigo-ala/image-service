@@ -2,16 +2,12 @@ package au.org.ala.images
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.services.analytics.AnalyticsScopes
-import grails.gorm.transactions.Transactional
 import groovy.json.JsonSlurper
 
-@Transactional
 class AnalyticsService {
 
     def collectoryService
     def grailsApplication
-
-
 
     def REPORT_PERIODS = [
         "thisMonth": "30daysAgo",
@@ -73,7 +69,7 @@ class AnalyticsService {
 
     String getAccessToken(){
         GoogleCredential credential = GoogleCredential
-                .fromStream(new FileInputStream("/data/image-service/config/google-analytics.json"))
+                .fromStream(new FileInputStream(grailsApplication.config.analytics.credentialsJson))
                 .createScoped(Collections.singleton(AnalyticsScopes.ANALYTICS_READONLY));
         credential.refreshToken()
         credential.getAccessToken()

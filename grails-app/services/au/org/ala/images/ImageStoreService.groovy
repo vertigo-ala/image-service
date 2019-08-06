@@ -19,7 +19,6 @@ import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import grails.web.context.ServletContextHolder
 
-@Transactional
 class ImageStoreService {
 
     def grailsApplication

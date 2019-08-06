@@ -5,6 +5,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.ws.security.ApiKeyInterceptor
 import grails.converters.JSON
 import grails.converters.XML
+import groovyx.net.http.HTTPBuilder
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
@@ -14,8 +15,11 @@ import io.swagger.annotations.ApiResponses
 import io.swagger.annotations.Authorization
 import org.apache.http.HttpStatus
 import grails.plugins.csv.CSVWriter
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.Resource
+import org.springframework.http.MediaType
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.multipart.MultipartRequest
+import swagger.SwaggerService
 
 import javax.servlet.http.HttpServletRequest
 import java.util.zip.GZIPOutputStream
@@ -34,6 +38,20 @@ class WebServiceController {
     def batchService
     def elasticSearchService
     def collectoryService
+
+    SwaggerService swaggerService
+
+    @Value("classpath*:**/webjars/swagger-ui/**/index.html")
+    Resource[] swaggerUiResources
+
+    def swagger() {
+        if(params.json){
+            String swaggerJson = swaggerService.generateSwaggerDocument()
+            render (contentType: MediaType.APPLICATION_JSON_UTF8_VALUE, text: swaggerJson)
+        } else {
+            render(view: 'swagger')
+        }
+    }
 
     @RequireApiKey
     @ApiOperation(
@@ -99,7 +117,7 @@ class WebServiceController {
             nickname = "scheduleThumbnailGeneration/{imageID}",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "POST",
             response = Map.class,
             authorizations = @Authorization(value="apiKey"),
             tags = ["JSON services for accessing and updating metadata"]
@@ -141,7 +159,7 @@ class WebServiceController {
             nickname = "scheduleArtifactGeneration/{imageID}",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "POST",
             response = Map.class,
             authorizations = @Authorization(value="apiKey"),
             tags = ["JSON services for accessing and updating metadata"]
@@ -525,7 +543,7 @@ class WebServiceController {
     ])
     def detachTagFromImage() {
         def success = false
-        def image = Image.findByImageIdentifier(params.id as String)
+        def image = Image.findByImageIdentifier(params.imageId as String)
         def tag = Tag.get(params.int("tagId"))
         if (image && tag) {
             success = tagService.detachTagFromImage(image, tag)
@@ -723,7 +741,7 @@ class WebServiceController {
             nickname = "createSubimage",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "PUT",
             response = Map.class,
             authorizations = @Authorization(value="apiKey"),
             tags = ["JSON services for accessing and updating metadata"]
@@ -1337,7 +1355,7 @@ class WebServiceController {
      * @return
      */
     @ApiOperation(
-            value = "Upload a single image, with by URL or multipart HTTP file upload",
+            value = "Upload a single image, with by URL or multipart HTTP file upload. For multipart the image must be posted in a 'image' property",
             nickname = "uploadImage",
             produces = "application/json",
             consumes = "application/json",
@@ -1377,9 +1395,8 @@ class WebServiceController {
                 }
             } else {
                 // it should contain a file parameter
-                MultipartRequest req = request as MultipartRequest
-                if (req) {
-                    MultipartFile file = req.getFile('image')
+                if (request.metaClass.respondsTo(request, 'getFile', String)) {
+                    MultipartFile file = request.getFile('image')
                     if (!file) {
                         renderResults([success: false, message: 'image parameter not found. Please supply an image file.'])
                         return
@@ -1402,19 +1419,14 @@ class WebServiceController {
 
                 CodeTimer ct = new CodeTimer("Setting Image metadata ${params.imageIdentifier}")
 
-                //store any other property
-                metadata.each { kvp ->
-                    if (!storeResult.image.hasProperty(kvp.key)) {
-                        imageService.setMetaDataItem(storeResult.image, MetaDataSourceType.SystemDefined, kvp.key as String, kvp.value as String)
-                    }
-                }
-
                 tagService.updateTags(storeResult.image, params.tags, userId)
-                imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
+                if(!storeResult.alreadyStored) {
+                    imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
+                }
 
                 ct.stop(true)
 
-                renderResults([success: true, imageId: storeResult.image?.imageIdentifier])
+                renderResults([success: true, imageId: storeResult.image?.imageIdentifier, alreadyStored: storeResult.alreadyStored])
             } else {
                 renderResults([success: false, message: "Failed to store image!"])
             }
@@ -1455,6 +1467,24 @@ class WebServiceController {
                          message:'You must supply a list of objects called "images", each of which' +
                                  ' must contain a "sourceUrl" key, along with optional meta data items!'],
                         HttpStatus.SC_BAD_REQUEST
+                )
+                return
+            }
+
+            //validate post
+            def invalidCount = 0
+            imageList.each { srcImage ->
+                if(!srcImage.sourceUrl &&  !srcImage.imageUrl){
+                    invalidCount += 1
+                }
+            }
+
+            if (invalidCount) {
+                renderResults(
+                    [success:false,
+                     message: 'You must supply a list of objects called "images", each of which' +
+                             ' must contain a "sourceUrl" key, along with optional meta data items. Invalid submissions:' + invalidCount],
+                    HttpStatus.SC_BAD_REQUEST
                 )
                 return
             }
@@ -1519,7 +1549,7 @@ class WebServiceController {
             nickname = "scheduleUploadFromUrls",
             produces = "application/json",
             consumes = "application/json",
-            httpMethod = "GET",
+            httpMethod = "POST",
             response = Map.class,
             tags = ["Upload"],
             authorizations = @Authorization(value="apiKey")

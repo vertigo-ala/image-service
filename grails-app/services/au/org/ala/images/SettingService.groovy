@@ -10,7 +10,6 @@ import java.lang.reflect.Method
  * To add a new setting simply define a getter with the preferred type of the setting (currently boolean or String)
  * and mark it with the @ImageServiceSetting annotation to describe it's name, description and default (initial) value
  */
-@Transactional
 class SettingService {
 
     def logService

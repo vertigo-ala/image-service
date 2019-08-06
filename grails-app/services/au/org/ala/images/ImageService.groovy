@@ -3,7 +3,6 @@ package au.org.ala.images
 import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
-import grails.transaction.Transactional
 import groovy.sql.Sql
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
@@ -22,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile
 import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentLinkedQueue
 
-@Transactional
 class ImageService {
 
     def dataSource
@@ -56,6 +54,15 @@ class ImageService {
     ImageStoreResult storeImageFromUrl(String imageUrl, String uploader, Map metadata = [:]) {
         if (imageUrl) {
             try {
+                def image = Image.findByOriginalFilename(imageUrl)
+                if (image){
+                    //check file exists
+                    def file = imageStoreService.getOriginalImageFile(image.imageIdentifier)
+                    if (file.exists() && file.size() > 0){
+                        updateMetadata(image, metadata)
+                        return new ImageStoreResult(image, true)
+                    }
+                }
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
                 def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
@@ -117,6 +124,18 @@ class ImageService {
 
     def clearTilingTaskQueueLength() {
         return _tilingQueue.clear();
+    }
+
+    void updateMetadata(Image image, Map metadata = [:]) {
+        //update metadata
+        metadata.each { kvp ->
+            if(image.hasProperty(kvp.key) && kvp.value){
+                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
+                    image[kvp.key] = kvp.value
+                }
+            }
+        }
+        image.save(flush:true, failOnError: true)
     }
 
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
@@ -934,6 +953,7 @@ class ImageService {
      * @return
      */
     File exportCSVToFile(){
+        FileUtils.forceMkdir(new File(grailsApplication.config.imageservice.exportDir))
         def exportFile = grailsApplication.config.imageservice.exportDir + "/images.csv"
         new Sql(dataSource).call("""{ call export_images() }""")
         new File(exportFile)
@@ -947,6 +967,7 @@ class ImageService {
      * @return
      */
     File exportIndexToFile(){
+        FileUtils.forceMkdir(new File(grailsApplication.config.imageservice.exportDir))
         def exportFile = grailsApplication.config.imageservice.exportDir + "/images-index.csv"
         new Sql(dataSource).call("""{ call export_index() }""")
         new File(exportFile)
