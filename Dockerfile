@@ -15,7 +15,8 @@ RUN mkdir -p /data \
 #    /data/images/bin/imgcnv
 
 #ARG ARTIFACT_URL=http://192.168.0.19/web/image-service-1.0.1.war
-ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/image-service/1.0.5/image-service-1.0.5.war
+#ARG ARTIFACT_URL=https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/image-service/1.0.5/image-service-1.0.5.war
+ARG ARTIFACT_URL=https://ala-rnp.s3.amazonaws.com/ala-assets/brasil/image-service-1.0.5.war
 ARG WAR_NAME=images
 ENV IMAGE_SERVICE_BASE_URL http://localhost:8080/images
 
