@@ -151,7 +151,6 @@ class ImageController {
 
     private void proxyUrl(URL u, HttpServletResponse response) {
 
-        //async call to google analytics....
         InputStream is = null
         try {
             is = u.openStream()
@@ -161,7 +160,7 @@ class ImageController {
 
         if (is) {
             try {
-                IOUtils.copy(u.openStream(), response.outputStream)
+                IOUtils.copy(is, response.outputStream)
             } finally {
                 is.close()
                 response.flushBuffer()
@@ -357,10 +356,14 @@ class ImageController {
 
         def imageInstance = imageService.getImageFromParams(params)
         def metaData = []
-        def source = params.source as MetaDataSourceType
         if (imageInstance) {
-            if (source) {
-                metaData = imageInstance.metadata?.findAll { it.source == source }
+            if (params.source) {
+                def source = MetaDataSourceType.valueOf(params.source)
+                if (source){
+                    metaData = imageInstance.metadata?.findAll { it.source == source }
+                } else {
+                    metaData = imageInstance.metadata
+                }
             } else {
                 metaData = imageInstance.metadata
             }
