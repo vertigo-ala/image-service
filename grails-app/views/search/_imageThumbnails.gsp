@@ -67,10 +67,10 @@
                     <g:render template="${headerTemplate}" model="${[image: image]}" />
                 </g:if>
                 <a href="${createLink(mapping: 'image_url', params: [imageId: image.imageIdentifier])}">
-                    <g:if test="${image.mimeType.startsWith("image")}">
+                    <g:if test="${image.format.startsWith("image")}">
                         <img src="<img:imageThumbUrl imageId='${image.imageIdentifier}'/>" />
                     </g:if>
-                    <g:elseif test="${image.mimeType.startsWith("audio")}">
+                    <g:elseif test="${image.format.startsWith("audio")}">
                       <img src="${grailsApplication.config.placeholder.sound.thumbnail}"/>
                     </g:elseif>
                     <g:else>
@@ -85,7 +85,9 @@
             </g:if>
         </g:each>
     </div>
-    <tb:paginate total="${totalImageCount}" max="100"
+
+    <g:set var="maxOffsetLimit" value="${grailsApplication.config.elasticsearch.maxOffset as int}" />
+    <tb:paginate total="${totalImageCount > maxOffsetLimit ? maxOffsetLimit : totalImageCount}" max="100"
                  action="list"
                  controller="search"
                  params="${[q:params.q, fq:params.fq]}"

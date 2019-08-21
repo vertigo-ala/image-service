@@ -131,7 +131,6 @@ environments:
                 inbox: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-incoming'
             exportDir: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-exports'
 
-
     production:
         hibernate:
             dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -206,7 +205,7 @@ spring:
 
 # Spring Actuator Endpoints are Disabled by Default
 endpoints:
-    enabled: false
+    enabled: true
     jmx:
         enabled: true
 
@@ -251,6 +250,9 @@ analytics:
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
     viewID: "ga:8736349"
+    trackThumbnails: false
+    trackLargeViewer: false
+    trackDetailedView: false
 
 elasticsearch:
   indexName: "images"
@@ -259,3 +261,4 @@ elasticsearch:
   port1: 9200
   port2: 9201
   maxFacetSize: 10000
+  maxOffset: 10000

@@ -284,12 +284,7 @@ class ElasticSearchService {
         def imageList = []
         if (searchResponse.hits) {
             searchResponse.hits.each { hit ->
-               def image =  Image.findByImageIdentifier(hit.id)
-               if(image) {
-                   image.metadata = null
-                   image.recognisedLicense = null
-                   imageList << image
-               }
+                imageList << hit.getSourceAsMap()
             }
         }
         QueryResults<Image> qr = new QueryResults<Image>()
@@ -544,9 +539,25 @@ class ElasticSearchService {
     }
 
     private SearchSourceBuilder pagenateQuery(Map params) {
+
+        int maxOffset = grailsApplication.config.elasticsearch.maxOffset as int
+
+
         SearchSourceBuilder source = new SearchSourceBuilder()
-        source.from(params.offset ? params.offset as int : 0)
-        source.size(params.max ? params.max as int : 10)
+
+        if(params.offset && params.max && (params.offset as int) + (params.max as int) >= maxOffset ){
+            //max default max offset is 10000 for elastic search
+            source.from(maxOffset - (params.max as int))
+            source.size(params.max ? params.max as int : 10)
+        } else {
+            if (params.offset && (params.offset as int)  >= maxOffset){
+                source.from(maxOffset) //limit to 10000
+            } else {
+                source.from(params.offset ? params.offset as int : 0)
+            }
+            source.size(params.max ? params.max as int : 10)
+        }
+
         source.sort('dateUploaded', SortOrder.DESC)
         source
     }
@@ -565,7 +576,7 @@ class ElasticSearchService {
                 }
 
                 PutMappingRequest putMappingRequest = new PutMappingRequest(grailsApplication.config.elasticsearch.indexName)
-                putMappingRequest.type("images")
+                putMappingRequest.type(grailsApplication.config.elasticsearch.indexName as String)
                 putMappingRequest.source(
                         """{
                                   "properties": {
@@ -723,7 +734,7 @@ class ElasticSearchService {
             def aggregations = [:]
             if (searchResponse.hits) {
                 searchResponse.hits.each { hit ->
-                    imageList << Image.get(hit.id.toLong())
+                    imageList << hit.getSourceAsMap()
                 }
                 searchResponse.aggregations.each {
                     def facet = [:]

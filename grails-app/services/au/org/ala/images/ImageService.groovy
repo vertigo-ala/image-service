@@ -386,8 +386,10 @@ class ImageService {
         List<ThumbnailingResult> results
         if (isAudioType(image)) {
             results = imageStoreService.generateAudioThumbnails(image.imageIdentifier)
-        } else {
+        } else if (isImageType(image)) {
             results = imageStoreService.generateImageThumbnails(image.imageIdentifier)
+        } else {
+            results = imageStoreService.generateDocumentThumbnails(image.imageIdentifier)
         }
 
         // These are deprecated, but we'll update them anyway...
@@ -923,6 +925,37 @@ class ImageService {
             image = Image.findByImageIdentifier(guid)
         }
         return image
+    }
+
+    def UUID_PATTERN = ~/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/
+
+
+    def getImageGUIDFromParams(params) {
+
+        if(params.id){
+            //if it a GUID, avoid database trip if possible....
+            if (UUID_PATTERN.matcher(params.id).matches()){
+                return params.id
+            }
+            if(params.id ){
+                def image = Image.findById(params.int("id"))
+                if(image) {
+                    return image.imageIdentifier
+                }
+            }
+        } else if(params.imageId){
+            //if it a GUID, avoid database trip if possible....
+            if (UUID_PATTERN.matcher(params.imageId).matches()){
+                return params.imageId
+            }
+            if(params.id ){
+                def image = Image.findById(params.int("imageId"))
+                if (image) {
+                    return image.imageIdentifier
+                }
+            }
+        }
+        return null
     }
 
     /**
