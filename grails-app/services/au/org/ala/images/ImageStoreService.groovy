@@ -77,12 +77,6 @@ class ImageStoreService {
     byte[] retrieveImage(String imageIdentifier) {
         if (imageIdentifier) {
             def imageFile = getOriginalImageFile(imageIdentifier)
-//            byte[] data = null
-//            imageFile.withInputStream { is ->
-//                data = IOUtils.toByteArray(is)
-//            }
-//
-
             return imageFile.getBytes()
         }
         return null
@@ -153,6 +147,27 @@ class ImageStoreService {
         return grailsApplication.config.imageservice.apache.root + path.join("/")
     }
 
+    String getImageThumbFile(String imageIdentifier) {
+        def path = []
+        computeAndAppendLocalDirectoryPath(imageIdentifier, path)
+        path << "thumbnail"
+        return grailsApplication.config.imageservice.imagestore.root + "/" + path.join("/")
+    }
+
+    String getImageThumbLargeFile(String imageIdentifier) {
+        def path = []
+        computeAndAppendLocalDirectoryPath(imageIdentifier, path)
+        path << "thumbnail_large"
+        return grailsApplication.config.imageservice.imagestore.root + "/" + path.join("/")
+    }
+
+    String getImageOriginalFile(String imageIdentifier) {
+        def path = []
+        computeAndAppendLocalDirectoryPath(imageIdentifier, path)
+        path << "original"
+        return grailsApplication.config.imageservice.imagestore.root + "/" + path.join("/")
+    }
+
     String getImageThumbUrl(String imageIdentifier,  Integer idx) {
         def path = []
         computeAndAppendLocalDirectoryPath(imageIdentifier, path)
@@ -195,9 +210,17 @@ class ImageStoreService {
     }
 
     List<ThumbnailingResult> generateAudioThumbnails(String imageIdentifier) {
-        def servletContext = ServletContextHolder.servletContext
-        def res = servletContext.getResource('/images/audio-icon.png')
-        def imageBytes = res.bytes
+        URL u = new URL(grailsApplication.config.placeholder.sound.thumbnail)
+        def imageBytes = u.getBytes()
+        if (imageBytes) {
+            return generateThumbnailsImpl(imageBytes, imageIdentifier)
+        }
+        return null
+    }
+
+    List<ThumbnailingResult> generateDocumentThumbnails(String imageIdentifier) {
+        URL u = new URL(grailsApplication.config.placeholder.document.thumbnail)
+        def imageBytes = u.getBytes()
         if (imageBytes) {
             return generateThumbnailsImpl(imageBytes, imageIdentifier)
         }

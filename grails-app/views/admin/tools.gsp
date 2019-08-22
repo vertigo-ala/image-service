@@ -127,18 +127,21 @@
         $("#btnRegenArtifacts").click(function(e) {
             e.preventDefault();
             $.ajax("${createLink(controller:'webService', action:'scheduleArtifactGeneration')}").done(function() {
+                window.location = "${createLink(action:'tools')}";
             });
         });
 
         $("#btnRegenThumbnails").click(function(e) {
             e.preventDefault();
             $.ajax("${createLink(controller:'webService', action:'scheduleThumbnailGeneration')}").done(function() {
+                window.location = "${createLink(action:'tools')}";
             });
         });
 
         $("#btnRebuildKeywords").click(function(e) {
             e.preventDefault();
             $.ajax("${createLink(controller:'webService', action:'scheduleKeywordRegeneration')}").done(function() {
+                window.location = "${createLink(action:'tools')}";
             });
         });
 

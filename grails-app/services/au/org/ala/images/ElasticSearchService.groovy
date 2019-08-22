@@ -39,10 +39,8 @@ import org.elasticsearch.search.aggregations.BucketOrder
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder
 import org.elasticsearch.search.sort.SortOrder
-import org.springframework.context.MessageSource
 
 import javax.annotation.PreDestroy
-import java.sql.Timestamp
 import java.util.regex.Pattern
 import javax.annotation.PostConstruct
 import java.util.zip.ZipEntry
@@ -53,8 +51,9 @@ class ElasticSearchService {
     def logService
     def grailsApplication
     def imageStoreService
-    def collectoryService
-    MessageSource messageSource
+
+    static String UNRECOGNISED_LICENCE =  "unrecognised_licence"
+    static String NOT_SUPPLIED = "not_supplied"
 
     private RestHighLevelClient client
 
@@ -123,7 +122,7 @@ class ElasticSearchService {
         if (image.recognisedLicense) {
             data.recognisedLicence = image.recognisedLicense.acronym
         } else {
-            data.recognisedLicence = "unrecognised_licence"
+            data.recognisedLicence = UNRECOGNISED_LICENCE
         }
 
         indexImageInES(
@@ -233,16 +232,27 @@ class ElasticSearchService {
 
     private def addAdditionalIndexFields(data){
 
-        if(data.dateUploaded){
-
+        if (data.dateUploaded){
             if(!data.dateUploadedYearMonth && data.dateUploaded instanceof java.util.Date){
                 data.dateUploadedYearMonth = data.dateUploaded.format("yyyy-MM")
             }
         }
 
-        data.recognisedLicence  = data.recognisedLicence ?: "unrecognised_licence"
-        data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : "not_supplied"
-        data.dataResourceUid = data.dataResourceUid ?: "no_dataresource"
+        if (data.format){
+            if (data.format.startsWith('image')){
+                data.fileType = 'image'
+            } else if (data.format.startsWith('audio')){
+                data.fileType = 'sound'
+            } else if (data.format.startsWith('video')){
+                data.fileType = 'video'
+            } else {
+                data.fileType = 'document'
+            }
+        }
+
+        data.recognisedLicence  = data.recognisedLicence ?: UNRECOGNISED_LICENCE
+        data.creator = data.creator ? data.creator.replaceAll("[\"|'&]", "") : NOT_SUPPLIED
+        data.dataResourceUid = data.dataResourceUid ?:  CollectoryService.NO_DATARESOURCE
         def imageSize = data.height.toInteger() * data.width.toInteger()
         if (imageSize < 100){
             data.imageSize = "less than 100"
@@ -274,12 +284,7 @@ class ElasticSearchService {
         def imageList = []
         if (searchResponse.hits) {
             searchResponse.hits.each { hit ->
-               def image =  Image.findByImageIdentifier(hit.id)
-               if(image) {
-                   image.metadata = null
-                   image.recognisedLicense = null
-                   imageList << image
-               }
+                imageList << hit.getSourceAsMap()
             }
         }
         QueryResults<Image> qr = new QueryResults<Image>()
@@ -523,7 +528,7 @@ class ElasticSearchService {
         SearchSourceBuilder source = pagenateQuery(params).query(boolQueryBuilder)
 
         // request aggregations (facets)
-        source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(10000).order(BucketOrder.key(true)))
+        source.aggregation(AggregationBuilders.terms(facet as String).field(facet as String).size(grailsApplication.config.elasticsearch.maxFacetSize.toInteger()).order(BucketOrder.key(true)))
 
         //ask for the total
         source.trackTotalHits(false)
@@ -534,9 +539,25 @@ class ElasticSearchService {
     }
 
     private SearchSourceBuilder pagenateQuery(Map params) {
+
+        int maxOffset = grailsApplication.config.elasticsearch.maxOffset as int
+
+
         SearchSourceBuilder source = new SearchSourceBuilder()
-        source.from(params.offset ? params.offset as int : 0)
-        source.size(params.max ? params.max as int : 10)
+
+        if(params.offset && params.max && (params.offset as int) + (params.max as int) >= maxOffset ){
+            //max default max offset is 10000 for elastic search
+            source.from(maxOffset - (params.max as int))
+            source.size(params.max ? params.max as int : 10)
+        } else {
+            if (params.offset && (params.offset as int)  >= maxOffset){
+                source.from(maxOffset) //limit to 10000
+            } else {
+                source.from(params.offset ? params.offset as int : 0)
+            }
+            source.size(params.max ? params.max as int : 10)
+        }
+
         source.sort('dateUploaded', SortOrder.DESC)
         source
     }
@@ -555,7 +576,7 @@ class ElasticSearchService {
                 }
 
                 PutMappingRequest putMappingRequest = new PutMappingRequest(grailsApplication.config.elasticsearch.indexName)
-                putMappingRequest.type("images")
+                putMappingRequest.type(grailsApplication.config.elasticsearch.indexName as String)
                 putMappingRequest.source(
                         """{
                                   "properties": {
@@ -579,7 +600,10 @@ class ElasticSearchService {
                                     }, 
                                     "format":{
                                        "type": "keyword"
-                                    },                                                                         
+                                    },    
+                                    "fileType":{
+                                       "type": "keyword"
+                                    },                                               
                                     "createdYear":{
                                        "type": "keyword"
                                     },                                                                     
@@ -710,7 +734,7 @@ class ElasticSearchService {
             def aggregations = [:]
             if (searchResponse.hits) {
                 searchResponse.hits.each { hit ->
-                    imageList << Image.get(hit.id.toLong())
+                    imageList << hit.getSourceAsMap()
                 }
                 searchResponse.aggregations.each {
                     def facet = [:]

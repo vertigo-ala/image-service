@@ -386,8 +386,10 @@ class ImageService {
         List<ThumbnailingResult> results
         if (isAudioType(image)) {
             results = imageStoreService.generateAudioThumbnails(image.imageIdentifier)
-        } else {
+        } else if (isImageType(image)) {
             results = imageStoreService.generateImageThumbnails(image.imageIdentifier)
+        } else {
+            results = imageStoreService.generateDocumentThumbnails(image.imageIdentifier)
         }
 
         // These are deprecated, but we'll update them anyway...
@@ -451,12 +453,6 @@ class ImageService {
                 subimage.delete()
             }
 
-            // and delete album images
-            def albumImages = AlbumImage.findAllByImage(image)
-            albumImages.each { albumImage ->
-                albumImage.delete()
-            }
-
             // thumbnail records...
             def thumbs = ImageThumbnail.findAllByImage(image)
             thumbs.each { thumb ->
@@ -489,8 +485,6 @@ class ImageService {
     }
 
     Image importFileFromInbox(File file, String batchId, String userId) {
-
-        CodeTimer ct = new CodeTimer("Import file ${file?.absolutePath}")
 
         if (!file || !file.exists()) {
             throw new RuntimeException("Could not read file ${file?.absolutePath} - Does not exist")
@@ -529,6 +523,8 @@ class ImageService {
             if (!FileUtils.deleteQuietly(file)) {
                 file.deleteOnExit()
             }
+            // schedule an index
+            scheduleImageIndex(image.id)
             // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
             scheduleTileGeneration(image.id, userId)
         }
@@ -542,7 +538,6 @@ class ImageService {
         inboxDirectory.eachFile { File file ->
             _backgroundQueue.add(new ImportFileBackgroundTask(file, this, batchId, userId))
         }
-
     }
 
     private static String sanitizeString(Object value) {
@@ -930,6 +925,37 @@ class ImageService {
             image = Image.findByImageIdentifier(guid)
         }
         return image
+    }
+
+    def UUID_PATTERN = ~/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/
+
+
+    def getImageGUIDFromParams(params) {
+
+        if(params.id){
+            //if it a GUID, avoid database trip if possible....
+            if (UUID_PATTERN.matcher(params.id).matches()){
+                return params.id
+            }
+            if(params.id ){
+                def image = Image.findById(params.int("id"))
+                if(image) {
+                    return image.imageIdentifier
+                }
+            }
+        } else if(params.imageId){
+            //if it a GUID, avoid database trip if possible....
+            if (UUID_PATTERN.matcher(params.imageId).matches()){
+                return params.imageId
+            }
+            if(params.id ){
+                def image = Image.findById(params.int("imageId"))
+                if (image) {
+                    return image.imageIdentifier
+                }
+            }
+        }
+        return null
     }
 
     /**

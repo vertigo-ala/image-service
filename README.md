@@ -3,7 +3,7 @@
 This Grails application provides the webservices and backend for the storage of all images in the Atlas.
 It includes:
 
-* Support for large images
+* Support for large images, generation of thumbnails and tile views
 * Extensible key/value pair storage for image metadata
 * Support for subimaging and maintaining the relationships between parent and child images
 * Exif extraction

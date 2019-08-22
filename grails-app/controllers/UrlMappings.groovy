@@ -36,6 +36,11 @@ class UrlMappings {
         "/image/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
         "/image/proxyImageTile"(controller: "image", action: "proxyImageTile")
         "/image/proxyImage"(controller: "image", action: "proxyImage")
+        "/proxyImageThumbnail"(controller: "image", action: "proxyImageThumbnail")
+        "/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
+        "/proxyImageTile"(controller: "image", action: "proxyImageTile")
+        "/proxyImage"(controller: "image", action: "proxyImage")
+
         "/image/viewer"(controller:"image", action: "viewer")
         "/image/view/$id"(controller:"image", action: "viewer")
         "/image/viewer/$id"(controller:"image", action: "viewer")
