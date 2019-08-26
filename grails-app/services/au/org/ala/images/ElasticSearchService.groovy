@@ -668,9 +668,13 @@ class ElasticSearchService {
     }
 
     private QueryResults<Image> executeSearch(GrailsParameterMap params) {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
+        executeSearch(searchSourceBuilder, params)
+    }
+
+    private QueryResults<Image> executeSearch(SearchSourceBuilder searchSourceBuilder, GrailsParameterMap params) {
 
         try {
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder()
 
             QueryBuilder queryBuilder = QueryBuilders.queryStringQuery(params.q)
 
