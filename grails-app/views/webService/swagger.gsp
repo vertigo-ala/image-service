@@ -31,6 +31,8 @@
 </head>
 
 <body>
+
+
 <div id="swagger-ui"></div>
 <script src="${grailsApplication.config.server.contextPath}/webjars/swagger-ui/3.20.9/swagger-ui-bundle.js"> </script>
 <script src="${grailsApplication.config.server.contextPath}/webjars/swagger-ui/3.20.9/swagger-ui-standalone-preset.js"> </script>
