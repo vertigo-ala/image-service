@@ -5,7 +5,6 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.ws.security.ApiKeyInterceptor
 import grails.converters.JSON
 import grails.converters.XML
-import groovyx.net.http.HTTPBuilder
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
@@ -1214,20 +1213,6 @@ class WebServiceController {
             }
 
             def results = elasticSearchService.searchByMetadata(key, values, params)
-//            def results = [:]
-////            def keyValues = imageService.getMetadataItemValuesForImages(images.list, key)
-//            images?.list?.each { image ->
-//                def map = imageService.getImageInfoMap(image)
-//                collectoryService.addMetadataForResource(image)
-////                def keyValue = keyValues[image.id]
-//                def list = results[keyValue]
-////                if (!list) {
-////                    list = []
-////                }
-////                results[keyValue] = list
-//                list << map
-//            }
-
             def totalCount = 0
             results.values().each {
                 totalCount = totalCount + it.size()
