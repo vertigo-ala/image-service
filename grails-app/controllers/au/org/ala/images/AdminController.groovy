@@ -91,7 +91,7 @@ class AdminController {
         if (storeResult.image) {
             imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
         } else {
-            imageService.scheduleNonImagePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
+            imageService.scheduleNonImagePostIngestTasks(storeResult.image.id)
         }
         flash.message = "Image uploaded with identifier: ${storeResult.image?.imageIdentifier}"
         redirect(action:'upload')

@@ -189,7 +189,7 @@ class ImageService {
         scheduleImageMetadataPersist(imageId,identifier, fileName,  MetaDataSourceType.Embedded, uploaderId)
     }
 
-    def scheduleNonImagePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
+    def scheduleNonImagePostIngestTasks(Long imageId){
         scheduleImageIndex(imageId)
     }
 
