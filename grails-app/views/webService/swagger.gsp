@@ -38,7 +38,7 @@
     window.onload = function() {
         // Begin Swagger UI call region
         const ui = SwaggerUIBundle({
-            url: "/ws/api",
+            url: "${g.createLink(controller: 'ws', params: [json:true])}",
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [
@@ -54,5 +54,8 @@
         window.ui = ui
     }
 </script>
+<style>
+    .topbar { display:none; }
+</style>
 </body>
 </html>

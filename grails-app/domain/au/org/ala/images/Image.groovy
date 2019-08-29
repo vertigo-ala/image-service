@@ -43,6 +43,8 @@ class Image {
     String rightsHolder
     @SearchableProperty(description="A legal document giving official permission to do something with the resource.")
     String license
+    @SearchableProperty(description="Associated occurrence ID.")
+    String occurrenceId
 
     License recognisedLicense
 
@@ -92,6 +94,7 @@ class Image {
         harvestable nullable: true
 
         dateDeleted  nullable: true
+        occurrenceId nullable: true
     }
 
     static mapping = {

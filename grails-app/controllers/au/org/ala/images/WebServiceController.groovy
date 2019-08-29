@@ -1186,13 +1186,14 @@ class WebServiceController {
             consumes = "application/json",
             httpMethod = "POST",
             response = Map.class,
-            tags = ["Search"]
+            tags = ["Search", "Deprecated"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
+    @Deprecated
     def findImagesByMetadata() {
 
         def query = request.JSON
@@ -1212,22 +1213,27 @@ class WebServiceController {
                 return
             }
 
-            def images = elasticSearchService.searchByMetadata(key, values, params)
-            def results = [:]
-            def keyValues = imageService.getMetadataItemValuesForImages(images.list, key)
-            images?.list?.each { image ->
-                def map = imageService.getImageInfoMap(image)
-                collectoryService.addMetadataForResource(image)
-                def keyValue = keyValues[image.id]
-                def list = results[keyValue]
-                if (!list) {
-                    list = []
-                    results[keyValue] = list
-                }
-                list << map
+            def results = elasticSearchService.searchByMetadata(key, values, params)
+//            def results = [:]
+////            def keyValues = imageService.getMetadataItemValuesForImages(images.list, key)
+//            images?.list?.each { image ->
+//                def map = imageService.getImageInfoMap(image)
+//                collectoryService.addMetadataForResource(image)
+////                def keyValue = keyValues[image.id]
+//                def list = results[keyValue]
+////                if (!list) {
+////                    list = []
+////                }
+////                results[keyValue] = list
+//                list << map
+//            }
+
+            def totalCount = 0
+            results.values().each {
+                totalCount = totalCount + it.size()
             }
 
-            renderResults([success: true, images: results, count:images?.totalCount ?: 0])
+            renderResults([success: true, images: results, count: totalCount])
             return
         }
 
