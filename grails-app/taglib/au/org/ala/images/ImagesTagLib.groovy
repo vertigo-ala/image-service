@@ -113,9 +113,11 @@ class ImagesTagLib {
             if(attrs.image.dataResourceUid){
                 def metadata = collectoryService.getResourceLevelMetadata(attrs.image.dataResourceUid)
                 out << """<div class="thumb-caption caption-detail ${attrs.css?:''}">"""
-                out <<  "<span class='resource-name'>${metadata.name}</span>"
-
-                def text = "${attrs.image.title? ' - ' + attrs.image.title: ''} ${attrs.image.creator ?  ' - ' + attrs.image.creator : ''}"
+                out <<  "<span class='resource-name'>${metadata.name?:''}</span>"
+                if (metadata.name && (attrs.image.title || attrs.image.creator)){
+                    out << ' - '
+                }
+                def text = "${attrs.image.title? attrs.image.title: ''} ${attrs.image.creator ?  attrs.image.creator : ''}"
                 text = StringUtils.abbreviate(text, 100)
                 out << "<span>${text}</span>"
                 out << '</div>'
