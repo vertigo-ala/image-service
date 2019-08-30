@@ -38,6 +38,8 @@ class ImageService {
 
     private static int BACKGROUND_TASKS_BATCH_SIZE = 100
 
+    Map imagePropertyMap = null
+
     ImageStoreResult storeImage(MultipartFile imageFile, String uploader, Map metadata = [:]) {
 
         if (imageFile) {
@@ -171,9 +173,10 @@ class ImageService {
 
         //update metadata
         metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
-                    image[kvp.key] = kvp.value
+            def propertyName = hasImageCaseFriendlyProperty(image, kvp.key)
+            if (propertyName && kvp.value){
+                if(!(propertyName in ["dateTaken", "dateUploaded", "id"])){
+                    image[propertyName] = kvp.value
                 }
             }
         }
@@ -182,6 +185,18 @@ class ImageService {
 
         new ImageStoreResult(image, preExisting)
     }
+
+
+    def hasImageCaseFriendlyProperty(Image image, String propertyName){
+        if (!imagePropertyMap) {
+            def properties = image.getProperties().keySet()
+            imagePropertyMap = [:]
+            properties.each { imagePropertyMap.put(it.toLowerCase(), it) }
+        }
+        imagePropertyMap.get(propertyName.toLowerCase())
+    }
+
+
 
     def schedulePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
         scheduleArtifactGeneration(imageId, uploaderId)
