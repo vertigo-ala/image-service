@@ -694,6 +694,9 @@ class WebServiceController {
     def getRepositoryStatistics() {
         def results = [:]
         results.imageCount = Image.count()
+        results.deletedImageCount = Image.countByDateDeletedIsNotNull()
+        results.licenceCount = License.count()
+        results.licenceMappingCount = LicenseMapping.count()
         results.sizeOnDisk =
         renderResults(results)
     }
