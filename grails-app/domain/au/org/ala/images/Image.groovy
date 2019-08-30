@@ -62,6 +62,12 @@ class Image {
 
     Integer squareThumbSize
 
+
+
+
+
+
+
     static hasMany = [keywords:ImageKeyword, metadata: ImageMetaDataItem, tags: ImageTag]
 
     static constraints = {
