@@ -50,6 +50,22 @@ class SearchSpec extends Specification {
 
         when:
 
+        boolean hasBacklog = true
+        int counter = 0
+        int MAX_CHECKS = 10
+
+
+        while (hasBacklog && counter < MAX_CHECKS){
+            RestResponse statsResp = rest.get("http://localhost:${serverPort}/ws/backgroundQueueStats")
+            def json = new JsonSlurper().parseText(statsResp.body)
+            if(json.queueLength > 0){
+                Thread.sleep(5000)
+            } else {
+                hasBacklog = false
+            }
+            counter +=1
+        }
+
         //search by occurrence ID
         RestResponse resp = rest.post("http://localhost:${serverPort}/ws/findImagesByMetadata",{
             json {
