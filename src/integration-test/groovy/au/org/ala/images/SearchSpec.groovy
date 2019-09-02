@@ -28,7 +28,7 @@ class SearchSpec extends Specification {
         def occurrenceID = "f4c13adc-2926-44c8-b2cd-fb2d62378a1a"
 
         //first upload an image
-        def testUrl = "https://www.ala.org.au/app/uploads/2019/06/Rufous-Betting-by-Graham-Armstrong-CCBY-25-Apr-2019-1920-x-1200-640x480.jpg"
+        def testUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Red_kangaroo_-_melbourne_zoo.jpg/800px-Red_kangaroo_-_melbourne_zoo.jpg"
 
         RestResponse uploadResponse = rest.post("http://localhost:${serverPort}/ws/uploadImagesFromUrls", {
             json {
@@ -45,10 +45,11 @@ class SearchSpec extends Specification {
         jsonUploadResponse.success == true
     }
 
+
     void 'test search for previous upload'(){
 
-
         when:
+
         //search by occurrence ID
         RestResponse resp = rest.post("http://localhost:${serverPort}/ws/findImagesByMetadata",{
             json {
