@@ -98,7 +98,7 @@ class ImageService {
                             result.success = true
                             auditService.log(storeResult.image, "Image (batch) downloaded from ${imageUrl}", uploader ?: "<unknown>")
                         } catch (Exception ex) {
-                            ex.printStackTrace()
+                            log.error("Problem storing image - " + ex.getMessage(), ex)
                             result.message = ex.message
                         }
                         results[imageUrl] = result
