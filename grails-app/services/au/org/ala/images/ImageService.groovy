@@ -38,6 +38,8 @@ class ImageService {
 
     private static int BACKGROUND_TASKS_BATCH_SIZE = 100
 
+    Map imagePropertyMap = null
+
     ImageStoreResult storeImage(MultipartFile imageFile, String uploader, Map metadata = [:]) {
 
         if (imageFile) {
@@ -96,7 +98,7 @@ class ImageService {
                             result.success = true
                             auditService.log(storeResult.image, "Image (batch) downloaded from ${imageUrl}", uploader ?: "<unknown>")
                         } catch (Exception ex) {
-                            ex.printStackTrace()
+                            log.error("Problem storing image - " + ex.getMessage(), ex)
                             result.message = ex.message
                         }
                         results[imageUrl] = result
@@ -171,9 +173,10 @@ class ImageService {
 
         //update metadata
         metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
-                    image[kvp.key] = kvp.value
+            def propertyName = hasImageCaseFriendlyProperty(image, kvp.key)
+            if (propertyName && kvp.value){
+                if(!(propertyName in ["dateTaken", "dateUploaded", "id"])){
+                    image[propertyName] = kvp.value
                 }
             }
         }
@@ -183,13 +186,25 @@ class ImageService {
         new ImageStoreResult(image, preExisting)
     }
 
+
+    def hasImageCaseFriendlyProperty(Image image, String propertyName){
+        if (!imagePropertyMap) {
+            def properties = image.getProperties().keySet()
+            imagePropertyMap = [:]
+            properties.each { imagePropertyMap.put(it.toLowerCase(), it) }
+        }
+        imagePropertyMap.get(propertyName.toLowerCase())
+    }
+
+
+
     def schedulePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
         scheduleArtifactGeneration(imageId, uploaderId)
         scheduleImageIndex(imageId)
         scheduleImageMetadataPersist(imageId,identifier, fileName,  MetaDataSourceType.Embedded, uploaderId)
     }
 
-    def scheduleNonImagePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
+    def scheduleNonImagePostIngestTasks(Long imageId){
         scheduleImageIndex(imageId)
     }
 
@@ -420,44 +435,7 @@ class ImageService {
 
         if (image) {
 
-            // need to delete it from user selections
-            def selected = SelectedImage.findAllByImage(image)
-            selected.each { selectedImage ->
-                selectedImage.delete()
-            }
-
-            // Need to delete tags
-            def tags = ImageTag.findAllByImage(image)
-            tags.each { tag ->
-                tag.delete()
-            }
-
-            // Delete keywords
-            def keywords = ImageKeyword.findAllByImage(image)
-            keywords.each { keyword ->
-                keyword.delete()
-            }
-
-            // If this image is a subimage, also need to delete any subimage rectangle records
-            def subimagesRef = Subimage.findAllBySubimage(image)
-            subimagesRef.each { subimage ->
-                subimage.delete()
-            }
-
-            // This image may also be a parent image
-            def subimages = Subimage.findAllByParentImage(image)
-            subimages.each { subimage ->
-                // need to detach this image from the child images, but we do not actually delete the sub images. They
-                // will live on as root images in their own right
-                subimage.subimage.parent = null
-                subimage.delete()
-            }
-
-            // thumbnail records...
-            def thumbs = ImageThumbnail.findAllByImage(image)
-            thumbs.each { thumb ->
-                thumb.delete()
-            }
+            deleteRelatedArtefacts(image)
 
             // Delete from the index...
             elasticSearchService.deleteImage(image)
@@ -471,6 +449,59 @@ class ImageService {
             return true
         }
 
+        return false
+    }
+
+    private def deleteRelatedArtefacts(Image image){
+
+        // need to delete it from user selections
+        def selected = SelectedImage.findAllByImage(image)
+        selected.each { selectedImage ->
+            selectedImage.delete()
+        }
+
+        // Need to delete tags
+        def tags = ImageTag.findAllByImage(image)
+        tags.each { tag ->
+            tag.delete()
+        }
+
+        // Delete keywords
+        def keywords = ImageKeyword.findAllByImage(image)
+        keywords.each { keyword ->
+            keyword.delete()
+        }
+
+        // If this image is a subimage, also need to delete any subimage rectangle records
+        def subimagesRef = Subimage.findAllBySubimage(image)
+        subimagesRef.each { subimage ->
+            subimage.delete()
+        }
+
+        // This image may also be a parent image
+        def subimages = Subimage.findAllByParentImage(image)
+        subimages.each { subimage ->
+            // need to detach this image from the child images, but we do not actually delete the sub images. They
+            // will live on as root images in their own right
+            subimage.subimage.parent = null
+            subimage.delete()
+        }
+
+        // thumbnail records...
+        def thumbs = ImageThumbnail.findAllByImage(image)
+        thumbs.each { thumb ->
+            thumb.delete()
+        }
+    }
+
+    def deleteImagePurge(Image image) {
+        if (image && image.dateDeleted) {
+            deleteRelatedArtefacts(image)
+            imageStoreService.deleteImage(image.imageIdentifier)
+            //hard delete
+            image.delete(flush:true)
+            return true
+        }
         return false
     }
 
@@ -724,8 +755,8 @@ class ImageService {
             def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId, metadata).image
 
             def subimageRect = new Subimage(parentImage: parentImage, subimage: subimage, x: x, y: y, height: height, width: width)
-            subimageRect.save()
             subimage.parent = parentImage
+            subimageRect.save(flush:true)
 
             auditService.log(parentImage, "Subimage created ${subimage.imageIdentifier}", userId)
             auditService.log(subimage, "Subimage created from parent image ${parentImage.imageIdentifier}", userId)
@@ -811,7 +842,8 @@ class ImageService {
 
     def resetImageLinearScale(Image image) {
         image.mmPerPixel = null;
-        image.save()
+        image.calibratedByUser = null
+        image.save(flush:true)
         scheduleImageIndex(image.id)
     }
 
@@ -835,7 +867,8 @@ class ImageService {
         def mmPerPixel = (actualLength * scale) / pixelLength
 
         image.mmPerPixel = mmPerPixel
-        image.save()
+        image.calibratedByUser = userId
+        image.save(flush:true)
         scheduleImageIndex(image.id)
 
         return mmPerPixel

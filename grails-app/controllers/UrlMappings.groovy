@@ -32,6 +32,7 @@ class UrlMappings {
         "/ws"(controller: 'webService', action: 'swagger')
 
         // legacy URLS
+        "/image/imageTooltipFragment"(controller: "image", action: "imageTooltipFragment")
         "/image/proxyImageThumbnail"(controller: "image", action: "proxyImageThumbnail")
         "/image/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
         "/image/proxyImageTile"(controller: "image", action: "proxyImageTile")

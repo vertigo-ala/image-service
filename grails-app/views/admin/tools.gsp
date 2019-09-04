@@ -114,6 +114,14 @@
             </td>
         </tr>
 
+        <tr>
+            <td>
+                <button id="btnPurgeDeletedImages" class="btn btn-default">Purge deleted images</button>
+            </td>
+            <td>
+                This will run a background task that will remove deleted images from the filesystem and the database.
+            </td>
+        </tr>
     </table>
 <script>
 
@@ -179,6 +187,11 @@
         $("#btnClearCollectoryCache").click(function(e) {
             e.preventDefault();
             window.location = "${createLink(action:'clearCollectoryCache')}";
+        });
+
+        $("#btnPurgeDeletedImages").click(function(e) {
+            e.preventDefault();
+            window.location = "${createLink(action:'scheduleDeletedImagesPurge')}";
         });
     });
 

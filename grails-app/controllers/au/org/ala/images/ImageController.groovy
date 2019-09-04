@@ -365,35 +365,45 @@ class ImageController {
                 flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
                 redirect(action:'list', controller: 'search')
             } else {
-                def subimages = Subimage.findAllByParentImage(image)*.subimage
-                def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
-
-                //accessible from cookie
-                def userEmail = AuthenticationUtils.getEmailAddress(request)
-                def userDetails = authService.getUserForEmailAddress(userEmail, true)
-                def userId = userDetails ? userDetails.id : ""
-
-                def isAdmin = false
-                if (userDetails){
-                    if (userDetails.getRoles().contains("ROLE_ADMIN"))
-                        isAdmin = true
-                }
-
-                def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
-
-                boolean isImage = imageService.isImageType(image)
-
-                //add additional metadata
-                def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
-
-                if (grailsApplication.config.analytics.trackDetailedView.toBoolean()) {
-                    sendAnalytics(image, 'imagedetailedview')
-                }
-
-                [imageInstance: image, subimages: subimages, sizeOnDisk: sizeOnDisk,
-                 squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId]
+                getImageModel(image)
             }
         }
+    }
+
+    private def getImageModel(Image image){
+        def subimages = Subimage.findAllByParentImage(image)*.subimage
+        def sizeOnDisk = imageStoreService.getConsumedSpaceOnDisk(image.imageIdentifier)
+
+        //accessible from cookie
+        def userEmail = AuthenticationUtils.getEmailAddress(request)
+        def userDetails = authService.getUserForEmailAddress(userEmail, true)
+        def userId = userDetails ? userDetails.id : ""
+
+        def isAdmin = false
+        if (userDetails){
+            if (userDetails.getRoles().contains("ROLE_ADMIN"))
+                isAdmin = true
+        }
+
+        if (!userId){
+            userId =  authService.getUserId()
+        }
+
+        def thumbUrls = imageService.getAllThumbnailUrls(image.imageIdentifier)
+
+        boolean isImage = imageService.isImageType(image)
+
+        //add additional metadata
+        def resourceLevel = collectoryService.getResourceLevelMetadata(image.dataResourceUid)
+
+        if (grailsApplication.config.analytics.trackDetailedView.toBoolean()) {
+            sendAnalytics(image, 'imagedetailedview')
+        }
+
+        [imageInstance: image, subimages: subimages,
+         parentImage: image.parent,
+         sizeOnDisk: sizeOnDisk,
+         squareThumbs: thumbUrls, isImage: isImage, resourceLevel: resourceLevel, isAdmin:isAdmin, userId:userId]
     }
 
     def view() {
@@ -448,6 +458,12 @@ class ImageController {
         }
 
         [imageInstance: imageInstance, metaData: metaData?.sort { it.name }, source: source]
+    }
+
+    def coreImageMetadataTableFragment() {
+        def imageInstance = imageService.getImageFromParams(params)
+
+        render(view: '_coreImageMetadataFragment', model: getImageModel(imageInstance))
     }
 
     def imageTooltipFragment() {

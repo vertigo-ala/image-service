@@ -91,10 +91,11 @@ dataSource:
 
 environments:
     development:
-        hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
+#        hibernate:
+#            dialect: org.hibernate.dialect.PostgreSQLDialect
         dataSource:
             dbCreate: update
+#            driverClassName: org.postgresql.Driver
             url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
             username: "images"
             password: "images"
@@ -136,6 +137,7 @@ environments:
             dialect: org.hibernate.dialect.PostgreSQLDialect
         dataSource:
             dbCreate: update
+            driverClassName: org.postgresql.Driver
             url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
             properties:
                 jmxEnabled: true
@@ -159,7 +161,7 @@ security:
     cas:
         appServerName: 'http://dev.ala.org.au:8080'
         uriFilterPattern: '/admin/.*,/admin,/admin/,/image/deleteImage/.*'
-        authenticateOnlyIfLoggedInPattern:  ''
+        authenticateOnlyIfLoggedInPattern:  '/ws/createSubimage'
         bypass: false
         disableCAS: false
 
