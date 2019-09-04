@@ -435,44 +435,7 @@ class ImageService {
 
         if (image) {
 
-            // need to delete it from user selections
-            def selected = SelectedImage.findAllByImage(image)
-            selected.each { selectedImage ->
-                selectedImage.delete()
-            }
-
-            // Need to delete tags
-            def tags = ImageTag.findAllByImage(image)
-            tags.each { tag ->
-                tag.delete()
-            }
-
-            // Delete keywords
-            def keywords = ImageKeyword.findAllByImage(image)
-            keywords.each { keyword ->
-                keyword.delete()
-            }
-
-            // If this image is a subimage, also need to delete any subimage rectangle records
-            def subimagesRef = Subimage.findAllBySubimage(image)
-            subimagesRef.each { subimage ->
-                subimage.delete()
-            }
-
-            // This image may also be a parent image
-            def subimages = Subimage.findAllByParentImage(image)
-            subimages.each { subimage ->
-                // need to detach this image from the child images, but we do not actually delete the sub images. They
-                // will live on as root images in their own right
-                subimage.subimage.parent = null
-                subimage.delete()
-            }
-
-            // thumbnail records...
-            def thumbs = ImageThumbnail.findAllByImage(image)
-            thumbs.each { thumb ->
-                thumb.delete()
-            }
+            deleteRelatedArtefacts(image)
 
             // Delete from the index...
             elasticSearchService.deleteImage(image)
@@ -489,15 +452,56 @@ class ImageService {
         return false
     }
 
+    private def deleteRelatedArtefacts(Image image){
+
+        // need to delete it from user selections
+        def selected = SelectedImage.findAllByImage(image)
+        selected.each { selectedImage ->
+            selectedImage.delete()
+        }
+
+        // Need to delete tags
+        def tags = ImageTag.findAllByImage(image)
+        tags.each { tag ->
+            tag.delete()
+        }
+
+        // Delete keywords
+        def keywords = ImageKeyword.findAllByImage(image)
+        keywords.each { keyword ->
+            keyword.delete()
+        }
+
+        // If this image is a subimage, also need to delete any subimage rectangle records
+        def subimagesRef = Subimage.findAllBySubimage(image)
+        subimagesRef.each { subimage ->
+            subimage.delete()
+        }
+
+        // This image may also be a parent image
+        def subimages = Subimage.findAllByParentImage(image)
+        subimages.each { subimage ->
+            // need to detach this image from the child images, but we do not actually delete the sub images. They
+            // will live on as root images in their own right
+            subimage.subimage.parent = null
+            subimage.delete()
+        }
+
+        // thumbnail records...
+        def thumbs = ImageThumbnail.findAllByImage(image)
+        thumbs.each { thumb ->
+            thumb.delete()
+        }
+    }
+
     def deleteImagePurge(Image image) {
         if (image && image.dateDeleted) {
+            deleteRelatedArtefacts(image)
             imageStoreService.deleteImage(image.imageIdentifier)
             //hard delete
             image.delete(flush:true)
-
             return true
         }
-
         return false
     }
 
