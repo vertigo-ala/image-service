@@ -1,6 +1,7 @@
 alter table image add date_deleted timestamp;
 alter table image add recognised_license_id bigint;
 alter table image add occurrence_id character varying(255);
+alter table image add calibrated_by_user character varying(255);
 
 CREATE TABLE public.license (
     id bigint NOT NULL,

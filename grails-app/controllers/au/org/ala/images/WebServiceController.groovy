@@ -617,7 +617,8 @@ class WebServiceController {
     ])
     def getImageInfo() {
         def results = [success:false]
-        def image = Image.findByImageIdentifier(params.imageID as String)
+        def imageId = params.id ? params.id : params.imageID
+        def image = Image.findByImageIdentifier(imageId as String)
         if (image) {
             results.success = true
             addImageInfoToMap(image, results, params.boolean("includeTags"), params.boolean("includeMetadata"))
@@ -741,22 +742,6 @@ class WebServiceController {
         renderResults(results)
     }
 
-    @ApiOperation(
-            value = "Create Subimage",
-            nickname = "createSubimage",
-            produces = "application/json",
-            consumes = "application/json",
-            httpMethod = "PUT",
-            response = Map.class,
-            authorizations = @Authorization(value="apiKey"),
-            tags = ["JSON services for accessing and updating metadata"]
-    )
-    @ApiResponses([
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
-    )
-    @RequireApiKey
     def createSubimage() {
         def image = Image.findByImageIdentifier(params.id as String)
         if (!image) {
@@ -790,6 +775,57 @@ class WebServiceController {
         def subimage = imageService.createSubimage(image, x, y, width, height, userId, [title:title, description:description] )
         renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
     }
+
+    @ApiOperation(
+            value = "Create Subimage",
+            nickname = "subimage",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "PUT",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @RequireApiKey
+    def subimage() {
+        def image = Image.findByImageIdentifier(params.id as String)
+        if (!image) {
+            renderResults([success:false, message:"Image not found: ${params.id}"])
+            return
+        }
+
+        if (!params.x || !params.y || !params.height || !params.width) {
+            renderResults([success:false, message:"Rectangle not correctly specified. Use x, y, height and width params"])
+            return
+        }
+
+        def x = params.int('x')
+        def y = params.int('y')
+        def height = params.int('height')
+        def width = params.int('width')
+        def title = params.title
+        def description = params.description
+
+        if (height == 0 || width == 0) {
+            renderResults([success:false, message:"Rectangle not correctly specified. Height and width cannot be zero"])
+            return
+        }
+
+        def userId = getUserIdForRequest(request)
+        if(!userId){
+            renderResults([success:false, message:"User needs to be logged in to create sub image"])
+            return
+        }
+
+        def subimage = imageService.createSubimage(image, x, y, width, height, userId, [title:title, description:description] )
+        renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
+    }
+
 
     def getSubimageRectangles() {
 
@@ -1182,13 +1218,13 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Find images by image metadata",
+            value = "Find images by image metadata - deprecated. Use /search instead",
             nickname = "findImagesByMetadata",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
             response = Map.class,
-            tags = ["Search", "Deprecated"]
+            tags = ["Deprecated"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -1509,7 +1545,6 @@ class WebServiceController {
     }
 
     def calibrateImageScale() {
-
         def userId = getUserIdForRequest(request)
         def image = Image.findByImageIdentifier(params.imageId)
         def units = params.units ?: "mm"
@@ -1518,9 +1553,9 @@ class WebServiceController {
         if (image && units && pixelLength && actualLength) {
             def pixelsPerMM = imageService.calibrateImageScale(image, pixelLength, actualLength, units, userId)
             renderResults([success: true, pixelsPerMM:pixelsPerMM, message:"Image is scaled at ${pixelsPerMM} pixels per mm"])
-            return
+        } else {
+            renderResults([success: false, message: 'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
         }
-        renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
     }
 
     def resetImageCalibration() {

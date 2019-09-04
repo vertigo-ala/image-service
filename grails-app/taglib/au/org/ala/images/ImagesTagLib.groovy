@@ -275,7 +275,7 @@ class ImagesTagLib {
     }
 
     def imageMetadata = { attrs, body ->
-        if(attrs.image[attrs.field]){
+        if (attrs.image[attrs.field]){
             out << attrs.image[attrs.field]
         } else if(attrs.resource && attrs.resource.imageMetadata && attrs.resource.imageMetadata[attrs.field]){
             out << attrs.resource.imageMetadata[attrs.field] + "<small> (resource level metadata) </small>"

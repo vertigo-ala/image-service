@@ -46,6 +46,7 @@ class Image {
     @SearchableProperty(description="Associated occurrence ID.")
     String occurrenceId
 
+    String calibratedByUser
     License recognisedLicense
 
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The height of the thumbnail in pixels")
@@ -61,12 +62,6 @@ class Image {
     Double mmPerPixel
 
     Integer squareThumbSize
-
-
-
-
-
-
 
     static hasMany = [keywords:ImageKeyword, metadata: ImageMetaDataItem, tags: ImageTag]
 
@@ -97,6 +92,7 @@ class Image {
         thumbWidth nullable: true
         squareThumbSize nullable: true
         mmPerPixel nullable: true
+        calibratedByUser nullable:true
         harvestable nullable: true
 
         dateDeleted  nullable: true
