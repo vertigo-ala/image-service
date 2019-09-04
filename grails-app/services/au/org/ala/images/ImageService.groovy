@@ -489,6 +489,18 @@ class ImageService {
         return false
     }
 
+    def deleteImagePurge(Image image) {
+        if (image && image.dateDeleted) {
+            imageStoreService.deleteImage(image.imageIdentifier)
+            //hard delete
+            image.delete(flush:true)
+
+            return true
+        }
+
+        return false
+    }
+
     List<File> listStagedImages() {
         def files = []
         def inboxLocation = grailsApplication.config.imageservice.imagestore.inbox as String
@@ -739,8 +751,8 @@ class ImageService {
             def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId, metadata).image
 
             def subimageRect = new Subimage(parentImage: parentImage, subimage: subimage, x: x, y: y, height: height, width: width)
-            subimageRect.save()
             subimage.parent = parentImage
+            subimageRect.save(flush:true)
 
             auditService.log(parentImage, "Subimage created ${subimage.imageIdentifier}", userId)
             auditService.log(subimage, "Subimage created from parent image ${parentImage.imageIdentifier}", userId)
@@ -826,7 +838,8 @@ class ImageService {
 
     def resetImageLinearScale(Image image) {
         image.mmPerPixel = null;
-        image.save()
+        image.calibratedByUser = null
+        image.save(flush:true)
         scheduleImageIndex(image.id)
     }
 
@@ -850,7 +863,8 @@ class ImageService {
         def mmPerPixel = (actualLength * scale) / pixelLength
 
         image.mmPerPixel = mmPerPixel
-        image.save()
+        image.calibratedByUser = userId
+        image.save(flush:true)
         scheduleImageIndex(image.id)
 
         return mmPerPixel

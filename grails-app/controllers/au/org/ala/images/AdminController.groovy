@@ -112,23 +112,27 @@ class AdminController {
             def headers = []
             def batch = []
 
-            file.inputStream.eachCsvLine { tokens ->
-                if (lineCount == 0) {
-                    headers = tokens
-                } else {
-                    def m = [:]
-                    for (int i = 0; i < headers.size(); ++i) {
-                        m[headers[i]] = tokens[i]
+            try {
+                file.inputStream.eachCsvLine { tokens ->
+                    if (lineCount == 0) {
+                        headers = tokens
+                    } else {
+                        def m = [:]
+                        for (int i = 0; i < headers.size(); ++i) {
+                            m[headers[i]] = tokens[i]
+                        }
+                        batch << m
                     }
-                    batch << m
+                    lineCount++
                 }
-                lineCount++
+                scheduleImagesUpload(batch, authService.getUserId())
+                renderResults([success: true, message:'Image upload started'])
+            } catch (Exception e){
+                log.error(e.getMessage(), e)
+                renderResults([success: false, message: "Problem reading CSV file. Please check contents."])
             }
-
-            scheduleImagesUpload(batch, '-2')
-            renderResults([success: true, message:'Image upload started'])
         } else {
-            renderResults([success: false, message: "Expected multipart request containing 'csvfile' file parameter"])
+            renderResults([success: false, message: "Problem reading CSV file from upload."])
         }
     }
 
@@ -143,6 +147,12 @@ class AdminController {
             batchService.addTaskToBatch(batchId, new UploadFromUrlTask(srcImage, imageService, userId))
             imageCount++
         }
+    }
+
+    def scheduleDeletedImagesPurge(){
+        imageService.scheduleBackgroundTask(new DeletedImagesPurgeBackgroundTask(imageService))
+        flash.message = "Deleted images purge started. Refresh dashboard for progress."
+        redirect(action:'dashboard')
     }
 
     def licences(){}

@@ -270,15 +270,17 @@ class ElasticSearchService {
         } else if (imageSize < 1000000){
             data.imageSize = "less than 1m"
         } else {
-            data.imageSize = (imageSize / 1000000).intValue() +"m"
+            data.imageSize = (imageSize / 1000000).intValue() + "m"
         }
         data
     }
 
     def deleteImage(Image image) {
         if (image) {
-            DeleteResponse response = client.delete(new DeleteRequest(grailsApplication.config.elasticsearch.indexName, image.id.toString()), RequestOptions.DEFAULT)
-            log.info(response.status())
+            DeleteResponse response = client.delete(new DeleteRequest(grailsApplication.config.elasticsearch.indexName, image.imageIdentifier), RequestOptions.DEFAULT)
+            if (response.status() && response.status().status){
+                log.info(response.status().status.toString())
+            }
         }
     }
 
