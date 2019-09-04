@@ -264,3 +264,10 @@ elasticsearch:
   port2: 9201
   maxFacetSize: 10000
   maxOffset: 10000
+
+# External links
+collectory:
+    baseURL: "https://collections.ala.org.au"
+biocache:
+    baseURL: "https://biocache.ala.org.au"
+

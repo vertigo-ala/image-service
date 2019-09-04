@@ -16,6 +16,16 @@
         <td class="property-name">Image Identifier</td>
         <td class="property-value">${imageInstance.imageIdentifier}</td>
     </tr>
+    <g:if test="${imageInstance.occurrenceId}">
+        <tr>
+            <td class="property-name">Occurrence ID</td>
+            <td class="property-value">
+                <a href="${grailsApplication.config.biocache.baseURL}/occurrences/${imageInstance.occurrenceId}}">
+                ${imageInstance.occurrenceId}
+                </a>
+            </td>
+        </tr>
+    </g:if>
     <tr>
         <td class="property-name">Title</td>
         <td class="property-value">${imageInstance.title}</td>
