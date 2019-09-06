@@ -251,7 +251,7 @@ analytics:
     URL: "https://www.google-analytics.com"
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
-    viewID: "ga:8736349"
+    viewID: "ga:197294038"
     trackThumbnails: false
     trackLargeViewer: false
     trackDetailedView: false

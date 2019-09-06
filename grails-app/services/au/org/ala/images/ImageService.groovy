@@ -181,6 +181,12 @@ class ImageService {
             }
         }
 
+        //try to match licence
+        LicenseMapping licenceMapping = LicenseMapping.findByValue(image.license)
+        if (licenceMapping){
+            image.recognisedLicense = licenceMapping.license
+        }
+
         image.save(flush:true, failOnError: true)
 
         new ImageStoreResult(image, preExisting)
@@ -195,8 +201,6 @@ class ImageService {
         }
         imagePropertyMap.get(propertyName.toLowerCase())
     }
-
-
 
     def schedulePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
         scheduleArtifactGeneration(imageId, uploaderId)
