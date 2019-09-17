@@ -51,3 +51,6 @@ DROP TABLE temp_image_full_url;
 
 ALTER TABLE image RENAME COLUMN original_filename TO original_filename_old;
 ALTER TABLE image RENAME COLUMN full_original_url TO original_filename;
+
+/* For images that where manually loaded without a source URL */
+update image set original_filename = original_filename_old where original_filename is null;

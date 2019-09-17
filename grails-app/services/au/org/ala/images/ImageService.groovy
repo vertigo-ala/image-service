@@ -4,6 +4,7 @@ import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
 import groovy.sql.Sql
+import groovy.transform.Synchronized
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
 import org.apache.commons.imaging.common.ImageMetadata
@@ -61,7 +62,7 @@ class ImageService {
                     //check file exists
                     def file = imageStoreService.getOriginalImageFile(image.imageIdentifier)
                     if (file.exists() && file.size() > 0){
-                        updateMetadata(image, metadata)
+                        scheduleMetadataUpdate(image.imageIdentifier, metadata)
                         return new ImageStoreResult(image, true)
                     }
                 }
@@ -125,19 +126,40 @@ class ImageService {
     }
 
     def clearTilingTaskQueueLength() {
-        return _tilingQueue.clear();
+        return _tilingQueue.clear()
     }
 
-    void updateMetadata(Image image, Map metadata = [:]) {
-        //update metadata
-        metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
-                    image[kvp.key] = kvp.value
+    @Synchronized
+    def updateMetadata(String imageId, Map metadata) {
+
+        def image = Image.findByImageIdentifier(imageId)
+
+        if (image) {
+            boolean toSave = false
+            def toUpdate = [:]
+            metadata.each { kvp ->
+
+                if (image.hasProperty(kvp.key) && kvp.value) {
+                    if (!(kvp.key in ["dateTaken", "dateUploaded", "id"])) {
+                        if (image[kvp.key] != kvp.value) {
+                            toUpdate[kvp.key] = kvp.value
+                            toSave = true
+                        }
+                    }
                 }
             }
+            if (toSave) {
+                //this has been changed to use executeUpdate to avoid
+                // StaleStateExceptions which are thrown due to
+                // this method being called on the same image multiple times
+                // by multiple threads.
+                def query  = toUpdate.keySet().collect{"${it}=:${it}" }.join(", ")
+                def fullQuery = "update Image i set " + query +
+                        " where i.imageIdentifier =:imageIdentifier"
+                toUpdate['imageIdentifier'] = imageId
+                Image.executeUpdate(fullQuery, toUpdate)
+            }
         }
-        image.save(flush:true, failOnError: true)
     }
 
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
@@ -345,6 +367,10 @@ class ImageService {
 
     def scheduleLicenseUpdate(long imageId) {
         scheduleBackgroundTask(new LicenseMatchingBackgroundTask(imageId, imageService, elasticSearchService))
+    }
+
+    def scheduleMetadataUpdate(String imageIdentifier, Map metadata) {
+        scheduleBackgroundTask(new ImageMetadataUpdateBackgroundTask(imageIdentifier, metadata, imageService))
     }
 
     def scheduleImageIndex(long imageId) {
@@ -593,65 +619,56 @@ class ImageService {
     }
 
     def updateImageMetadata(Image image, Map metadata){
-
-        def imageUpdated = false
-        metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                image[kvp.key] = kvp.value
-                imageUpdated = true
-            }
-        }
-        if(imageUpdated){
-            image.save()
-        }
+        scheduleMetadataUpdate(image.imageIdentifier, metadata)
+//        imageService.updateMetadata(image.imageIdentifier, metadata)
     }
 
-    def setMetaDataItems(Image image, MetaDataSourceType source, Map metadata, String userId = "<unknown>") {
-        if (!userId) {
-            userId = "<unknown>"
-        }
-
-        metadata.each { kvp ->
-            def value = sanitizeString(kvp.value?.toString())
-            def key = kvp.key
-            if (image && StringUtils.isNotEmpty(key?.trim())) {
-
-                if (value.length() > 8000) {
-                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", userId)
-                    return false
-                }
-
-                // See if we already have an existing item...
-                def existing = ImageMetaDataItem.findByImageAndNameAndSource(image, key, source)
-                if (existing) {
-                    existing.value = value
-                } else {
-                    log.info("Storing metadata: ${image.title}, name: ${key}, value: ${value}, source: ${source}")
-                    if (key && value) {
-                        def md = new ImageMetaDataItem(image: image, name: key, value: value, source: source)
-                        md.save(failOnError: true)
-                        image.addToMetadata(md)
-                    }
-                }
-
-                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
-            } else {
-                logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
-            }
-        }
-        image.save()
-        return true
-    }
-
-
-    def setMetaDataItem(Long imageId, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
-        try {
-            def image = Image.lock(imageId)
-            setMetaDataItem(image, source, key, value, userId)
-        } catch(Exception e){
-           log.error("Error setting image ${imageId} :  ${key} = ${value}")
-        }
-    }
+//    def setMetaDataItems(Image image, MetaDataSourceType source, Map metadata, String userId = "<unknown>") {
+//        if (!userId) {
+//            userId = "<unknown>"
+//        }
+//
+//        metadata.each { kvp ->
+//            def value = sanitizeString(kvp.value?.toString())
+//            def key = kvp.key
+//            if (image && StringUtils.isNotEmpty(key?.trim())) {
+//
+//                if (value.length() > 8000) {
+//                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", userId)
+//                    return false
+//                }
+//
+//                // See if we already have an existing item...
+//                def existing = ImageMetaDataItem.findByImageAndNameAndSource(image, key, source)
+//                if (existing) {
+//                    existing.value = value
+//                } else {
+//                    log.info("Storing metadata: ${image.title}, name: ${key}, value: ${value}, source: ${source}")
+//                    if (key && value) {
+//                        def md = new ImageMetaDataItem(image: image, name: key, value: value, source: source)
+//                        md.save(failOnError: true)
+//                        image.addToMetadata(md)
+//                    }
+//                }
+//
+//                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
+//            } else {
+//                logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
+//            }
+//        }
+//        image.save()
+//        return true
+//    }
+//
+//
+//    def setMetaDataItem(Long imageId, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
+//        try {
+//            def image = Image.lock(imageId)
+//            setMetaDataItem(image, source, key, value, userId)
+//        } catch(Exception e){
+//           log.error("Error setting image ${imageId} :  ${key} = ${value}")
+//        }
+//    }
 
     def setMetaDataItem(Image image, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
 
@@ -814,35 +831,35 @@ class ImageService {
         }
     }
 
-    def createNextThumbnailJob() {
-
-        ImageBackgroundTask task = _backgroundQueue.find { bgt ->
-            def imageTask = bgt as ImageBackgroundTask
-            if (imageTask != null) {
-                if (imageTask.operation == ImageTaskType.Thumbnail) {
-                    if (_backgroundQueue.remove(imageTask)) {
-                        return true
-                    }
-                }
-            }
-            return false
-        }
-
-        if (task == null) {
-            return [success: false, message:'No thumbnail job available at this time.']
-        } else {
-            if (task) {
-                def image = Image.get(task.imageId)
-                // Create a new pending job
-                def ticket = UUID.randomUUID().toString()
-                def job = new OutsourcedJob(image: image, taskType: ImageTaskType.Thumbnail, expectedDurationInMinutes: 15, ticket: ticket)
-                job.save()
-                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket]
-            } else {
-                return [success:false, message: "Internal error!"]
-            }
-        }
-    }
+//    def createNextThumbnailJob() {
+//
+//        ImageBackgroundTask task = _backgroundQueue.find { bgt ->
+//            def imageTask = bgt as ImageBackgroundTask
+//            if (imageTask != null) {
+//                if (imageTask.operation == ImageTaskType.Thumbnail) {
+//                    if (_backgroundQueue.remove(imageTask)) {
+//                        return true
+//                    }
+//                }
+//            }
+//            return false
+//        }
+//
+//        if (task == null) {
+//            return [success: false, message:'No thumbnail job available at this time.']
+//        } else {
+//            if (task) {
+//                def image = Image.get(task.imageId)
+//                // Create a new pending job
+//                def ticket = UUID.randomUUID().toString()
+//                def job = new OutsourcedJob(image: image, taskType: ImageTaskType.Thumbnail, expectedDurationInMinutes: 15, ticket: ticket)
+//                job.save()
+//                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket]
+//            } else {
+//                return [success:false, message: "Internal error!"]
+//            }
+//        }
+//    }
 
     def resetImageLinearScale(Image image) {
         image.mmPerPixel = null;
