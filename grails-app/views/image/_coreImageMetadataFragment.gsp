@@ -20,7 +20,7 @@
         <tr>
             <td class="property-name">Occurrence ID</td>
             <td class="property-value">
-                <a href="${grailsApplication.config.biocache.baseURL}/occurrences/${imageInstance.occurrenceId}}">
+                <a href="${grailsApplication.config.biocache.baseURL}/occurrences/${imageInstance.occurrenceId}">
                     ${imageInstance.occurrenceId}
                 </a>
             </td>
