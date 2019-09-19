@@ -575,6 +575,7 @@ class WebServiceController {
         results.license = image.license ?: ''
         results.recognisedLicence = image.recognisedLicense
         results.dataResourceUid = image.dataResourceUid ?: ''
+        results.occurrenceID = image.occurrenceId ?: ''
 
         collectoryService.addMetadataForResource(results)
 

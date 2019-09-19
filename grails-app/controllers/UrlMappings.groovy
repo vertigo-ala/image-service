@@ -61,6 +61,7 @@ class UrlMappings {
         "/ws/analytics/dataResource/$dataResourceUID"(controller: "analytics", action: "byDataResource")
 
         name image_url: "/image/$imageId"(controller: "image", action: "details")
+        name image_ws_url: "/ws/image/$imageId"(controller: "webService", action: "getImageInfo")
 
         //tags
         "/ws/tags"(controller: "webService", action: "getTagModel")
