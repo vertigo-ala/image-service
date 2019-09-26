@@ -204,10 +204,9 @@ class ImageService {
         }
 
         //try to match licence
-        LicenseMapping licenceMapping = LicenseMapping.findByValue(image.license)
-        if (licenceMapping){
-            image.recognisedLicense = licenceMapping.license
-        }
+
+        updateLicence(image)
+
 
         image.save(flush:true, failOnError: true)
 
@@ -290,11 +289,17 @@ class ImageService {
 
     def updateLicence(Image image){
         if(image.license){
-            def licenceMapping = LicenseMapping.findByValue(image.license)
-            if (licenceMapping){
-                image.recognisedLicense = licenceMapping.license
+
+            def license = License.findByAcronymOrNameOrUrlOrImageUrl(image.license,image.license,image.license,image.license)
+            if (license){
+                image.recognisedLicense = license
             } else {
-                image.recognisedLicense = null
+                def licenceMapping = LicenseMapping.findByValue(image.license)
+                if (licenceMapping){
+                    image.recognisedLicense = licenceMapping.license
+                } else {
+                    image.recognisedLicense = null
+                }
             }
         } else {
             image.recognisedLicense = null

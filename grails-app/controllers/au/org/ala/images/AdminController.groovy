@@ -4,6 +4,7 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.web.AlaSecured
 import au.org.ala.web.CASRoles
 import com.opencsv.CSVReader
+import com.opencsv.CSVWriter
 import grails.converters.JSON
 import grails.converters.XML
 import groovy.json.JsonSlurper
@@ -87,7 +88,19 @@ class AdminController {
         }
 
         def userId = AuthenticationUtils.getUserId(request) ?: "<anonymous>"
-        ImageStoreResult storeResult = imageService.storeImage(file, userId)
+
+        //retrieve metadata
+        def metadata = [
+           title: params.title,
+           creator: params.creator,
+           description: params.description,
+           license: params.license,
+           rights: params.rights,
+           rightsHolder: params.rightsHolder,
+           dataResourceUid: params.dataResourceUid,
+        ]
+
+        ImageStoreResult storeResult = imageService.storeImage(file, userId, metadata)
         if (storeResult.image) {
             imageService.schedulePostIngestTasks(storeResult.image.id, storeResult.image.imageIdentifier, storeResult.image.originalFilename, userId)
         } else {
@@ -155,7 +168,23 @@ class AdminController {
         redirect(action:'dashboard')
     }
 
-    def licences(){}
+    def licences(){
+        //get current licence content
+        def licenceCSV = new StringWriter()
+        def csvWriter = new CSVWriter(licenceCSV)
+        License.findAll().each {
+            String[] licence = [it.acronym, it.name, it.url,  it.imageUrl]
+            csvWriter.writeNext(licence)
+        }
+
+        def licenceCSVMappings = new StringWriter()
+        def csvWriter2 = new CSVWriter(licenceCSVMappings)
+        LicenseMapping.findAll().each {
+            String[] licenceCSVMapping = [it.license.acronym, it.value]
+            csvWriter2.writeNext(licenceCSVMapping)
+        }
+        [licenceCSV:licenceCSV.toString(), licenceCSVMapping:licenceCSVMappings.toString()]
+    }
 
     def updateStoredLicences(){
 
@@ -282,7 +311,7 @@ class AdminController {
     }
 
     def reindexImages() {
-        flash.message = "Reindexing scheduled. Monitor progress using the search."
+        flash.message = "Reindexing scheduled. Monitor progress using the dashboard."
         imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService, elasticSearchService))
         redirect(action:'tools')
     }

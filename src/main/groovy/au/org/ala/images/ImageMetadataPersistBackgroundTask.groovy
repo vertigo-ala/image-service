@@ -2,7 +2,6 @@ package au.org.ala.images
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.lang.StringUtils
-import org.apache.log4j.Logger
 import org.hibernate.Session
 
 class ImageMetadataPersistBackgroundTask extends BackgroundTask {
@@ -14,7 +13,6 @@ class ImageMetadataPersistBackgroundTask extends BackgroundTask {
     String _uploaderId
     String _imageIdentifier
     String _originalFilename
-    private Logger log = Logger.getLogger(ImageMetadataPersistBackgroundTask.class)
 
     ImageMetadataPersistBackgroundTask(Long imageId, String imageIdentifier, String originalFilename, MetaDataSourceType metaDataSourceType, String uploaderId, ImageService imageService, ImageStoreService imageStoreService) {
         _imageId = imageId
@@ -48,14 +46,14 @@ class ImageMetadataPersistBackgroundTask extends BackgroundTask {
                 }
             }
         } catch (Exception e){
-            log.error(e.getMessage(), e)
+            e.printStackTrace()
         } finally {
             if (session){
                 session.getTransaction().commit()
                 session.close()
             }
         }
-        log.debug("Metadata update for "+ _imageId)
+        println("Metadata update for "+ _imageId)
     }
 
     private static String sanitizeString(Object value) {

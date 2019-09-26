@@ -50,8 +50,7 @@
             plugins: [
                 SwaggerUIBundle.plugins.DownloadUrl
             ],
-            layout: "StandaloneLayout",
-            validatorUrl: "" //validation disabled due to duplicate operation Swagger annotation bug
+            layout: "StandaloneLayout"
         })
         // End Swagger UI call region
         window.ui = ui

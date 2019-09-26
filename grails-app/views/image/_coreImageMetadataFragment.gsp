@@ -16,16 +16,6 @@
         <td class="property-name">Image Identifier</td>
         <td class="property-value">${imageInstance.imageIdentifier}</td>
     </tr>
-    <g:if test="${imageInstance.occurrenceId}">
-        <tr>
-            <td class="property-name">Occurrence ID</td>
-            <td class="property-value">
-                <a href="${grailsApplication.config.biocache.baseURL}/occurrences/${imageInstance.occurrenceId}">
-                    ${imageInstance.occurrenceId}
-                </a>
-            </td>
-        </tr>
-    </g:if>
     <tr>
         <td class="property-name">Title</td>
         <td class="property-value">${imageInstance.title}</td>
@@ -136,7 +126,7 @@
     </g:if>
     <tr>
         <td colspan="2">
-            <g:link mapping="image_ws_url" params="[imageId:imageInstance.imageIdentifier,includeMetadata:true,includeTags:true]" title="View JSON metadata" class="btn btn-default">
+            <g:link controller="webService" action="getImageInfo" params="[id:imageInstance.imageIdentifier,includeMetadata:true,includeTags:true]" title="View JSON metadata" class="btn btn-default">
                 <i class="glyphicon glyphicon-wrench"> </i>
             </g:link>
             <g:if test="${isImage}">
