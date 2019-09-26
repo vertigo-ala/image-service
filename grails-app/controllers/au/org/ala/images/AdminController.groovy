@@ -282,7 +282,7 @@ class AdminController {
     }
 
     def reindexImages() {
-        flash.message = "Reindexing scheduled. Monitor progress using the dashboard."
+        flash.message = "Reindexing scheduled. Monitor progress using the search."
         imageService.scheduleBackgroundTask(new ScheduleReindexAllImagesTask(imageService, elasticSearchService))
         redirect(action:'tools')
     }

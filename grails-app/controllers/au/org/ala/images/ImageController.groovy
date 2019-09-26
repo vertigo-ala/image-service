@@ -337,7 +337,7 @@ class ImageController {
     @ApiOperation(
             value = "Get original image",
             nickname = "{id}",
-            notes = "To get an image, supply an Accept-Content header with a value of 'image/jpeg'",
+            notes = "To get an image, supply an Accept HTTP Header with a value of 'image/jpeg'",
             produces = "image/jpeg",
             httpMethod = "GET"
     )
@@ -354,7 +354,7 @@ class ImageController {
             if (imageInstance) {
                 def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
                 boolean contentDisposition = params.boolean("contentDisposition")
-                proxyImageRequest(response, imageUrl, imageInstance.imageIdentifier, imageInstance.extension, (int) imageInstance.fileSize ?: 0, contentDisposition)
+                proxyImageRequest(response, imageUrl, imageInstance.imageIdentifier, imageInstance.extension, imageInstance.mimeType, (int) imageInstance.fileSize ?: 0, contentDisposition)
                 if (grailsApplication.config.analytics.trackDetailedView.toBoolean()) {
                     sendAnalytics(imageInstance, 'imageview')
                 }
