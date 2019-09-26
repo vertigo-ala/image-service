@@ -244,14 +244,14 @@ swagger:
                 in: "header"
                 name: "Authorization"
 
-facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize", "fileType", "format", "dateUploadedYearMonth"]
+facets: ["recognisedLicence", "dataResourceUid", "creator.keyword", "imageSize", "fileType", "format", "dateUploadedYearMonth"]
 
 analytics:
     credentialsJson: "/data/image-service/config/google-analytics.json"
     URL: "https://www.google-analytics.com"
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
-    viewID: "ga:8736349"
+    viewID: "ga:197294038"
     trackThumbnails: false
     trackLargeViewer: false
     trackDetailedView: false
@@ -264,3 +264,10 @@ elasticsearch:
   port2: 9201
   maxFacetSize: 10000
   maxOffset: 10000
+
+# External links
+collectory:
+    baseURL: "https://collections.ala.org.au"
+biocache:
+    baseURL: "https://biocache.ala.org.au"
+

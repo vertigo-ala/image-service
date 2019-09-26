@@ -575,6 +575,7 @@ class WebServiceController {
         results.license = image.license ?: ''
         results.recognisedLicence = image.recognisedLicense
         results.dataResourceUid = image.dataResourceUid ?: ''
+        results.occurrenceID = image.occurrenceId ?: ''
 
         collectoryService.addMetadataForResource(results)
 
@@ -885,8 +886,8 @@ class WebServiceController {
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
     @ApiImplicitParams([
-            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
-            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+            @ApiImplicitParam(name = "q", paramType = "query", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "query", required = false, value = "Filter Query", dataType = "string")
     ])
     def search(){
         def ct = new CodeTimer("Image list")
@@ -928,9 +929,9 @@ class WebServiceController {
             @ApiResponse(code = 404, message = "Image Not Found")]
     )
     @ApiImplicitParams([
-            @ApiImplicitParam(name = "facet", paramType = "path", required = true, value = "Facet", dataType = "string"),
-            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
-            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+            @ApiImplicitParam(name = "facet", paramType = "query", required = true, value = "Facet", dataType = "string"),
+            @ApiImplicitParam(name = "q", paramType = "query", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "query", required = false, value = "Filter Query", dataType = "string")
     ])
     def facet(){
 
