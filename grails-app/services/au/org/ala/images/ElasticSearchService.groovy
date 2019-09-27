@@ -30,10 +30,7 @@ import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestClient
 import org.elasticsearch.client.RestHighLevelClient
-import org.elasticsearch.cluster.ClusterState
-import org.elasticsearch.cluster.metadata.IndexMetaData
 import org.elasticsearch.index.query.BoolQueryBuilder
-import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryStringQueryBuilder
 import org.elasticsearch.search.Scroll
@@ -615,7 +612,13 @@ class ElasticSearchService {
                                        "type": "keyword"
                                     },                                                                     
                                     "creator": {
-                                      "type": "keyword"
+                                      "type": "text",
+                                      "fielddata": true,
+                                      "fields": {
+                                        "keyword": { 
+                                          "type": "keyword"
+                                        }
+                                      }                                      
                                     },                                                                     
                                     "width": {
                                       "type": "integer"
