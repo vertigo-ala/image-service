@@ -271,7 +271,6 @@ class ImageService {
 
     List<String> getAllThumbnailUrls(String imageIdentifier) {
         def results = []
-
         def image = Image.findByImageIdentifier(imageIdentifier)
         if (image) {
             def thumbs = ImageThumbnail.findAllByImage(image)
@@ -279,8 +278,7 @@ class ImageService {
                 results << imageStoreService.getThumbUrlByName(imageIdentifier, thumb.name)
             }
         }
-
-        return results
+        results
     }
 
     String getImageTilesRootUrl(String imageIdentifier) {
@@ -288,7 +286,7 @@ class ImageService {
     }
 
     def updateLicence(Image image){
-        if(image.license){
+        if (image.license){
 
             def license = License.findByAcronymOrNameOrUrlOrImageUrl(image.license,image.license,image.license,image.license)
             if (license){
@@ -309,15 +307,27 @@ class ImageService {
 
     //this is slow on large tables
     def updateLicences(){
-        println("Updating license mapping for all images")
+        log.info("Updating license mapping for all images")
         def licenseMapping = LicenseMapping.findAll()
         licenseMapping.each {
-            println("Updating license mapping for string matching: " + it.value)
+            log.info("Updating license mapping for string matching: " + it.value)
             Image.executeUpdate("Update Image i set i.recognisedLicense = :recognisedLicense " +
                     " where " +
                     " i.license = :license" +
                     "", [recognisedLicense: it.license, license: it.value])
         }
+
+        def licenses = License.findAll()
+        log.info("Updating licenses  for all images - using acronym, name and url")
+        licenses.each  { license ->
+            [license.url, license.name, license.acronym].each { licenceValue ->
+                Image.executeUpdate("Update Image i set i.recognisedLicense = :recognisedLicense " +
+                        " where " +
+                        " i.license = :license" +
+                        "", [recognisedLicense: license, license: licenceValue])
+            }
+        }
+        log.info("Licence refresh complete")
     }
 
     private static Date getImageTakenDate(byte[] bytes) {
