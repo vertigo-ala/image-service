@@ -15,6 +15,8 @@ import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang.StringUtils
+import org.apache.tika.mime.MimeType
+import org.apache.tika.mime.MimeTypes
 import org.grails.plugins.codecs.MD5CodecExtensionMethods
 import org.grails.plugins.codecs.SHA1CodecExtensionMethods
 import org.hibernate.FlushMode
@@ -68,7 +70,36 @@ class ImageService {
                 }
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
-                def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
+
+                def contentType = null
+
+                //detect from dc:mimetype field
+                if (metadata.mimeType){
+                    try {
+                        MimeType mimeType = new MimeTypes().forName(metadata.mimeType)
+                        metadata.extension = mimeType.getExtension()
+                        contentType = mimeType.toString()
+                    } catch (Exception e){
+                        log.debug("Un-parseable mime type supplied: " + metadata.mimeType)
+                    }
+                }
+
+                //detect from dc:format field
+                if(contentType == null && metadata.format){
+                    try {
+                        MimeType mimeType =  new MimeTypes().forName(metadata.format)
+                        metadata.extension = mimeType.getExtension()
+                        contentType = mimeType.toString()
+                    } catch (Exception e){
+                        log.debug("Un-parseable mime type supplied: " + metadata.format)
+                    }
+                }
+
+                //detect from file
+                if (contentType == null){
+                    contentType = detectMimeTypeFromBytes(bytes, imageUrl)
+                }
+
                 def result = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader, metadata)
                 auditService.log(result.image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
                 return result
@@ -172,7 +203,8 @@ class ImageService {
         def preExisting = false
         if (!image) {
             def sha1Hash = SHA1CodecExtensionMethods.encodeAsSHA1(bytes)
-            def extension = FilenameUtils.getExtension(originalFilename) ?: 'jpg'
+
+
             def imgDesc = imageStoreService.storeImage(bytes)
             // Create the image record, and set the various attributes
             image = new Image(
@@ -180,7 +212,22 @@ class ImageService {
                     contentMD5Hash: md5Hash,
                     contentSHA1Hash: sha1Hash,
                     uploader: uploaderId)
-            image.extension = extension
+
+
+            if(metadata.extension){
+                image.extension = metadata.extension
+            } else {
+                // this is known to be problematic
+                def extension =  FilenameUtils.getExtension(originalFilename) ?: 'jpg'
+                if (extension && extension.contains("?")){
+                    def cleanedExtension = extension.substring(0, extension.indexOf("?"))
+                    if (cleanedExtension && cleanedExtension.length() > 0){
+                        extension  = cleanedExtension
+                    }
+                }
+                image.extension = extension
+            }
+
             image.height = imgDesc.height
             image.width = imgDesc.width
             image.fileSize = filesize
@@ -204,9 +251,7 @@ class ImageService {
         }
 
         //try to match licence
-
         updateLicence(image)
-
 
         image.save(flush:true, failOnError: true)
 
@@ -285,7 +330,7 @@ class ImageService {
         return imageStoreService.getImageTilesRootUrl(imageIdentifier)
     }
 
-    def updateLicence(Image image){
+    Image updateLicence(Image image){
         if (image.license){
 
             def license = License.findByAcronymOrNameOrUrlOrImageUrl(image.license,image.license,image.license,image.license)
@@ -302,7 +347,7 @@ class ImageService {
         } else {
             image.recognisedLicense = null
         }
-        image.save(flush:true)
+        image
     }
 
     //this is slow on large tables

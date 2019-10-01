@@ -38,6 +38,22 @@ class ImageController {
         redirect(controller: 'search', action:'list')
     }
 
+    @Deprecated
+    def proxyImage() {
+        def imageIdentifier = imageService.getImageGUIDFromParams(params)
+        if (imageIdentifier) {
+            def imageUrl = imageService.getImageUrl(imageIdentifier)
+            boolean contentDisposition = params.boolean("contentDisposition")
+            proxyImageRequest(response, imageUrl, imageIdentifier, "", "", 0, contentDisposition)
+            if (grailsApplication.config.analytics.trackThumbnails.toBoolean()) {
+               def imageInstance = Image.findByImageIdentifier(imageIdentifier)
+               sendAnalytics(imageInstance, 'imageview')
+            }
+        } else {
+            response.sendError(404, "Image not found")
+        }
+    }
+
     @ApiOperation(
             value = "Get original image",
             nickname = "{id}/original",
@@ -51,15 +67,15 @@ class ImageController {
     @ApiImplicitParams([
             @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
     ])
-    def proxyImage() {
+    def getOriginalFile() {
         def imageIdentifier = imageService.getImageGUIDFromParams(params)
         if (imageIdentifier) {
+            def imageInstance = Image.findByImageIdentifier(imageIdentifier)
             def imageUrl = imageService.getImageUrl(imageIdentifier)
             boolean contentDisposition = params.boolean("contentDisposition")
-            proxyImageRequest(response, imageUrl, imageIdentifier, "", "", 0, contentDisposition)
+            proxyImageRequest(response, imageUrl, imageIdentifier, imageInstance.extension, imageInstance.mimeType, imageInstance.fileSize.toInteger(), contentDisposition)
             if (grailsApplication.config.analytics.trackThumbnails.toBoolean()) {
-               def imageInstance = Image.findByImageIdentifier(imageIdentifier)
-               sendAnalytics(imageInstance, 'imageview')
+                sendAnalytics(imageInstance, 'imageview')
             }
         } else {
             response.sendError(404, "Image not found")
@@ -96,9 +112,9 @@ class ImageController {
                 def imageInstance = Image.findByImageIdentifier(imageIdentifier)
                 if (imageInstance) {
                     if (imageInstance.mimeType.startsWith('audio')) {
-                        proxyImageRequest(response, grailsApplication.config.placeholder.sound.thumbnail as String, imageIdentifier, "jpg", "image/jpeg", 0, addContentDisposition)
+                        proxyImageRequest(response, grailsApplication.config.placeholder.sound.thumbnail as String, imageIdentifier, imageInstance.extension, imageInstance.mimeType, 0, addContentDisposition)
                     } else {
-                        proxyImageRequest(response, grailsApplication.config.placeholder.document.thumbnail as String, imageIdentifier, "jpg", "image/jpeg", 0, addContentDisposition)
+                        proxyImageRequest(response, grailsApplication.config.placeholder.document.thumbnail as String, imageIdentifier, imageInstance.extension, imageInstance.mimeType, 0, addContentDisposition)
                     }
                 } else {
                     response.sendError(404, "Resource not found")
@@ -202,6 +218,14 @@ class ImageController {
 
         def u = new URL(imageUrl)
         response.setContentType(mimeType ?: "image/jpeg")
+
+        // this is specifically for iNaturalist data, where extensions are currently parsed to strings like m4a?12312312
+        if (extension && extension.contains("?")){
+            def cleanedExtension = extension.substring(0, extension.indexOf("?"))
+            if (cleanedExtension && cleanedExtension.length() > 0){
+                extension  = cleanedExtension
+            }
+        }
 
         if (imageIdentifier && addContentDisposition) {
             response.setHeader("Content-disposition", "attachment;filename=${imageIdentifier}.${extension ?: "jpg"}")
