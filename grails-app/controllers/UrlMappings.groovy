@@ -50,7 +50,7 @@ class UrlMappings {
         "/image/$id/thumbnail"(controller: "image", action: "proxyImageThumbnail")
         "/image/$id/large"(controller: "image", action: "proxyImageThumbnailLarge")
         "/image/$id/tms"(controller: "image", action: "proxyImageTile")
-        "/image/$id/original"(controller: "image", action: "proxyImage")
+        "/image/$id/original"(controller: "image", action: "getOriginalFile")
 
         "/admin/image/$imageId"(controller: "admin", action: "image")
         "/image/details"(controller: "image", action: "details")
