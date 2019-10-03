@@ -107,7 +107,7 @@ class AdminController {
             imageService.scheduleNonImagePostIngestTasks(storeResult.image.id)
         }
         flash.message = "Image uploaded with identifier: ${storeResult.image?.imageIdentifier}"
-        redirect(action:'upload')
+        redirect(action:'upload', params:[newImageId:storeResult.image?.imageIdentifier])
     }
 
     def uploadImagesFromCSVFile() {
