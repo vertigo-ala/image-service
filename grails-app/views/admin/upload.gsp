@@ -10,11 +10,20 @@
         <asset:javascript src="images-client.js" />
     </head>
     <body>
-
         <content tag="pageTitle">Upload images</content>
         <div>
             <g:if test="${flash.message}">
-                <div class="alert alert-success" style="display: block">${flash.message}</div>
+                <div class="alert alert-success" style="display: block">
+                    <g:if test="${params.newImageId}">
+                        New image created - click to view
+                        <g:link controller="image" action="details" params="[imageId:params.newImageId]">
+                        ${params.newImageId}
+                        </g:link>
+                    </g:if>
+                    <g:else>
+                        ${flash.message}
+                    </g:else>
+                </div>
             </g:if>
             <g:if test="${flash.errorMessage}">
                 <div class="alert alert-danger" style="display: block">${flash.errorMessage}</div>
