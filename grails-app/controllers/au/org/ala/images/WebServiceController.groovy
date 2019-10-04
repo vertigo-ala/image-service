@@ -74,16 +74,15 @@ class WebServiceController {
     def deleteImageService() {
 
         def success = false
-        def message = ""
-
         def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
 
         if(!userId) {
             response.sendError(400, "Must include API key")
         } else {
+            def message = ""
             def image = Image.findByImageIdentifier(params.imageID as String)
             if (image) {
-                success = imageService.scheduleImageDeletion(image, userId)
+                success = imageService.scheduleImageDeletion(image.id, userId)
                 message = "Image scheduled for deletion."
             } else {
                 message = "Invalid image identifier."
