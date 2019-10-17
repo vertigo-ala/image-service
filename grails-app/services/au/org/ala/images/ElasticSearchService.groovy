@@ -680,6 +680,18 @@ class ElasticSearchService {
         boolQueryBuilder
     }
 
+    def filtered = ['class', 'active', 'metaClass', 'tags', 'keywords', 'metadata']
+
+    Map asMap(Image image) {
+
+        def props = image.properties.collect{it}.findAll { !filtered.contains(it.key) }
+        def map =  [:]
+        props.each {
+            map[it.key] = it.value
+        }
+        map
+    }
+
     Map searchByMetadata(String key, List<String> values, GrailsParameterMap params) {
 
         def properties = getMetadataKeys()
@@ -727,7 +739,8 @@ class ElasticSearchService {
                     def image =  Image.findByImageIdentifier(hit.id)
                     image.metadata = null
                     image.tags = null
-                    imageList << image
+                    def imageAsMap = asMap(image)
+                    imageList << imageAsMap
                 }
             }
             ct.stop(true)
@@ -737,7 +750,7 @@ class ElasticSearchService {
             imageList.each {
 
                 def caseInsensitiveMap = [:]
-                it.properties.each { k, v -> caseInsensitiveMap[k.toLowerCase()] = v }
+                it.each { k, v -> caseInsensitiveMap[k.toLowerCase()] = v }
                 def keyValue = caseInsensitiveMap.get(indexField.toLowerCase())
                 def list = resultsKeyedByValue.get(keyValue, [])
                 list << it

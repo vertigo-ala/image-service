@@ -362,7 +362,7 @@ class ImageController {
             value = "Get original image",
             nickname = "{id}",
             notes = "To get an image, supply an 'Accept' header with a value of 'image/jpeg'",
-            produces = "image/jpeg",
+            produces = "image/jpeg,application/json,text/html",
             httpMethod = "GET"
     )
     @ApiResponses([
@@ -373,23 +373,73 @@ class ImageController {
             @ApiImplicitParam(name = "id", paramType = "path", required = true, value = "Image Id", dataType = "string")
     ])
     def details() {
-        if (request.getHeader('accept') && request.getHeader('accept').indexOf(MediaType.IMAGE_JPEG.toString()) > -1) {
+
+        if (request.getHeader('accept')) {
+
+            boolean imageRequest = request.getHeader('accept').indexOf(MediaType.IMAGE_JPEG.toString()) > -1
+            boolean htmlRequest = request.getHeader('accept').indexOf("text/html") > -1
+
             def imageInstance = imageService.getImageFromParams(params)
-            if (imageInstance) {
-                def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
-                boolean contentDisposition = params.boolean("contentDisposition")
-                proxyImageRequest(response, imageUrl, imageInstance.imageIdentifier, imageInstance.extension, imageInstance.mimeType, (int) imageInstance.fileSize ?: 0, contentDisposition)
-                if (grailsApplication.config.analytics.trackDetailedView.toBoolean()) {
-                    sendAnalytics(imageInstance, 'imageview')
+            if (htmlRequest){
+                if (imageInstance) {
+                    getImageModel(imageInstance)
+                } else {
+                    flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
+                    redirect(action:'list', controller: 'search')
                 }
+            } else if(imageRequest){
+                if (imageInstance) {
+                    def imageUrl = imageService.getImageUrl(imageInstance.imageIdentifier)
+                    boolean contentDisposition = params.boolean("contentDisposition")
+                    proxyImageRequest(response, imageUrl, imageInstance.imageIdentifier, imageInstance.extension, imageInstance.mimeType, (int) imageInstance.fileSize ?: 0, contentDisposition)
+                    if (grailsApplication.config.analytics.trackDetailedView.toBoolean()) {
+                        sendAnalytics(imageInstance, 'imageview')
+                    }
+                } else {
+                    response.setStatus(404)
+                    proxyImageRequest(response, grailsApplication.config.placeholder.missing.thumbnail as String, null, null, "image/png", 0, false)
+                }
+            } else {
+                renderImageInstance(imageInstance)
             }
         } else {
+            //default to html view
             def image = imageService.getImageFromParams(params)
-            if (!image) {
+            if (image) {
+                getImageModel(image)
+            } else {
                 flash.errorMessage = "Could not find image with id ${params.int("id") ?: params.imageId }!"
                 redirect(action:'list', controller: 'search')
-            } else {
-                getImageModel(image)
+            }
+        }
+    }
+
+    private renderImageInstance(Object imageInstance) {
+        response.addHeader("Access-Control-Allow-Origin", "")
+        withFormat {
+            json {
+
+                if(imageInstance) {
+                    def jsonStr = imageInstance as JSON
+                    if (params.callback) {
+                        response.setContentType("text/javascript")
+                        render("${params.callback}(${jsonStr})")
+                    } else {
+                        response.setContentType("application/json")
+                        render(jsonStr)
+                    }
+                } else {
+                    response.status = 404
+                    render([success:false] as JSON)
+                }
+            }
+            xml {
+                if(imageInstance) {
+                    render(imageInstance as XML)
+                } else {
+                    response.status = 404
+                    render([success:false] as XML)
+                }
             }
         }
     }
