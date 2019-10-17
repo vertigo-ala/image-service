@@ -108,25 +108,16 @@ class ContentNegotiationSpec extends Specification {
      */
     void "Test accept: image/jpeg - 404"() {
         when:
-
+        def failresp
         def imageInBytes = new HTTPBuilder("http://localhost:${serverPort}/image/ABC").request(Method.GET, "image/jpeg") {
             requestContentType = "image/jpeg"
-            response.error = { resp, binary ->
-                return binary.bytes
+            response.failure = { failresp_inner ->
+                failresp = failresp_inner
             }
         }
 
-
-        MessageDigest md = MessageDigest.getInstance("MD5")
-        def md5Hash = md.digest(imageInBytes)
-
-        //compare image with source
-        def imageAsBytes = new URL("https://upload.wikimedia.org/wikipedia/commons/e/ed/Puma_concolor_camera_trap_Arizona_2.jpg").getBytes()
-
-        def md5Hash2 =  md.digest(imageAsBytes)
-
         then:
-        md5Hash == md5Hash2
+        assert failresp.status == 404
     }
 }
 
