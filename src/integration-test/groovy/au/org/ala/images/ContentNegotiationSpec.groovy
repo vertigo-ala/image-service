@@ -6,6 +6,10 @@ import grails.testing.mixin.integration.Integration
 import grails.transaction.Rollback
 import groovy.json.JsonSlurper
 import image.service.Application
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.DefaultServlet
+import org.eclipse.jetty.servlet.ServletContextHandler
+import org.eclipse.jetty.servlet.ServletHolder
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import spock.lang.Shared
@@ -27,7 +31,22 @@ class ContentNegotiationSpec extends Specification {
 
     def imageId
 
+    Server server
+
     def setup() {
+
+        // Create HTTP Server to emulate nginx
+        server = new Server(8880)
+        ServletContextHandler context = new ServletContextHandler()
+        ServletHolder defaultServ = new ServletHolder("default", DefaultServlet.class)
+        defaultServ.setInitParameter("resourceBase","/tmp/image-service")
+        defaultServ.setInitParameter("dirAllowed","true")
+        context.addServlet(defaultServ,"/")
+        server.setHandler(context)
+
+        // Start Server
+        server.start()
+
         MultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>()
         form.add("imageUrl", "https://upload.wikimedia.org/wikipedia/commons/e/ed/Puma_concolor_camera_trap_Arizona_2.jpg")
 
@@ -42,7 +61,12 @@ class ContentNegotiationSpec extends Specification {
         assert imageId != null
     }
 
-    def cleanup() {}
+    def cleanup() {
+        // Start Server
+        if (server != null) {
+            server.stop()
+        }
+    }
 
     /**
      * Testing equivalent of

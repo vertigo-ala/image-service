@@ -38,6 +38,9 @@ class ImageController {
         redirect(controller: 'search', action:'list')
     }
 
+    /**
+     * @deprecated use getOriginalFile instead.
+     */
     @Deprecated
     def proxyImage() {
         def imageIdentifier = imageService.getImageGUIDFromParams(params)
@@ -55,7 +58,7 @@ class ImageController {
     }
 
     @ApiOperation(
-            value = "Get original image",
+            value = "Get original image, sound or video file.",
             nickname = "{id}/original",
             produces = "image/jpeg",
             httpMethod = "GET"
@@ -82,6 +85,10 @@ class ImageController {
         }
     }
 
+    /**
+     * This method serves the image from the file system where possible for better performance.
+     * proxyImageThumbnail is used heavily by applications rendering search results (biocache, BIE).
+     */
     @ApiOperation(
             value = "Get image thumbnail",
             nickname = "{id}/thumbnail",
@@ -125,11 +132,33 @@ class ImageController {
         }
     }
 
+    /**
+     * Serve the image file from the file system.
+     *
+     * @param response
+     * @param filePath
+     * @param imageIdentifier
+     * @param contentType
+     * @param extension
+     * @param addContentDisposition
+     * @return
+     */
     private def serveImageFile(response, String filePath, String imageIdentifier, String contentType, String extension, boolean addContentDisposition){
         def file = new File(filePath)
         serveImageFile(response, file, imageIdentifier, contentType, extension, addContentDisposition)
     }
 
+    /**
+     * Serve image from file system.
+     *
+     * @param response
+     * @param file
+     * @param imageIdentifier
+     * @param contentType
+     * @param extension
+     * @param addContentDisposition
+     * @return
+     */
     private def serveImageFile(response, File file, String imageIdentifier, String contentType, String extension, boolean addContentDisposition){
         response.setContentLength(file.size() as int)
         response.setContentType(contentType)
@@ -144,7 +173,7 @@ class ImageController {
     }
 
     @ApiOperation(
-            value = "Get image large version",
+            value = "Get image thumbnail large version",
             nickname = "{id}/large",
             produces = "image/jpeg",
             httpMethod = "GET"
