@@ -31,6 +31,7 @@ class ContentNegotiationSpec extends Specification {
 
     def imageId
 
+    def grailsApplication
     Server server
 
     def setup() {
@@ -39,7 +40,8 @@ class ContentNegotiationSpec extends Specification {
         server = new Server(8880)
         ServletContextHandler context = new ServletContextHandler()
         ServletHolder defaultServ = new ServletHolder("default", DefaultServlet.class)
-        defaultServ.setInitParameter("resourceBase","/tmp/image-service")
+        def imageStoreDir = new File(grailsApplication.config.imageservice.imagestore.root)
+        defaultServ.setInitParameter("resourceBase",imageStoreDir.getParent())
         defaultServ.setInitParameter("dirAllowed","true")
         context.addServlet(defaultServ,"/")
         server.setHandler(context)
@@ -145,5 +147,3 @@ class ContentNegotiationSpec extends Specification {
         assert failresp.status == 404
     }
 }
-
-
