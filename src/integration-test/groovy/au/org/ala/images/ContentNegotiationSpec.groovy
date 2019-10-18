@@ -5,7 +5,6 @@ import grails.plugins.rest.client.RestResponse
 import grails.testing.mixin.integration.Integration
 import grails.transaction.Rollback
 import groovy.json.JsonSlurper
-import groovyx.net.http.HTTPBuilder
 import image.service.Application
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
@@ -38,7 +37,9 @@ class ContentNegotiationSpec extends Specification {
         })
 
         def jsonResponse = new JsonSlurper().parseText(resp.body)
-        imageId  = jsonResponse.imageId
+        imageId = jsonResponse.imageId
+
+        assert imageId != null
     }
 
     def cleanup() {}
