@@ -612,8 +612,8 @@ class WebServiceController {
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
-            @ApiImplicitParam(name = "includeTags", paramType = "query", required = false, value = "Include tags", dataType = "string"),
-            @ApiImplicitParam(name = "includeMetadata", paramType = "query", required = false, value = "Include metadata", dataType = "string")
+            @ApiImplicitParam(name = "includeTags", paramType = "query", required = false, value = "Include tags", dataType = "boolean"),
+            @ApiImplicitParam(name = "includeMetadata", paramType = "query", required = false, value = "Include metadata", dataType = "boolean")
     ])
     def getImageInfo() {
         def results = [success:false]
@@ -1255,6 +1255,22 @@ class WebServiceController {
             def totalCount = 0
             results.values().each {
                 totalCount = totalCount + it.size()
+            }
+
+            //add additional fields for backwards compatibility
+            results.each { id, metadataItems ->
+                metadataItems.each { metadata ->
+                    metadata["imageId"] = metadata.imageIdentifier
+                    metadata["tileZoomLevels"] = metadata.zoomLevels
+                    metadata["filesize"] = metadata.fileSize
+                    metadata["imageUrl"] = imageService.getImageUrl(metadata.imageIdentifier)
+                    metadata["largeThumbUrl"] = imageService.getImageThumbLargeUrl(metadata.imageIdentifier)
+                    metadata["squareThumbUrl"]  = imageService.getImageSquareThumbUrl(metadata.imageIdentifier)
+                    metadata["thumbUrl"]  = imageService.getImageThumbUrl(metadata.imageIdentifier)
+                    metadata["tilesUrlPattern"]  = imageService.getImageTilesRootUrl(metadata.imageIdentifier) + "/{z}/{x}/{y}.png"
+                    metadata.remove("fileSize")
+                    metadata.remove("zoomLevels")
+                }
             }
 
             renderResults([success: true, images: results, count: totalCount])

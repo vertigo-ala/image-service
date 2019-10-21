@@ -11,6 +11,10 @@
         <style>
             td.property-value { font-weight: bold !important; }
             .audiojs { width: 100%; }
+            .audiojs .play-pause {
+                padding-left:0px;
+                padding-right:5px;
+            }
             .tab-pane { padding-top: 20px !important; }
             .tabbable { font-size: 9pt; margin-top:10px; }
             div#main { padding-top: 0px; }
