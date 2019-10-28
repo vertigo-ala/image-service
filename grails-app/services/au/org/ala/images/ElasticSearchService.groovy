@@ -619,7 +619,25 @@ class ElasticSearchService {
                                           "type": "keyword"
                                         }
                                       }                                      
-                                    },                                                                     
+                                    },          
+                                    "title": {
+                                      "type": "text",
+                                      "fielddata": true,
+                                      "fields": {
+                                        "keyword": { 
+                                          "type": "keyword"
+                                        }
+                                      }                                      
+                                    }, 
+                                    "description": {
+                                      "type": "text",
+                                      "fielddata": true,
+                                      "fields": {
+                                        "keyword": { 
+                                          "type": "keyword"
+                                        }
+                                      }                                      
+                                    },                                                                                                                                    
                                     "width": {
                                       "type": "integer"
                                     },                                                                     
