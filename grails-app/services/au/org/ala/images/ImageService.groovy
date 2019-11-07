@@ -193,6 +193,7 @@ class ImageService {
         }
     }
 
+    @Synchronized
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
                           String uploaderId, Map metadata = [:]) {
 
@@ -240,20 +241,30 @@ class ImageService {
             preExisting = true
         }
 
-        //update metadata
-        metadata.each { kvp ->
-            def propertyName = hasImageCaseFriendlyProperty(image, kvp.key)
-            if (propertyName && kvp.value){
-                if(!(propertyName in ["dateTaken", "dateUploaded", "id"])){
-                    image[propertyName] = kvp.value
+        if (preExisting){
+            //stick it on a queue
+            scheduleMetadataUpdate(image.imageIdentifier, metadata)
+            scheduleLicenseUpdate(image.id)
+        } else {
+            //update metadata
+            metadata.each { kvp ->
+                def propertyName = hasImageCaseFriendlyProperty(image, kvp.key)
+                if (propertyName && kvp.value){
+                    if(!(propertyName in ["dateTaken", "dateUploaded", "id"])){
+                        image[propertyName] = kvp.value
+                    }
                 }
             }
+
+            //try to match licence
+            updateLicence(image)
+
+            try {
+                image.save(flush: true, failOnError: true)
+            } catch (Exception ex){
+                log.error("Problem ${preExisting ? 'updating' : 'saving'} image ${originalFilename}  - " + ex.getMessage(), ex)
+            }
         }
-
-        //try to match licence
-        updateLicence(image)
-
-        image.save(flush:true, failOnError: true)
 
         new ImageStoreResult(image, preExisting)
     }
