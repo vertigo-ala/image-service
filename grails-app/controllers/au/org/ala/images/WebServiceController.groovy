@@ -1462,7 +1462,7 @@ class WebServiceController {
 
                     storeResult = imageService.storeImage(file, userId, metadata)
                 } else {
-                    renderResults([success: false, message: "No url parameter, therefore expected multipart request!"], 400HttpStatus.SC_BAD_REQUEST)
+                    renderResults([success: false, message: "No url parameter, therefore expected multipart request!"], HttpStatus.SC_BAD_REQUEST)
                 }
             }
 
