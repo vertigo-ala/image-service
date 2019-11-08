@@ -230,7 +230,7 @@ class AdminController {
                             licenseMapping.save(flush: true, failOnError: true)
                         }
                     } else {
-                        log.error("Unable to find mapping for acronym" + line[0])
+                        log.warn("Unable to find mapping for acronym: " + line[0])
                     }
                 }
             }
