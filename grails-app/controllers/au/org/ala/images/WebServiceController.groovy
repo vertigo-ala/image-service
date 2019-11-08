@@ -44,7 +44,7 @@ class WebServiceController {
     Resource[] swaggerUiResources
 
     def swagger() {
-        if(params.json){
+        if (params.json){
             String swaggerJson = swaggerService.generateSwaggerDocument()
             render (contentType: MediaType.APPLICATION_JSON_UTF8_VALUE, text: swaggerJson)
         } else {
@@ -1608,8 +1608,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only POST is allowed")]
     )
     @RequireApiKey
     def scheduleUploadFromUrls() {
@@ -1652,16 +1651,15 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def getBatchStatus() {
         def status = batchService.getBatchStatus(params.batchId)
         if (status) {
             renderResults([success:true, taskCount: status.taskCount, tasksCompleted: status.tasksCompleted, batchId: status.batchId, timeStarted: status.timeStarted.getTime(), timeFinished: status.timeFinished?.getTime() ?: 0])
-            return
+        } else {
+            renderResults([success: false, message: 'Missing or invalid batchId'], HttpStatus.SC_BAD_REQUEST)
         }
-        renderResults([success:false, message:'Missing or invalid batchId'])
     }
 
     @ApiOperation(
@@ -1732,8 +1730,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def exportCSV(){
         response.setHeader("Content-disposition", "attachment;filename=images-export.csv.gz")
