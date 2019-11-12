@@ -545,21 +545,31 @@ class ElasticSearchService {
     private SearchSourceBuilder pagenateQuery(Map params) {
 
         int maxOffset = grailsApplication.config.elasticsearch.maxOffset as int
-
+        int maxPageSize = grailsApplication.config.elasticsearch.maxPageSize as int
+        int defaultPageSize = grailsApplication.config.elasticsearch.defaultPageSize as int
 
         SearchSourceBuilder source = new SearchSourceBuilder()
 
-        if(params.offset && params.max && (params.offset as int) + (params.max as int) >= maxOffset ){
-            //max default max offset is 10000 for elastic search
-            source.from(maxOffset - (params.max as int))
-            source.size(params.max ? params.max as int : 10)
-        } else {
-            if (params.offset && (params.offset as int)  >= maxOffset){
-                source.from(maxOffset) //limit to 10000
+        //set the page size
+        if (params.max){
+            if ((params.max as int) > maxPageSize){
+                source.size(maxPageSize)
             } else {
-                source.from(params.offset ? params.offset as int : 0)
+                source.size((params.max as int))
             }
-            source.size(params.max ? params.max as int : 10)
+        } else {
+            source.size(defaultPageSize)
+        }
+
+        //set the offset
+        if (params.offset){
+            if ((params.offset as int) > maxOffset){
+                source.from(maxOffset - source.size())
+            } else {
+                source.from((params.offset as int))
+            }
+        } else {
+            source.from(0)
         }
 
         source.sort('dateUploaded', SortOrder.DESC)
@@ -734,7 +744,7 @@ class ElasticSearchService {
             if (params?.max) {
                 searchSourceBuilder.size(params.int("max"))
             } else {
-                searchSourceBuilder.size(grailsApplication.config.elasticsearch.maxOffset) // probably way too many!
+                searchSourceBuilder.size(grailsApplication.config.elasticsearch.maxPage) // probably way too many!
             }
 
             if (params?.sort) {
