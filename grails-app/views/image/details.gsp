@@ -142,7 +142,7 @@
         </div>
 
         <asset:javascript src="ala/images-client.js"/>
-        <asset:javascript src="audiojs/audio.min.js"/>
+        <asset:javascript src="audio.min.js"/>
 
     <script>
 
@@ -191,7 +191,9 @@
             $('#viewerContainerId .document-icon').css('background-image', 'url("${grailsApplication.config.placeholder.sound.large}")');
             $('#viewerContainerId .document-icon').css('background-repeat', 'no-repeat');
             $('#viewerContainerId').css('background-position', 'center');
-            audiojs.createAll();
+
+
+            audiojs.createAll({});
             </g:elseif>
             <g:else>
             $('#viewerContainerId .document-icon').css('background-image', 'url("${grailsApplication.config.placeholder.document.large}")');
