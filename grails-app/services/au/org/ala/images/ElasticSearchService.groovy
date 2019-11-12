@@ -744,7 +744,7 @@ class ElasticSearchService {
             if (params?.max) {
                 searchSourceBuilder.size(params.int("max"))
             } else {
-                searchSourceBuilder.size(grailsApplication.config.elasticsearch.maxPage) // probably way too many!
+                searchSourceBuilder.size(grailsApplication.config.elasticsearch.maxPageSize) // probably way too many!
             }
 
             if (params?.sort) {
