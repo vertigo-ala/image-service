@@ -8,7 +8,7 @@ class UrlMappings {
         }
 
         "/ws/image/$imageID?(.$format)?"(controller: "webService") {
-                action = [GET: 'getImageInfo', DELETE: 'deleteImageService']
+                action = [GET: 'getImageInfo', DELETE: 'deleteImageService', HEAD: 'getImageInfo']
         }
         "/ws/updateMetadata/$imageIdentifier"(controller: "webService", action: "updateMetadata")
         "/ws/getImageInfo/$imageID"(controller: "webService", action:'getImageInfo')

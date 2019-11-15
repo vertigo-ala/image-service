@@ -266,6 +266,8 @@ elasticsearch:
   port2: 9201
   maxFacetSize: 10000
   maxOffset: 10000
+  maxPageSize: 200
+  defaultPageSize: 10
 
 # External links
 collectory:

@@ -44,7 +44,7 @@ class Image {
     String license
     @SearchableProperty(description="Associated occurrence ID.")
     String occurrenceId
-    @SearchableProperty(description="Calibratedf by user.")
+    @SearchableProperty(description="Calibrated by user.")
     String calibratedByUser
     License recognisedLicense
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The height of the thumbnail in pixels")

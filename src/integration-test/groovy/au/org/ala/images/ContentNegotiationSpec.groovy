@@ -106,6 +106,23 @@ class ContentNegotiationSpec extends Specification {
 
     /**
      * Testing equivalent of
+     * curl -X GET "https://images.ala.org.au/ws/image/ABC" -H "Accept: application/json"
+     */
+    void "Test WS accept: application/json with expected 404"() {
+        when:
+        RestResponse resp = rest.get("http://localhost:${serverPort}/image/ABC"){
+            accept "application/json"
+        }
+
+        def jsonResponse = new JsonSlurper().parseText(resp.body)
+
+        then:
+        resp.status == 404
+        jsonResponse.success == false
+    }
+
+    /**
+     * Testing equivalent of
      * curl -X GET "https://images.ala.org.au/image/1a6dc180-96b1-45df-87da-7d0912dddd4f" -H "Accept: image/jpeg"
      */
     void "Test accept: image/jpeg"() {
