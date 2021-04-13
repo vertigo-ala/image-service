@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Image Service API</title>
-    <link rel="stylesheet" type="text/css" href="/webjars/swagger-ui/3.20.9/swagger-ui.css" >
+    <link rel="stylesheet" type="text/css" href="${grailsApplication.config.server.contextPath}/webjars/swagger-ui/3.20.9/swagger-ui.css" >
     <link href="${grailsApplication.config.skin.favicon}" rel="shortcut icon"  type="image/x-icon"/>
     <style>
     html
@@ -31,14 +31,16 @@
 </head>
 
 <body>
+
+
 <div id="swagger-ui"></div>
-<script src="/webjars/swagger-ui/3.20.9/swagger-ui-bundle.js"> </script>
-<script src="/webjars/swagger-ui/3.20.9/swagger-ui-standalone-preset.js"> </script>
+<script src="${grailsApplication.config.server.contextPath}/webjars/swagger-ui/3.20.9/swagger-ui-bundle.js"> </script>
+<script src="${grailsApplication.config.server.contextPath}/webjars/swagger-ui/3.20.9/swagger-ui-standalone-preset.js"> </script>
 <script>
     window.onload = function() {
         // Begin Swagger UI call region
         const ui = SwaggerUIBundle({
-            url: "/ws/api",
+            url: "${g.createLink(controller: 'ws', params: [json:true])}",
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [
@@ -48,11 +50,15 @@
             plugins: [
                 SwaggerUIBundle.plugins.DownloadUrl
             ],
-            layout: "StandaloneLayout"
+            layout: "StandaloneLayout",
+            validatorUrl: "" //validation disabled due to duplicate operation Swagger annotation bug
         })
         // End Swagger UI call region
         window.ui = ui
     }
 </script>
+<style>
+    .topbar { display:none; }
+</style>
 </body>
 </html>

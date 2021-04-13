@@ -28,7 +28,6 @@ class Image {
     Integer width
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "", description = "The number of zoom levels available in the TMS tiles")
     Integer zoomLevels = 0
-
     @SearchableProperty(description="The UID for the data resource associated with this image.")
     String dataResourceUid
     @SearchableProperty(description="An entity primarily responsible for making the resource.")
@@ -43,14 +42,15 @@ class Image {
     String rightsHolder
     @SearchableProperty(description="A legal document giving official permission to do something with the resource.")
     String license
-
+    @SearchableProperty(description="Associated occurrence ID.")
+    String occurrenceId
+    @SearchableProperty(description="Calibrated by user.")
+    String calibratedByUser
     License recognisedLicense
-
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The height of the thumbnail in pixels")
     Integer thumbHeight = 0
     @SearchableProperty(valueType = CriteriaValueType.NumberRangeInteger, units = "pixels", description = "The width of the thumbnail in pixels")
     Integer thumbWidth = 0
-
     @SearchableProperty(valueType = CriteriaValueType.Boolean, description = "Should be harvested by the ALA")
     Boolean harvestable = false
 
@@ -89,9 +89,11 @@ class Image {
         thumbWidth nullable: true
         squareThumbSize nullable: true
         mmPerPixel nullable: true
+        calibratedByUser nullable:true
         harvestable nullable: true
 
         dateDeleted  nullable: true
+        occurrenceId nullable: true
     }
 
     static mapping = {
@@ -99,4 +101,6 @@ class Image {
         description length: 8096
         metadata cascade: 'all'
     }
+
+
 }

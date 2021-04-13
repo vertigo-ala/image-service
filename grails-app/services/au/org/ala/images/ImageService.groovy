@@ -4,6 +4,7 @@ import au.org.ala.images.metadata.MetadataExtractor
 import au.org.ala.images.thumb.ThumbnailingResult
 import au.org.ala.images.tiling.TileFormat
 import groovy.sql.Sql
+import groovy.transform.Synchronized
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.imaging.Imaging
 import org.apache.commons.imaging.common.ImageMetadata
@@ -14,6 +15,8 @@ import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang.StringUtils
+import org.apache.tika.mime.MimeType
+import org.apache.tika.mime.MimeTypes
 import org.grails.plugins.codecs.MD5CodecExtensionMethods
 import org.grails.plugins.codecs.SHA1CodecExtensionMethods
 import org.hibernate.FlushMode
@@ -38,6 +41,8 @@ class ImageService {
 
     private static int BACKGROUND_TASKS_BATCH_SIZE = 100
 
+    Map imagePropertyMap = null
+
     ImageStoreResult storeImage(MultipartFile imageFile, String uploader, Map metadata = [:]) {
 
         if (imageFile) {
@@ -59,13 +64,42 @@ class ImageService {
                     //check file exists
                     def file = imageStoreService.getOriginalImageFile(image.imageIdentifier)
                     if (file.exists() && file.size() > 0){
-                        updateMetadata(image, metadata)
+                        scheduleMetadataUpdate(image.imageIdentifier, metadata)
                         return new ImageStoreResult(image, true)
                     }
                 }
                 def url = new URL(imageUrl)
                 def bytes = url.bytes
-                def contentType = detectMimeTypeFromBytes(bytes, imageUrl)
+
+                def contentType = null
+
+                //detect from dc:mimetype field
+                if (metadata.mimeType){
+                    try {
+                        MimeType mimeType = new MimeTypes().forName(metadata.mimeType)
+                        metadata.extension = mimeType.getExtension()
+                        contentType = mimeType.toString()
+                    } catch (Exception e){
+                        log.debug("Un-parseable mime type supplied: " + metadata.mimeType)
+                    }
+                }
+
+                //detect from dc:format field
+                if(contentType == null && metadata.format){
+                    try {
+                        MimeType mimeType =  new MimeTypes().forName(metadata.format)
+                        metadata.extension = mimeType.getExtension()
+                        contentType = mimeType.toString()
+                    } catch (Exception e){
+                        log.debug("Un-parseable mime type supplied: " + metadata.format)
+                    }
+                }
+
+                //detect from file
+                if (contentType == null){
+                    contentType = detectMimeTypeFromBytes(bytes, imageUrl)
+                }
+
                 def result = storeImageBytes(bytes, imageUrl, bytes.length, contentType, uploader, metadata)
                 auditService.log(result.image, "Image downloaded from ${imageUrl}", uploader ?: "<unknown>")
                 return result
@@ -96,7 +130,7 @@ class ImageService {
                             result.success = true
                             auditService.log(storeResult.image, "Image (batch) downloaded from ${imageUrl}", uploader ?: "<unknown>")
                         } catch (Exception ex) {
-                            ex.printStackTrace()
+                            log.error("Problem storing image - " + ex.getMessage(), ex)
                             result.message = ex.message
                         }
                         results[imageUrl] = result
@@ -123,21 +157,43 @@ class ImageService {
     }
 
     def clearTilingTaskQueueLength() {
-        return _tilingQueue.clear();
+        return _tilingQueue.clear()
     }
 
-    void updateMetadata(Image image, Map metadata = [:]) {
-        //update metadata
-        metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
-                    image[kvp.key] = kvp.value
+    @Synchronized
+    def updateMetadata(String imageId, Map metadata) {
+
+        def image = Image.findByImageIdentifier(imageId)
+
+        if (image) {
+            boolean toSave = false
+            def toUpdate = [:]
+            metadata.each { kvp ->
+
+                if (image.hasProperty(kvp.key) && kvp.value) {
+                    if (!(kvp.key in ["dateTaken", "dateUploaded", "id"])) {
+                        if (image[kvp.key] != kvp.value) {
+                            toUpdate[kvp.key] = kvp.value
+                            toSave = true
+                        }
+                    }
                 }
             }
+            if (toSave) {
+                //this has been changed to use executeUpdate to avoid
+                // StaleStateExceptions which are thrown due to
+                // this method being called on the same image multiple times
+                // by multiple threads.
+                def query  = toUpdate.keySet().collect{"${it}=:${it}" }.join(", ")
+                def fullQuery = "update Image i set " + query +
+                        " where i.imageIdentifier =:imageIdentifier"
+                toUpdate['imageIdentifier'] = imageId
+                Image.executeUpdate(fullQuery, toUpdate)
+            }
         }
-        image.save(flush:true, failOnError: true)
     }
 
+    @Synchronized
     ImageStoreResult storeImageBytes(byte[] bytes, String originalFilename, long filesize, String contentType,
                           String uploaderId, Map metadata = [:]) {
 
@@ -148,7 +204,8 @@ class ImageService {
         def preExisting = false
         if (!image) {
             def sha1Hash = SHA1CodecExtensionMethods.encodeAsSHA1(bytes)
-            def extension = FilenameUtils.getExtension(originalFilename) ?: 'jpg'
+
+
             def imgDesc = imageStoreService.storeImage(bytes)
             // Create the image record, and set the various attributes
             image = new Image(
@@ -156,7 +213,22 @@ class ImageService {
                     contentMD5Hash: md5Hash,
                     contentSHA1Hash: sha1Hash,
                     uploader: uploaderId)
-            image.extension = extension
+
+
+            if(metadata.extension){
+                image.extension = metadata.extension
+            } else {
+                // this is known to be problematic
+                def extension =  FilenameUtils.getExtension(originalFilename) ?: 'jpg'
+                if (extension && extension.contains("?")){
+                    def cleanedExtension = extension.substring(0, extension.indexOf("?"))
+                    if (cleanedExtension && cleanedExtension.length() > 0){
+                        extension  = cleanedExtension
+                    }
+                }
+                image.extension = extension
+            }
+
             image.height = imgDesc.height
             image.width = imgDesc.width
             image.fileSize = filesize
@@ -169,18 +241,42 @@ class ImageService {
             preExisting = true
         }
 
-        //update metadata
-        metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                if(!(kvp.key in ["dateTaken", "dateUploaded", "id"])){
-                    image[kvp.key] = kvp.value
+        if (preExisting){
+            //stick it on a queue
+            scheduleMetadataUpdate(image.imageIdentifier, metadata)
+            scheduleLicenseUpdate(image.id)
+        } else {
+            //update metadata
+            metadata.each { kvp ->
+                def propertyName = hasImageCaseFriendlyProperty(image, kvp.key)
+                if (propertyName && kvp.value){
+                    if(!(propertyName in ["dateTaken", "dateUploaded", "id"])){
+                        image[propertyName] = kvp.value
+                    }
                 }
+            }
+
+            //try to match licence
+            updateLicence(image)
+
+            try {
+                image.save(flush: true, failOnError: true)
+            } catch (Exception ex){
+                log.error("Problem ${preExisting ? 'updating' : 'saving'} image ${originalFilename}  - " + ex.getMessage(), ex)
             }
         }
 
-        image.save(flush:true, failOnError: true)
-
         new ImageStoreResult(image, preExisting)
+    }
+
+
+    def hasImageCaseFriendlyProperty(Image image, String propertyName){
+        if (!imagePropertyMap) {
+            def properties = image.getProperties().keySet()
+            imagePropertyMap = [:]
+            properties.each { imagePropertyMap.put(it.toLowerCase(), it) }
+        }
+        imagePropertyMap.get(propertyName.toLowerCase())
     }
 
     def schedulePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
@@ -189,7 +285,7 @@ class ImageService {
         scheduleImageMetadataPersist(imageId,identifier, fileName,  MetaDataSourceType.Embedded, uploaderId)
     }
 
-    def scheduleNonImagePostIngestTasks(Long imageId, String identifier, String fileName, String uploaderId){
+    def scheduleNonImagePostIngestTasks(Long imageId){
         scheduleImageIndex(imageId)
     }
 
@@ -231,7 +327,6 @@ class ImageService {
 
     List<String> getAllThumbnailUrls(String imageIdentifier) {
         def results = []
-
         def image = Image.findByImageIdentifier(imageIdentifier)
         if (image) {
             def thumbs = ImageThumbnail.findAllByImage(image)
@@ -239,39 +334,56 @@ class ImageService {
                 results << imageStoreService.getThumbUrlByName(imageIdentifier, thumb.name)
             }
         }
-
-        return results
+        results
     }
 
     String getImageTilesRootUrl(String imageIdentifier) {
         return imageStoreService.getImageTilesRootUrl(imageIdentifier)
     }
 
-    def updateLicence(Image image){
-        if(image.license){
-            def licenceMapping = LicenseMapping.findByValue(image.license)
-            if (licenceMapping){
-                image.recognisedLicense = licenceMapping.license
+    Image updateLicence(Image image){
+        if (image.license){
+
+            def license = License.findByAcronymOrNameOrUrlOrImageUrl(image.license,image.license,image.license,image.license)
+            if (license){
+                image.recognisedLicense = license
             } else {
-                image.recognisedLicense = null
+                def licenceMapping = LicenseMapping.findByValue(image.license)
+                if (licenceMapping){
+                    image.recognisedLicense = licenceMapping.license
+                } else {
+                    image.recognisedLicense = null
+                }
             }
         } else {
             image.recognisedLicense = null
         }
-        image.save(flush:true)
+        image
     }
 
     //this is slow on large tables
     def updateLicences(){
-        println("Updating license mapping for all images")
+        log.info("Updating license mapping for all images")
         def licenseMapping = LicenseMapping.findAll()
         licenseMapping.each {
-            println("Updating license mapping for string matching: " + it.value)
+            log.info("Updating license mapping for string matching: " + it.value)
             Image.executeUpdate("Update Image i set i.recognisedLicense = :recognisedLicense " +
                     " where " +
                     " i.license = :license" +
                     "", [recognisedLicense: it.license, license: it.value])
         }
+
+        def licenses = License.findAll()
+        log.info("Updating licenses  for all images - using acronym, name and url")
+        licenses.each  { license ->
+            [license.url, license.name, license.acronym].each { licenceValue ->
+                Image.executeUpdate("Update Image i set i.recognisedLicense = :recognisedLicense " +
+                        " where " +
+                        " i.license = :license" +
+                        "", [recognisedLicense: license, license: licenceValue])
+            }
+        }
+        log.info("Licence refresh complete")
     }
 
     private static Date getImageTakenDate(byte[] bytes) {
@@ -326,6 +438,10 @@ class ImageService {
 
     def scheduleLicenseUpdate(long imageId) {
         scheduleBackgroundTask(new LicenseMatchingBackgroundTask(imageId, imageService, elasticSearchService))
+    }
+
+    def scheduleMetadataUpdate(String imageIdentifier, Map metadata) {
+        scheduleBackgroundTask(new ImageMetadataUpdateBackgroundTask(imageIdentifier, metadata, imageService))
     }
 
     def scheduleImageIndex(long imageId) {
@@ -386,8 +502,10 @@ class ImageService {
         List<ThumbnailingResult> results
         if (isAudioType(image)) {
             results = imageStoreService.generateAudioThumbnails(image.imageIdentifier)
-        } else {
+        } else if (isImageType(image)) {
             results = imageStoreService.generateImageThumbnails(image.imageIdentifier)
+        } else {
+            results = imageStoreService.generateDocumentThumbnails(image.imageIdentifier)
         }
 
         // These are deprecated, but we'll update them anyway...
@@ -418,50 +536,7 @@ class ImageService {
 
         if (image) {
 
-            // need to delete it from user selections
-            def selected = SelectedImage.findAllByImage(image)
-            selected.each { selectedImage ->
-                selectedImage.delete()
-            }
-
-            // Need to delete tags
-            def tags = ImageTag.findAllByImage(image)
-            tags.each { tag ->
-                tag.delete()
-            }
-
-            // Delete keywords
-            def keywords = ImageKeyword.findAllByImage(image)
-            keywords.each { keyword ->
-                keyword.delete()
-            }
-
-            // If this image is a subimage, also need to delete any subimage rectangle records
-            def subimagesRef = Subimage.findAllBySubimage(image)
-            subimagesRef.each { subimage ->
-                subimage.delete()
-            }
-
-            // This image may also be a parent image
-            def subimages = Subimage.findAllByParentImage(image)
-            subimages.each { subimage ->
-                // need to detach this image from the child images, but we do not actually delete the sub images. They
-                // will live on as root images in their own right
-                subimage.subimage.parent = null
-                subimage.delete()
-            }
-
-            // and delete album images
-            def albumImages = AlbumImage.findAllByImage(image)
-            albumImages.each { albumImage ->
-                albumImage.delete()
-            }
-
-            // thumbnail records...
-            def thumbs = ImageThumbnail.findAllByImage(image)
-            thumbs.each { thumb ->
-                thumb.delete()
-            }
+            deleteRelatedArtefacts(image)
 
             // Delete from the index...
             elasticSearchService.deleteImage(image)
@@ -478,6 +553,59 @@ class ImageService {
         return false
     }
 
+    private def deleteRelatedArtefacts(Image image){
+
+        // need to delete it from user selections
+        def selected = SelectedImage.findAllByImage(image)
+        selected.each { selectedImage ->
+            selectedImage.delete()
+        }
+
+        // Need to delete tags
+        def tags = ImageTag.findAllByImage(image)
+        tags.each { tag ->
+            tag.delete()
+        }
+
+        // Delete keywords
+        def keywords = ImageKeyword.findAllByImage(image)
+        keywords.each { keyword ->
+            keyword.delete()
+        }
+
+        // If this image is a subimage, also need to delete any subimage rectangle records
+        def subimagesRef = Subimage.findAllBySubimage(image)
+        subimagesRef.each { subimage ->
+            subimage.delete()
+        }
+
+        // This image may also be a parent image
+        def subimages = Subimage.findAllByParentImage(image)
+        subimages.each { subimage ->
+            // need to detach this image from the child images, but we do not actually delete the sub images. They
+            // will live on as root images in their own right
+            subimage.subimage.parent = null
+            subimage.delete()
+        }
+
+        // thumbnail records...
+        def thumbs = ImageThumbnail.findAllByImage(image)
+        thumbs.each { thumb ->
+            thumb.delete()
+        }
+    }
+
+    def deleteImagePurge(Image image) {
+        if (image && image.dateDeleted) {
+            deleteRelatedArtefacts(image)
+            imageStoreService.deleteImage(image.imageIdentifier)
+            //hard delete
+            image.delete(flush:true)
+            return true
+        }
+        return false
+    }
+
     List<File> listStagedImages() {
         def files = []
         def inboxLocation = grailsApplication.config.imageservice.imagestore.inbox as String
@@ -489,8 +617,6 @@ class ImageService {
     }
 
     Image importFileFromInbox(File file, String batchId, String userId) {
-
-        CodeTimer ct = new CodeTimer("Import file ${file?.absolutePath}")
 
         if (!file || !file.exists()) {
             throw new RuntimeException("Could not read file ${file?.absolutePath} - Does not exist")
@@ -529,6 +655,8 @@ class ImageService {
             if (!FileUtils.deleteQuietly(file)) {
                 file.deleteOnExit()
             }
+            // schedule an index
+            scheduleImageIndex(image.id)
             // also we should do the thumb generation (we'll defer tiles until after the load, as it will slow everything down)
             scheduleTileGeneration(image.id, userId)
         }
@@ -542,7 +670,6 @@ class ImageService {
         inboxDirectory.eachFile { File file ->
             _backgroundQueue.add(new ImportFileBackgroundTask(file, this, batchId, userId))
         }
-
     }
 
     private static String sanitizeString(Object value) {
@@ -563,65 +690,56 @@ class ImageService {
     }
 
     def updateImageMetadata(Image image, Map metadata){
-
-        def imageUpdated = false
-        metadata.each { kvp ->
-            if(image.hasProperty(kvp.key) && kvp.value){
-                image[kvp.key] = kvp.value
-                imageUpdated = true
-            }
-        }
-        if(imageUpdated){
-            image.save()
-        }
+        scheduleMetadataUpdate(image.imageIdentifier, metadata)
+//        imageService.updateMetadata(image.imageIdentifier, metadata)
     }
 
-    def setMetaDataItems(Image image, MetaDataSourceType source, Map metadata, String userId = "<unknown>") {
-        if (!userId) {
-            userId = "<unknown>"
-        }
-
-        metadata.each { kvp ->
-            def value = sanitizeString(kvp.value?.toString())
-            def key = kvp.key
-            if (image && StringUtils.isNotEmpty(key?.trim())) {
-
-                if (value.length() > 8000) {
-                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", userId)
-                    return false
-                }
-
-                // See if we already have an existing item...
-                def existing = ImageMetaDataItem.findByImageAndNameAndSource(image, key, source)
-                if (existing) {
-                    existing.value = value
-                } else {
-                    log.info("Storing metadata: ${image.title}, name: ${key}, value: ${value}, source: ${source}")
-                    if (key && value) {
-                        def md = new ImageMetaDataItem(image: image, name: key, value: value, source: source)
-                        md.save(failOnError: true)
-                        image.addToMetadata(md)
-                    }
-                }
-
-                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
-            } else {
-                logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
-            }
-        }
-        image.save()
-        return true
-    }
-
-
-    def setMetaDataItem(Long imageId, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
-        try {
-            def image = Image.lock(imageId)
-            setMetaDataItem(image, source, key, value, userId)
-        } catch(Exception e){
-           log.error("Error setting image ${imageId} :  ${key} = ${value}")
-        }
-    }
+//    def setMetaDataItems(Image image, MetaDataSourceType source, Map metadata, String userId = "<unknown>") {
+//        if (!userId) {
+//            userId = "<unknown>"
+//        }
+//
+//        metadata.each { kvp ->
+//            def value = sanitizeString(kvp.value?.toString())
+//            def key = kvp.key
+//            if (image && StringUtils.isNotEmpty(key?.trim())) {
+//
+//                if (value.length() > 8000) {
+//                    auditService.log(image, "Cannot set metdata item '${key}' because value is too big! First 25 bytes=${value.take(25)}", userId)
+//                    return false
+//                }
+//
+//                // See if we already have an existing item...
+//                def existing = ImageMetaDataItem.findByImageAndNameAndSource(image, key, source)
+//                if (existing) {
+//                    existing.value = value
+//                } else {
+//                    log.info("Storing metadata: ${image.title}, name: ${key}, value: ${value}, source: ${source}")
+//                    if (key && value) {
+//                        def md = new ImageMetaDataItem(image: image, name: key, value: value, source: source)
+//                        md.save(failOnError: true)
+//                        image.addToMetadata(md)
+//                    }
+//                }
+//
+//                auditService.log(image, "Metadata item ${key} set to '${value?.take(25)}' (truncated) (${source})", userId)
+//            } else {
+//                logService.debug("Not Setting metadata item! Image ${image?.id} key: ${key} value: ${value}")
+//            }
+//        }
+//        image.save()
+//        return true
+//    }
+//
+//
+//    def setMetaDataItem(Long imageId, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
+//        try {
+//            def image = Image.lock(imageId)
+//            setMetaDataItem(image, source, key, value, userId)
+//        } catch(Exception e){
+//           log.error("Error setting image ${imageId} :  ${key} = ${value}")
+//        }
+//    }
 
     def setMetaDataItem(Image image, MetaDataSourceType source, String key, String value, String userId = "<unknown") {
 
@@ -729,8 +847,8 @@ class ImageService {
             def subimage = storeImageBytes(results.bytes,filename, results.bytes.length, results.contentType, userId, metadata).image
 
             def subimageRect = new Subimage(parentImage: parentImage, subimage: subimage, x: x, y: y, height: height, width: width)
-            subimageRect.save()
             subimage.parent = parentImage
+            subimageRect.save(flush:true)
 
             auditService.log(parentImage, "Subimage created ${subimage.imageIdentifier}", userId)
             auditService.log(subimage, "Subimage created from parent image ${parentImage.imageIdentifier}", userId)
@@ -784,39 +902,40 @@ class ImageService {
         }
     }
 
-    def createNextThumbnailJob() {
-
-        ImageBackgroundTask task = _backgroundQueue.find { bgt ->
-            def imageTask = bgt as ImageBackgroundTask
-            if (imageTask != null) {
-                if (imageTask.operation == ImageTaskType.Thumbnail) {
-                    if (_backgroundQueue.remove(imageTask)) {
-                        return true
-                    }
-                }
-            }
-            return false
-        }
-
-        if (task == null) {
-            return [success: false, message:'No thumbnail job available at this time.']
-        } else {
-            if (task) {
-                def image = Image.get(task.imageId)
-                // Create a new pending job
-                def ticket = UUID.randomUUID().toString()
-                def job = new OutsourcedJob(image: image, taskType: ImageTaskType.Thumbnail, expectedDurationInMinutes: 15, ticket: ticket)
-                job.save()
-                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket]
-            } else {
-                return [success:false, message: "Internal error!"]
-            }
-        }
-    }
+//    def createNextThumbnailJob() {
+//
+//        ImageBackgroundTask task = _backgroundQueue.find { bgt ->
+//            def imageTask = bgt as ImageBackgroundTask
+//            if (imageTask != null) {
+//                if (imageTask.operation == ImageTaskType.Thumbnail) {
+//                    if (_backgroundQueue.remove(imageTask)) {
+//                        return true
+//                    }
+//                }
+//            }
+//            return false
+//        }
+//
+//        if (task == null) {
+//            return [success: false, message:'No thumbnail job available at this time.']
+//        } else {
+//            if (task) {
+//                def image = Image.get(task.imageId)
+//                // Create a new pending job
+//                def ticket = UUID.randomUUID().toString()
+//                def job = new OutsourcedJob(image: image, taskType: ImageTaskType.Thumbnail, expectedDurationInMinutes: 15, ticket: ticket)
+//                job.save()
+//                return [success: true, imageId: image.imageIdentifier, jobTicket: ticket]
+//            } else {
+//                return [success:false, message: "Internal error!"]
+//            }
+//        }
+//    }
 
     def resetImageLinearScale(Image image) {
         image.mmPerPixel = null;
-        image.save()
+        image.calibratedByUser = null
+        image.save(flush:true)
         scheduleImageIndex(image.id)
     }
 
@@ -840,7 +959,8 @@ class ImageService {
         def mmPerPixel = (actualLength * scale) / pixelLength
 
         image.mmPerPixel = mmPerPixel
-        image.save()
+        image.calibratedByUser = userId
+        image.save(flush:true)
         scheduleImageIndex(image.id)
 
         return mmPerPixel
@@ -930,6 +1050,37 @@ class ImageService {
             image = Image.findByImageIdentifier(guid)
         }
         return image
+    }
+
+    def UUID_PATTERN = ~/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/
+
+
+    def getImageGUIDFromParams(params) {
+
+        if(params.id){
+            //if it a GUID, avoid database trip if possible....
+            if (UUID_PATTERN.matcher(params.id).matches()){
+                return params.id
+            }
+            if(params.id ){
+                def image = Image.findById(params.int("id"))
+                if(image) {
+                    return image.imageIdentifier
+                }
+            }
+        } else if(params.imageId){
+            //if it a GUID, avoid database trip if possible....
+            if (UUID_PATTERN.matcher(params.imageId).matches()){
+                return params.imageId
+            }
+            if(params.id ){
+                def image = Image.findById(params.int("imageId"))
+                if (image) {
+                    return image.imageIdentifier
+                }
+            }
+        }
+        return null
     }
 
     /**

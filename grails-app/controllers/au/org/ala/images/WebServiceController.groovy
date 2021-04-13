@@ -5,7 +5,6 @@ import au.org.ala.cas.util.AuthenticationUtils
 import au.org.ala.ws.security.ApiKeyInterceptor
 import grails.converters.JSON
 import grails.converters.XML
-import groovyx.net.http.HTTPBuilder
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
@@ -45,7 +44,7 @@ class WebServiceController {
     Resource[] swaggerUiResources
 
     def swagger() {
-        if(params.json){
+        if (params.json){
             String swaggerJson = swaggerService.generateSwaggerDocument()
             render (contentType: MediaType.APPLICATION_JSON_UTF8_VALUE, text: swaggerJson)
         } else {
@@ -75,16 +74,15 @@ class WebServiceController {
     def deleteImageService() {
 
         def success = false
-        def message = ""
-
         def userId = request.getHeader(ApiKeyInterceptor.API_KEY_HEADER_NAME)
 
         if(!userId) {
-            response.sendError(400, "Must include API key")
+            response.sendError(HttpStatus.SC_BAD_REQUEST, "Must include API key")
         } else {
+            def message = ""
             def image = Image.findByImageIdentifier(params.imageID as String)
             if (image) {
-                success = imageService.scheduleImageDeletion(image, userId)
+                success = imageService.scheduleImageDeletion(image.id, userId)
                 message = "Image scheduled for deletion."
             } else {
                 message = "Invalid image identifier."
@@ -138,6 +136,7 @@ class WebServiceController {
         if (params.id && !imageInstance) {
             results.success = false
             results.message = "Could not find image ${params.id}"
+            renderResults(results, HttpStatus.SC_BAD_REQUEST)
         } else {
             if (imageInstance) {
                 imageService.scheduleThumbnailGeneration(imageInstance.id, userId)
@@ -148,9 +147,8 @@ class WebServiceController {
                 }
                 results.message = "Image thumbnail generation scheduled for ${count} images."
             }
+            renderResults(results)
         }
-
-        renderResults(results)
     }
 
     @RequireApiKey
@@ -181,6 +179,8 @@ class WebServiceController {
         if (params.id && !imageInstance) {
             results.success = false
             results.message = "Could not find image ${params.id}"
+            flash.message  = results.message
+            renderResults(results, HttpStatus.SC_BAD_REQUEST)
         } else {
             if (imageInstance) {
                 imageService.scheduleArtifactGeneration(imageInstance.id, userId)
@@ -191,8 +191,9 @@ class WebServiceController {
                 }
                 results.message = "Image artifact generation scheduled for ${count} images."
             }
+            flash.message  = results.message
+            renderResults(results)
         }
-        renderResults(results)
     }
 
     @RequireApiKey
@@ -208,8 +209,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string")
@@ -221,6 +221,8 @@ class WebServiceController {
         if (params.id && !imageInstance) {
             results.success = false
             results.message = "Could not find image ${params.id}"
+            flash.message  = results.message
+            renderResults(results, HttpStatus.SC_BAD_REQUEST)
         } else {
             if (imageInstance) {
                 imageService.scheduleKeywordRebuild(imageInstance.id, userId)
@@ -234,8 +236,9 @@ class WebServiceController {
                 }
                 results.message = "Image keyword rebuild scheduled for ${count} images."
             }
+            flash.message  = results.message
+            renderResults(results)
         }
-        renderResults(results)
     }
 
     @RequireApiKey
@@ -258,8 +261,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def getTagModel() {
 
@@ -321,8 +323,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only PUT is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only PUT is allowed")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "tagPath", paramType = "query", required = true, value = "Tag path. Paths separated by '/'. e.g. 'Birds/Colour/Red'", dataType = "string")
@@ -354,22 +355,23 @@ class WebServiceController {
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only PUT is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 404, message = "Tag Not Found")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "targetTagID", paramType = "query", required = true, value = "Target Tag ID to move", dataType = "string"),
             @ApiImplicitParam(name = "newParentTagID", paramType = "query", required = true, value = "New target parent tag ID", dataType = "string")
     ])
     def moveTag() {
-        def success = false
 
         def target = Tag.get(params.int("targetTagId"))
         def newParent = Tag.get(params.int("newParentTagId"))
 
         if (target) {
             tagService.moveTag(target, newParent)
+            renderResults([success: true])
+        } else {
+            renderResults([success: false, message: "Tag not recognised"], HttpStatus.SC_NOT_FOUND)
         }
-        renderResults([success: success])
     }
 
     @RequireApiKey
@@ -393,12 +395,13 @@ class WebServiceController {
             @ApiImplicitParam(name = "name", paramType = "query", required = true, value = "New name", dataType = "string")
     ])
     def renameTag() {
-        def success = false
         def tag = Tag.get(params.int("tagID"))
         if (tag && params.name) {
             tagService.renameTag(tag, params.name)
+            renderResults([success: true])
+        } else {
+            renderResults([success: false, message: "Tag not recognised"], HttpStatus.SC_NOT_FOUND)
         }
-        renderResults([success: success])
     }
 
     @RequireApiKey
@@ -421,12 +424,13 @@ class WebServiceController {
             @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string")
     ])
     def deleteTag() {
-        def success = false
         def tag = Tag.get(params.int("tagId"))
         if (tag) {
             tagService.deleteTag(tag)
+            renderResults([success: true])
+        } else {
+            renderResults([success: false, message: "Tag not recognised"], HttpStatus.SC_NOT_FOUND)
         }
-        renderResults([success: success])
     }
 
     @RequireApiKey
@@ -443,7 +447,7 @@ class WebServiceController {
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 404, message = "Image or Tag Not Found")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
@@ -452,16 +456,20 @@ class WebServiceController {
     def attachTagToImage() {
         def success = false
         def message = ""
+        def status = HttpStatus.SC_OK
         def image = Image.findByImageIdentifier(params.imageId as String)
         def tag = Tag.get(params.int("tagId"))
         if (!image){
             message =  "Unrecognised image ID"
+            status = HttpStatus.SC_NOT_FOUND
         } else if(!tag) {
             message = "Unrecognised tag ID"
+            status = HttpStatus.SC_NOT_FOUND
         } else if (image && tag) {
             success = tagService.attachTagToImage(image, tag, AuthenticationUtils.getUserId(request))
+            status = HttpStatus.SC_OK
         }
-        renderResults([success: success, message: message])
+        renderResults([success: success, message: message], status)
     }
 
     @ApiOperation(
@@ -475,8 +483,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "keyword", paramType = "path", required = true, value = "Keyword", dataType = "string"),
@@ -504,8 +511,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "tagID", paramType = "path", required = true, value = "Tag Id", dataType = "string"),
@@ -535,7 +541,7 @@ class WebServiceController {
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 404, message = "Image or Tag Not Found")]
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
@@ -547,31 +553,36 @@ class WebServiceController {
         def tag = Tag.get(params.int("tagId"))
         if (image && tag) {
             success = tagService.detachTagFromImage(image, tag)
+            renderResults([success: success])
+        } else {
+            renderResults([success: success, message:'Image or tag not found'], HttpStatus.SC_NOT_FOUND)
         }
-        renderResults([success: success])
     }
 
     private addImageInfoToMap(Image image, Map results, Boolean includeTags, Boolean includeMetadata) {
 
-        results.height = image.height
-        results.width = image.width
-        results.tileZoomLevels = image.zoomLevels ?: 0
         results.mimeType = image.mimeType
         results.originalFileName = image.originalFilename
         results.sizeInBytes = image.fileSize
         results.rights = image.rights ?: ''
         results.rightsHolder = image.rightsHolder ?: ''
-        results.dateUploaded = formatDate(date: image.dateUploaded, format:"yyyy-MM-dd HH:mm:ss")
-        results.dateTaken = formatDate(date: image.dateTaken, format:"yyyy-MM-dd HH:mm:ss")
-        results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
-        results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
-        results.mmPerPixel = image.mmPerPixel ?: ''
+        results.dateUploaded = formatDate(date: image.dateUploaded, format: "yyyy-MM-dd HH:mm:ss")
+        results.dateTaken = formatDate(date: image.dateTaken, format: "yyyy-MM-dd HH:mm:ss")
+        if (results.mimeType && results.mimeType.startsWith('image')){
+            results.imageUrl = imageService.getImageUrl(image.imageIdentifier)
+            results.tileUrlPattern = "${imageService.getImageTilesRootUrl(image.imageIdentifier)}/{z}/{x}/{y}.png"
+            results.mmPerPixel = image.mmPerPixel ?: ''
+            results.height = image.height
+            results.width = image.width
+            results.tileZoomLevels = image.zoomLevels ?: 0
+        }
         results.description = image.description ?: ''
         results.title = image.title ?: ''
         results.creator = image.creator ?: ''
         results.license = image.license ?: ''
         results.recognisedLicence = image.recognisedLicense
         results.dataResourceUid = image.dataResourceUid ?: ''
+        results.occurrenceID = image.occurrenceId ?: ''
 
         collectoryService.addMetadataForResource(results)
 
@@ -590,7 +601,6 @@ class WebServiceController {
                 results.metadata << [key: md.name, value: md.value, source: md.source]
             }
         }
-
     }
 
     @ApiOperation(
@@ -601,7 +611,6 @@ class WebServiceController {
             httpMethod = "GET",
             response = Map.class,
             tags = ["JSON services for accessing and updating metadata"]
-
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
@@ -610,17 +619,21 @@ class WebServiceController {
     )
     @ApiImplicitParams([
             @ApiImplicitParam(name = "imageID", paramType = "path", required = true, value = "Image Id", dataType = "string"),
-            @ApiImplicitParam(name = "includeTags", paramType = "query", required = false, value = "Include tags", dataType = "string"),
-            @ApiImplicitParam(name = "includeMetadata", paramType = "query", required = false, value = "Include metadata", dataType = "string")
+            @ApiImplicitParam(name = "includeTags", paramType = "query", required = false, value = "Include tags", dataType = "boolean"),
+            @ApiImplicitParam(name = "includeMetadata", paramType = "query", required = false, value = "Include metadata", dataType = "boolean")
     ])
     def getImageInfo() {
         def results = [success:false]
-        def image = Image.findByImageIdentifier(params.imageID as String)
+        def imageId = params.id ? params.id : params.imageID
+        def image = Image.findByImageIdentifier(imageId as String)
         if (image) {
             results.success = true
             addImageInfoToMap(image, results, params.boolean("includeTags"), params.boolean("includeMetadata"))
+            renderResults(results)
+        } else {
+            results["message"] = "image id not found"
+            renderResults(results, HttpStatus.SC_NOT_FOUND)
         }
-        renderResults(results)
     }
 
     @ApiOperation(
@@ -642,7 +655,6 @@ class WebServiceController {
     ])
     def imagePopupInfo() {
         def results = [success:false]
-
         def image = Image.findByImageIdentifier(params.id as String)
         if (image) {
             results.success = true
@@ -651,8 +663,11 @@ class WebServiceController {
             results.link = createLink(controller: "image", action:'details', id: image.id)
             results.linkText = "Image details..."
             results.title = "Image properties"
+            renderResults(results)
+        } else {
+            results["message"] = "image id not found"
+            renderResults(results, HttpStatus.SC_NOT_FOUND)
         }
-        renderResults(results)
     }
 
     private renderResults(Object results, int responseCode = 200) {
@@ -692,6 +707,9 @@ class WebServiceController {
     def getRepositoryStatistics() {
         def results = [:]
         results.imageCount = Image.count()
+        results.deletedImageCount = Image.countByDateDeletedIsNotNull()
+        results.licenceCount = License.count()
+        results.licenceMappingCount = LicenseMapping.count()
         results.sizeOnDisk =
         renderResults(results)
     }
@@ -726,8 +744,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def getBackgroundQueueStats() {
         def results = [:]
@@ -736,22 +753,6 @@ class WebServiceController {
         renderResults(results)
     }
 
-    @ApiOperation(
-            value = "Create Subimage",
-            nickname = "createSubimage",
-            produces = "application/json",
-            consumes = "application/json",
-            httpMethod = "PUT",
-            response = Map.class,
-            authorizations = @Authorization(value="apiKey"),
-            tags = ["JSON services for accessing and updating metadata"]
-    )
-    @ApiResponses([
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
-    )
-    @RequireApiKey
     def createSubimage() {
         def image = Image.findByImageIdentifier(params.id as String)
         if (!image) {
@@ -786,6 +787,63 @@ class WebServiceController {
         renderResults([success: subimage != null, subImageId: subimage?.imageIdentifier])
     }
 
+    @ApiOperation(
+            value = "Create Subimage",
+            nickname = "subimage",
+            produces = "application/json",
+            consumes = "application/json",
+            httpMethod = "PUT",
+            response = Map.class,
+            authorizations = @Authorization(value="apiKey"),
+            tags = ["JSON services for accessing and updating metadata"]
+    )
+    @ApiResponses([
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
+            @ApiResponse(code = 404, message = "Image Not Found")]
+    )
+    @RequireApiKey
+    def subimage() {
+        def image = Image.findByImageIdentifier(params.id as String)
+        if (!image) {
+            renderResults([success:false, message:"Image not found: ${params.id}"], HttpStatus.SC_NOT_FOUND)
+            return
+        }
+
+        if (!params.x || !params.y || !params.height || !params.width) {
+            renderResults([success:false, message:"Rectangle not correctly specified. Use x, y, height and width params"], HttpStatus.SC_BAD_REQUEST)
+            return
+        }
+
+        def x = params.int('x')
+        def y = params.int('y')
+        def height = params.int('height')
+        def width = params.int('width')
+        def title = params.title
+        def description = params.description
+
+        if (height == 0 || width == 0) {
+            renderResults([success:false, message:"Rectangle not correctly specified. Height and width cannot be zero"], HttpStatus.SC_BAD_REQUEST)
+            return
+        }
+
+        def userId = getUserIdForRequest(request)
+        if(!userId){
+            renderResults([success:false, message:"User needs to be logged in to create sub image"], HttpStatus.SC_FORBIDDEN)
+            return
+        }
+
+        def subimage = imageService.createSubimage(image, x, y, width, height, userId, [title:title, description:description] )
+
+        if (subimage && subimage.imageIdentifier){
+            renderResults([success: true, subImageId: subimage.imageIdentifier], HttpStatus.SC_OK)
+        } else {
+            renderResults([success: false], HttpStatus.SC_INTERNAL_SERVER_ERROR)
+        }
+
+    }
+
+
     def getSubimageRectangles() {
 
         def image = Image.findByImageIdentifier(params.id as String)
@@ -806,18 +864,18 @@ class WebServiceController {
     def addUserMetadataToImage() {
         def image = Image.findByImageIdentifier(params.id as String)
         if (!image) {
-            renderResults([success:false, message:"Image not found: ${params.id}"])
+            renderResults([success:false, message:"Image not found: ${params.id}"], HttpStatus.SC_NOT_FOUND)
             return
         }
 
         def key = params.key
         if (!key) {
-            renderResults([success:false, message:"Metadata key/name not supplied!"])
+            renderResults([success:false, message:"Metadata key/name not supplied!"], HttpStatus.SC_BAD_REQUEST)
             return
         }
         def value = params.value
         if (!value) {
-            renderResults([success:false, message:"Metadata value not supplied!"])
+            renderResults([success:false, message:"Metadata value not supplied!"], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
@@ -840,12 +898,11 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     @ApiImplicitParams([
-            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
-            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+            @ApiImplicitParam(name = "q", paramType = "query", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "query", required = false, value = "Filter Query", dataType = "string")
     ])
     def search(){
         def ct = new CodeTimer("Image list")
@@ -859,16 +916,16 @@ class WebServiceController {
 
         QueryResults<Image> results = searchService.search(params)
 
-        def filterQueries = params.findAll { it.key == 'fq' && it.value}
+        def filterQueries = params.findAll { it.key == 'fq' && it.value }
 
         ct.stop(true)
         renderResults([
-         q: query,
-         totalImageCount: results.totalCount,
-         filters: filterQueries,
-         searchCriteria: searchService.getSearchCriteriaList(),
-         facets: results.aggregations,
-         images: results.list,
+          q: query,
+          totalImageCount: results.totalCount,
+          filters: filterQueries,
+          searchCriteria: searchService.getSearchCriteriaList(),
+          facets: results.aggregations,
+          images: results.list,
         ])
     }
 
@@ -883,18 +940,17 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     @ApiImplicitParams([
-            @ApiImplicitParam(name = "facet", paramType = "path", required = true, value = "Facet", dataType = "string"),
-            @ApiImplicitParam(name = "q", paramType = "path", required = false, value = "Query", dataType = "string"),
-            @ApiImplicitParam(name = "fq", paramType = "path", required = false, value = "Filter Query", dataType = "string")
+            @ApiImplicitParam(name = "facet", paramType = "query", required = true, value = "Facet", dataType = "string"),
+            @ApiImplicitParam(name = "q", paramType = "query", required = false, value = "Query", dataType = "string"),
+            @ApiImplicitParam(name = "fq", paramType = "query", required = false, value = "Filter Query", dataType = "string")
     ])
     def facet(){
 
         if(!params.facet){
-            response.sendError(400, "Facet parameter is required")
+            response.sendError(HttpStatus.SC_BAD_REQUEST, "Facet parameter is required")
             return
         }
 
@@ -919,6 +975,7 @@ class WebServiceController {
         userId
     }
 
+    @RequireApiKey
     def bulkAddUserMetadataToImage(String id) {
         def image = Image.findByImageIdentifier(id)
         def userId = getUserIdForRequest(request)
@@ -934,16 +991,17 @@ class WebServiceController {
         renderResults([success:results != null])
     }
 
+    @RequireApiKey
     def removeUserMetadataFromImage() {
         def image = Image.findByImageIdentifier(params.id as String)
         if (!image) {
-            renderResults([success:false, message:"Image not found: ${params.id}"])
+            renderResults([success:false, message:"Image not found: ${params.id}"], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
         def key = params.key
         if (!key) {
-            renderResults([success:false, message:"Metadata key/name not supplied!"])
+            renderResults([success:false, message:"Metadata key/name not supplied!"], HttpStatus.SC_BAD_REQUEST)
             return
         }
         def userId = getUserIdForRequest(request)
@@ -963,8 +1021,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def getMetadataKeys() {
 
@@ -1013,14 +1070,14 @@ class WebServiceController {
 
         def key = params.key as String
         if (!key) {
-            render([success:false, message:'No key parameter supplied'])
+            render([success:false, message:'No key parameter supplied'], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
         def query = (params.q ?: params.value) as String
 
         if (!query) {
-            render([success:false, message:'No q or value parameter supplied'])
+            render([success:false, message:'No q or value parameter supplied'], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
@@ -1061,7 +1118,7 @@ class WebServiceController {
             List<String> imageIds = (query.imageIds as List)?.collect { it as String }
 
             if (!imageIds) {
-                renderResults([success:false, message:'You must supply a list of image IDs (imageIds) to search for!'])
+                renderResults([success:false, message:'You must supply a list of image IDs (imageIds) to search for!'], HttpStatus.SC_BAD_REQUEST)
                 return
             }
 
@@ -1083,7 +1140,7 @@ class WebServiceController {
             renderResults([success: true, results: results, invalidImageIds: errors])
             return
         }
-        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
+        renderResults([success:false, message:'POST with content type "application/JSON" required.'], HttpStatus.SC_BAD_REQUEST)
     }
 
     @ApiOperation(
@@ -1097,8 +1154,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def licence(){
         def licenses = License.findAll()
@@ -1116,8 +1172,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def licenceMapping(){
         def licenses = LicenseMapping.findAll()
@@ -1135,8 +1190,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def findImagesByOriginalFilename() {
 
@@ -1175,19 +1229,19 @@ class WebServiceController {
     }
 
     @ApiOperation(
-            value = "Find images by image metadata",
+            value = "Find images by image metadata - deprecated. Use /search instead",
             nickname = "findImagesByMetadata",
             produces = "application/json",
             consumes = "application/json",
             httpMethod = "POST",
             response = Map.class,
-            tags = ["Search"]
+            tags = ["Deprecated"]
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
+    @Deprecated
     def findImagesByMetadata() {
 
         def query = request.JSON
@@ -1207,22 +1261,29 @@ class WebServiceController {
                 return
             }
 
-            def images = elasticSearchService.searchByMetadata(key, values, params)
-            def results = [:]
-            def keyValues = imageService.getMetadataItemValuesForImages(images.list, key)
-            images?.list?.each { image ->
-                def map = imageService.getImageInfoMap(image)
-                collectoryService.addMetadataForResource(image)
-                def keyValue = keyValues[image.id]
-                def list = results[keyValue]
-                if (!list) {
-                    list = []
-                    results[keyValue] = list
-                }
-                list << map
+            def results = elasticSearchService.searchByMetadata(key, values, params)
+            def totalCount = 0
+            results.values().each {
+                totalCount = totalCount + it.size()
             }
 
-            renderResults([success: true, images: results, count:images?.totalCount ?: 0])
+            //add additional fields for backwards compatibility
+            results.each { id, metadataItems ->
+                metadataItems.each { metadata ->
+                    metadata["imageId"] = metadata.imageIdentifier
+                    metadata["tileZoomLevels"] = metadata.zoomLevels
+                    metadata["filesize"] = metadata.fileSize
+                    metadata["imageUrl"] = imageService.getImageUrl(metadata.imageIdentifier)
+                    metadata["largeThumbUrl"] = imageService.getImageThumbLargeUrl(metadata.imageIdentifier)
+                    metadata["squareThumbUrl"]  = imageService.getImageSquareThumbUrl(metadata.imageIdentifier)
+                    metadata["thumbUrl"]  = imageService.getImageThumbUrl(metadata.imageIdentifier)
+                    metadata["tilesUrlPattern"]  = imageService.getImageTilesRootUrl(metadata.imageIdentifier) + "/{z}/{x}/{y}.png"
+                    metadata.remove("fileSize")
+                    metadata.remove("zoomLevels")
+                }
+            }
+
+            renderResults([success: true, images: results, count: totalCount])
             return
         }
 
@@ -1234,6 +1295,7 @@ class WebServiceController {
         renderResults(results)
     }
 
+    @RequireApiKey
     def cancelTileJob() {
 
         def userId = AuthenticationUtils.getUserId(request)
@@ -1262,19 +1324,19 @@ class WebServiceController {
     def postJobResults() {
         def ticket = params.jobTicket ?: params.ticket
         if (!ticket) {
-            renderResults([success:false, message:'No job ticket specified'])
+            renderResults([success:false, message:'No job ticket specified'], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
         def job = OutsourcedJob.findByTicket(ticket)
         if (!job) {
-            renderResults([success:false, message:'No such ticket or ticket expired.'])
+            renderResults([success:false, message:'No such ticket or ticket expired.'], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
         def zoomLevels = params.int("zoomLevels")
         if (!zoomLevels) {
-            renderResults([success:false, message:'No zoomLevels supplied.'])
+            renderResults([success:false, message:'No zoomLevels supplied.'], HttpStatus.SC_BAD_REQUEST)
             return
         }
 
@@ -1283,7 +1345,7 @@ class WebServiceController {
             MultipartFile file = request.getFile('tilesArchive')
 
             if (!file || file.size == 0) {
-                renderResults([success:false, message:'tilesArchive param not present. Expected multipart file.'])
+                renderResults([success:false, message:'tilesArchive param not present. Expected multipart file.'], HttpStatus.SC_BAD_REQUEST)
                 return
             }
 
@@ -1293,11 +1355,11 @@ class WebServiceController {
                 renderResults([success: true])
                 return
             } else {
-                renderResults([success:false, message: "Error storing tiles for image!"])
+                renderResults([success:false, message: "Error storing tiles for image!"], HttpStatus.SC_INTERNAL_SERVER_ERROR)
                 return
             }
         }
-        renderResults([success: false, message:'Unhandled task type'])
+        renderResults([success: false, message:'Unhandled task type'], HttpStatus.SC_BAD_REQUEST)
     }
 
     /**
@@ -1339,11 +1401,9 @@ class WebServiceController {
             imageService.updateImageMetadata(image, metadata)
             tagService.updateTags(image, params.tags, userId)
 
-            response.setStatus(200)
             renderResults([success: true])
         } else {
-            response.setStatus(404)
-            renderResults([success: false])
+            renderResults([success: false, message: 'Image not found'], HttpStatus.SC_NOT_FOUND)
         }
 
         ct.stop(true)
@@ -1367,7 +1427,7 @@ class WebServiceController {
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 400, message = "Bad request")]
     )
     @RequireApiKey
     def uploadImage() {
@@ -1391,25 +1451,25 @@ class WebServiceController {
                 // Image is located at an endpoint, and we need to download it first.
                 storeResult = imageService.storeImageFromUrl(url, userId, metadata)
                 if (!storeResult || !storeResult.image) {
-                    renderResults([success: false, message: "Unable to retrieve image from ${url}"])
+                    renderResults([success: false, message: "Unable to retrieve image from ${url}"], HttpStatus.SC_BAD_REQUEST)
                 }
             } else {
                 // it should contain a file parameter
                 if (request.metaClass.respondsTo(request, 'getFile', String)) {
                     MultipartFile file = request.getFile('image')
                     if (!file) {
-                        renderResults([success: false, message: 'image parameter not found. Please supply an image file.'])
+                        renderResults([success: false, message: 'image parameter not found. Please supply an image file.'], HttpStatus.SC_BAD_REQUEST)
                         return
                     }
 
                     if (file.size == 0) {
-                        renderResults([success: false, message: 'the supplied image was empty. Please supply an image file.'])
+                        renderResults([success: false, message: 'the supplied image was empty. Please supply an image file.'], HttpStatus.SC_BAD_REQUEST)
                         return
                     }
 
                     storeResult = imageService.storeImage(file, userId, metadata)
                 } else {
-                    renderResults([success: false, message: "No url parameter, therefore expected multipart request!"])
+                    renderResults([success: false, message: "No url parameter, therefore expected multipart request!"], HttpStatus.SC_BAD_REQUEST)
                 }
             }
 
@@ -1428,10 +1488,10 @@ class WebServiceController {
 
                 renderResults([success: true, imageId: storeResult.image?.imageIdentifier, alreadyStored: storeResult.alreadyStored])
             } else {
-                renderResults([success: false, message: "Failed to store image!"])
+                renderResults([success: false, message: "Failed to store image!"], 500)
             }
         } catch (Exception e){
-            log.error(e.getMessage(), e)
+            log.error("Problem storing image " + e.getMessage(), e)
             renderResults([success: false, message: "Failed to store image!"], 500)
         }
     }
@@ -1448,8 +1508,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     @RequireApiKey
     def uploadImagesFromUrls() {
@@ -1504,12 +1563,11 @@ class WebServiceController {
 
             renderResults([success: true, results: results])
         } else {
-            renderResults([success:false, message:'POST with content type "application/JSON" required.'], 400)
+            renderResults([success:false, message:'POST with content type "application/JSON" required.'], HttpStatus.SC_BAD_REQUEST)
         }
     }
 
     def calibrateImageScale() {
-
         def userId = getUserIdForRequest(request)
         def image = Image.findByImageIdentifier(params.imageId)
         def units = params.units ?: "mm"
@@ -1518,9 +1576,9 @@ class WebServiceController {
         if (image && units && pixelLength && actualLength) {
             def pixelsPerMM = imageService.calibrateImageScale(image, pixelLength, actualLength, units, userId)
             renderResults([success: true, pixelsPerMM:pixelsPerMM, message:"Image is scaled at ${pixelsPerMM} pixels per mm"])
-            return
+        } else {
+            renderResults([success: false, message: 'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
         }
-        renderResults([success:false, message:'Missing one or more required parameters: imageId, pixelLength, actualLength, units'])
     }
 
     def resetImageCalibration() {
@@ -1556,8 +1614,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only POST is allowed")]
     )
     @RequireApiKey
     def scheduleUploadFromUrls() {
@@ -1586,7 +1643,7 @@ class WebServiceController {
             return
         }
 
-        renderResults([success:false, message:'POST with content type "application/JSON" required.'])
+        renderResults([success:false, message:'POST with content type "application/JSON" required.'], HttpStatus.SC_BAD_REQUEST)
     }
 
     @ApiOperation(
@@ -1600,16 +1657,15 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def getBatchStatus() {
         def status = batchService.getBatchStatus(params.batchId)
         if (status) {
             renderResults([success:true, taskCount: status.taskCount, tasksCompleted: status.tasksCompleted, batchId: status.batchId, timeStarted: status.timeStarted.getTime(), timeFinished: status.timeFinished?.getTime() ?: 0])
-            return
+        } else {
+            renderResults([success: false, message: 'Missing or invalid batchId'], HttpStatus.SC_BAD_REQUEST)
         }
-        renderResults([success:false, message:'Missing or invalid batchId'])
     }
 
     @ApiOperation(
@@ -1623,8 +1679,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def darwinCoreTerms() {
         def terms = []
@@ -1665,7 +1720,7 @@ class WebServiceController {
             bos.flush()
             bos.close()
         } else {
-            renderResults([success:"false", message:'No harvestable images found'])
+            renderResults([success:"false", message:'No harvestable images found'], HttpStatus.SC_BAD_REQUEST)
         }
     }
 
@@ -1680,8 +1735,7 @@ class WebServiceController {
     )
     @ApiResponses([
             @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed"),
-            @ApiResponse(code = 404, message = "Image Not Found")]
+            @ApiResponse(code = 405, message = "Method Not Allowed. Only GET is allowed")]
     )
     def exportCSV(){
         response.setHeader("Content-disposition", "attachment;filename=images-export.csv.gz")

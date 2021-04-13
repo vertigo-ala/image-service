@@ -91,10 +91,11 @@ dataSource:
 
 environments:
     development:
-        hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
+#        hibernate:
+#            dialect: org.hibernate.dialect.PostgreSQLDialect
         dataSource:
             dbCreate: update
+#            driverClassName: org.postgresql.Driver
             url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
             username: "images"
             password: "images"
@@ -131,12 +132,12 @@ environments:
                 inbox: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-incoming'
             exportDir: '/home/travis/build/AtlasOfLivingAustralia/image-service/temp-exports'
 
-
     production:
         hibernate:
             dialect: org.hibernate.dialect.PostgreSQLDialect
         dataSource:
             dbCreate: update
+            driverClassName: org.postgresql.Driver
             url: jdbc:postgresql://localhost/images?autoReconnect=true&connectTimeout=0&useUnicode=true&characterEncoding=UTF-8
             properties:
                 jmxEnabled: true
@@ -160,7 +161,7 @@ security:
     cas:
         appServerName: 'http://dev.ala.org.au:8080'
         uriFilterPattern: '/admin/.*,/admin,/admin/,/image/deleteImage/.*'
-        authenticateOnlyIfLoggedInPattern:  ''
+        authenticateOnlyIfLoggedInPattern:  '/ws/createSubimage'
         bypass: false
         disableCAS: false
 
@@ -206,7 +207,7 @@ spring:
 
 # Spring Actuator Endpoints are Disabled by Default
 endpoints:
-    enabled: false
+    enabled: true
     jmx:
         enabled: true
 
@@ -217,6 +218,8 @@ placeholder:
     document:
         thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/200px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
         large: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/500px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
+    missing:
+        thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Document_icon_%28the_Noun_Project_27904%29.svg/200px-Document_icon_%28the_Noun_Project_27904%29.svg.png"
 
 swagger:
     info:
@@ -243,14 +246,17 @@ swagger:
                 in: "header"
                 name: "Authorization"
 
-facets: ["recognisedLicence", "dataResourceUid", "creator", "imageSize", "format", "dateUploadedYearMonth"]
+facets: ["recognisedLicence", "dataResourceUid", "creator.keyword", "imageSize", "fileType", "format", "dateUploadedYearMonth"]
 
 analytics:
     credentialsJson: "/data/image-service/config/google-analytics.json"
     URL: "https://www.google-analytics.com"
     ID: "UA-4355440-1"
     baseURL: "https://www.googleapis.com/analytics/v3/data/ga"
-    viewID: "ga:8736349"
+    viewID: "ga:197294038"
+    trackThumbnails: false
+    trackLargeViewer: false
+    trackDetailedView: false
 
 elasticsearch:
   indexName: "images"
@@ -258,3 +264,14 @@ elasticsearch:
   scheme: "http"
   port1: 9200
   port2: 9201
+  maxFacetSize: 10000
+  maxOffset: 10000
+  maxPageSize: 200
+  defaultPageSize: 10
+
+# External links
+collectory:
+    baseURL: "https://collections.ala.org.au"
+biocache:
+    baseURL: "https://biocache.ala.org.au"
+

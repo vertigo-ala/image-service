@@ -8,7 +8,7 @@ class UrlMappings {
         }
 
         "/ws/image/$imageID?(.$format)?"(controller: "webService") {
-                action = [GET: 'getImageInfo', DELETE: 'deleteImageService']
+                action = [GET: 'getImageInfo', DELETE: 'deleteImageService', HEAD: 'getImageInfo']
         }
         "/ws/updateMetadata/$imageIdentifier"(controller: "webService", action: "updateMetadata")
         "/ws/getImageInfo/$imageID"(controller: "webService", action:'getImageInfo')
@@ -32,10 +32,16 @@ class UrlMappings {
         "/ws"(controller: 'webService', action: 'swagger')
 
         // legacy URLS
+        "/image/imageTooltipFragment"(controller: "image", action: "imageTooltipFragment")
         "/image/proxyImageThumbnail"(controller: "image", action: "proxyImageThumbnail")
         "/image/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
         "/image/proxyImageTile"(controller: "image", action: "proxyImageTile")
         "/image/proxyImage"(controller: "image", action: "proxyImage")
+        "/proxyImageThumbnail"(controller: "image", action: "proxyImageThumbnail")
+        "/proxyImageThumbnailLarge"(controller: "image", action: "proxyImageThumbnailLarge")
+        "/proxyImageTile"(controller: "image", action: "proxyImageTile")
+        "/proxyImage"(controller: "image", action: "proxyImage")
+
         "/image/viewer"(controller:"image", action: "viewer")
         "/image/view/$id"(controller:"image", action: "viewer")
         "/image/viewer/$id"(controller:"image", action: "viewer")
@@ -44,7 +50,7 @@ class UrlMappings {
         "/image/$id/thumbnail"(controller: "image", action: "proxyImageThumbnail")
         "/image/$id/large"(controller: "image", action: "proxyImageThumbnailLarge")
         "/image/$id/tms"(controller: "image", action: "proxyImageTile")
-        "/image/$id/original"(controller: "image", action: "proxyImage")
+        "/image/$id/original"(controller: "image", action: "getOriginalFile")
 
         "/admin/image/$imageId"(controller: "admin", action: "image")
         "/image/details"(controller: "image", action: "details")
@@ -55,6 +61,7 @@ class UrlMappings {
         "/ws/analytics/dataResource/$dataResourceUID"(controller: "analytics", action: "byDataResource")
 
         name image_url: "/image/$imageId"(controller: "image", action: "details")
+        name image_ws_url: "/ws/image/$imageId"(controller: "webService", action: "getImageInfo")
 
         //tags
         "/ws/tags"(controller: "webService", action: "getTagModel")

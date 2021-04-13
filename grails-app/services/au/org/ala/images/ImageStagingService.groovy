@@ -15,7 +15,6 @@ class ImageStagingService {
     def settingService
     def logService
     def imageService
-    def imageStoreService
     def auditService
 
     ResultsPageList<StagedFile> getFileList(String userId, GrailsParameterMap params) {
